@@ -4,7 +4,9 @@
   "description": "The first implementation of a website to support Spatul'As activities within IMT Atlantique",
   "main": "index.js",
   "scripts": {
-    "test": "test"
+    "test": "test",
+    "start": "node ./index.js"
+
   },
   "repository": {
     "type": "git",
