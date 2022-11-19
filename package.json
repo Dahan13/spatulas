@@ -1,0 +1,26 @@
+{
+  "name": "spatulas_web_project",
+  "version": "1.0.0",
+  "description": "The first implementation of a website to support Spatul'As activities within IMT Atlantique",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dahan13/spatulas.git"
+  },
+  "keywords": [
+    "nodeJS",
+    "SQL",
+    "NestJS",
+    "handlebars",
+    "live"
+  ],
+  "author": "Corentin Caugant",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Dahan13/spatulas/issues"
+  },
+  "homepage": "https://github.com/Dahan13/spatulas#readme"
+}
