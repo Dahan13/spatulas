@@ -4,7 +4,8 @@
   "description": "The first implementation of a website to support Spatul'As activities within IMT Atlantique",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "node ./bin/www",
+    "devstart": "nodemon ./bin/www"
   },
   "repository": {
     "type": "git",
@@ -18,10 +19,13 @@
     "http-errors": "~1.6.3",
     "morgan": "~1.9.1"
   },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  },
   "keywords": [
     "nodeJS",
     "SQL",
-    "NestJS",
+    "expressJS",
     "handlebars",
     "live"
   ],
