@@ -2,15 +2,21 @@
   "name": "spatulas_web_project",
   "version": "1.0.0",
   "description": "The first implementation of a website to support Spatul'As activities within IMT Atlantique",
-  "main": "index.js",
+  "private": true,
   "scripts": {
-    "test": "test",
-    "start": "node ./index.js"
-
+    "start": "node ./bin/www"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Dahan13/spatulas.git"
+  },
+  "dependencies": {
+    "cookie-parser": "~1.4.4",
+    "debug": "~2.6.9",
+    "express": "~4.16.1",
+    "hbs": "~4.0.4",
+    "http-errors": "~1.6.3",
+    "morgan": "~1.9.1"
   },
   "keywords": [
     "nodeJS",
