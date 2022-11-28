@@ -1,10 +1,36 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>{{title}}</title>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <meta charset="utf-8" lang="en"/> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> {{title}} - Spatul'As </title>
+    <!-- <link rel="shortcut icon" type="image/x-icon" href="/images/spatulas.ico" /> -->
+    <link rel="stylesheet" href="/stylesheets/layout-style.css"/>
   </head>
   <body>
-    {{{body}}}
+    <header> 
+      <div class="logo-holder"> <a href="/"> <img src="/images/layout/logo.png" alt="Logo Spatul'As X Corentin"> </a> </div>
+      <!-- <div class="protected-access"> <a href="/admin"> <img src="/images/layout/crown.png" alt="Crown"> </a> </div> -->
+    </header>
+    <div class="main-content">
+      <div class="header-filler"> </div>
+      <div class="content">
+        {{{body}}}
+      </div>
+      <footer>
+          <div class="contacts-container"> 
+            <a href="#"> <img src="/images/layout/facebook.png" alt="Facebook"> </a>
+            <a href="#"> <img src="/images/layout/twitter.png" alt="Twitter"> </a>
+            <a href="#"> <img src="/images/layout/discord.png" alt="Discord"> </a>
+            <a href="#"> <img src="/images/layout/github.png" alt="Github"> </a>
+          </div>
+          <div class="links-container"> 
+            <a href="#"> General Terms of Use </a>
+            <a href="#"> Credits </a>
+            <a href="#"> Cookies </a>
+          </div>
+      </footer>
+    </div>
+    <script src='/javascripts/layout.js'> </script>
   </body>
 </html>
