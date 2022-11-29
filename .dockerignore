@@ -1,0 +1,13 @@
+# Root files
+README.md
+LICENSE.md
+.gitignore
+
+# Dev workspace
+.vscode/
+
+# Modules and dependencies
+node_modules/
+
+# Documentation
+docs/
