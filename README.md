@@ -11,7 +11,7 @@ This project uses docker to launch and run without having to bother with install
 Extract and open a terminal in this project folder, then type :
 
 ```bash
-$ docker build -t <name of the image>
+$ docker build -t <name of the image> .
 ```
 
 After the image is built, you can launch a container using it :
