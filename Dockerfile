@@ -8,5 +8,4 @@ RUN npm install
 
 # Copying all other files & launching
 COPY . .
-EXPOSE 8080
 CMD ["npm", "start"]
