@@ -11,13 +11,13 @@ This project uses docker to launch and run without having to bother with install
 Extract and open a terminal in this project folder, then type :
 
 ```bash
-$ docker build -t <name of the image> .
+$ docker-compose build
 ```
 
 After the image is built, you can launch a container using it :
 
 ```bash
-$ docker run -dp 8080:8080 <name of the image>
+$ docker-compose up -d
 ```
 
 Now you can open <a href="http://localhost:8080/"> your localhost </a> and enjoy it !
