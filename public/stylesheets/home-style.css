@@ -1,0 +1,39 @@
+.huge-logo {
+    width: 90%;
+    align-self: center;
+    margin-top: 50px;
+}
+
+.message-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.message-container > h1 {
+    font-size: 1.3rem;
+}
+
+.message-container > em {
+    font-size: 1.15rem;
+}
+
+@media only screen and (min-width: 1020px) {
+
+    .huge-logo {
+        margin-top: 70px;
+    }
+
+    .message-container {
+        margin-top: 30px;
+    }
+
+    .message-container > h1 {
+        font-size: 2rem;
+    }
+    
+    .message-container > em {
+        font-size: 1.5rem;
+    }
+}

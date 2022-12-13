@@ -96,6 +96,8 @@ header {
 .content {
   width: 95%;
   margin-bottom: 25px;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Footer rules */
