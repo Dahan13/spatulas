@@ -157,6 +157,15 @@ footer {
     height: 80px;
   }
 
+  .protected-access {
+    margin-right: 6px;
+    height: 80px;
+  }
+  
+  .protected-access > a > img {
+    height: 80px;
+  }
+
   /* Main content rules on big screens */
 
   .content {

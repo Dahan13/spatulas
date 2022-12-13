@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-const pool = require("./database.js")
+// const pool = require("./database.js")
 
 
 /* GET home page. */
