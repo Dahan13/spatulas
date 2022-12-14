@@ -1,6 +1,56 @@
 <link rel="stylesheet" href="/stylesheets/home-style.css"/>
-<img class="huge-logo" src="/images/home/huge_logo.webp" alt="Logo Spatul'As X Corentin">
-<div class="message-container">
-    <h1> Registrations are not open ! </h1>
-    <em> Come back later... </em>
-</div>
+{{#if registrationOpen}}
+    <h1> Registration for "XX/XX/XXXX" </h1>
+    <form action="register" method="POST">
+        <div class="name-holder">
+            <div class="input-div">
+                <label for="last-name"> Last Name </label>
+                <input type="text" id="last-name" name="last-name">
+            </div>
+            <div class="input-div">
+                <label for="first-name"> First Name </label>
+                <input type="text" id="first-name" name="first-name">
+            </div>
+        </div>
+        <div class="input-div">
+            <label for="burger"> Burger </label>
+            <select name="burger" id="burger">
+                <option value="classico"> Classico : Steak, cheddar, homemade sauce </option>
+                <option value="chevre"> Chèvre : Steak, goat cheese, homemade sauce </option>
+                <option value="vege"> Végé : vegetarian steak, raclette, homemade sauce </option>
+            </select>
+        </div>
+        <div class="input-div">
+            <label for="fries"> Fries </label>
+            <select name="fries" id="fries">
+                <option value="paprika"> Paprika fries </option>
+            </select>
+        </div>
+        <div class="input-div">
+            <label for="drink"> Drink </label>
+            <select name="drink" id="drink">
+                <option value="coke"> Coca Cola </option>
+                <option value="orangina"> Orangina </option>
+                <option value="ice-tea"> Ice Tea </option>
+                <option value="no-drink"> No Drink (-0.50€) </option>
+            </select>
+        </div>
+        <div class="input-div">
+            <input type="checkbox" name="accept" id="accept">
+            <label for="accept"> I hereby consent to pay X.XX€ to receive my command</label>
+        </div>
+        <div class="input-div">
+            <label for="time"> Delivery time </label>
+            <select name="time" id="time">
+                <option value="19">19H00</option>
+            </select>
+        </div>
+        <input type="submit" value="Submit" />
+    </form>
+{{else}}
+    <img class="huge-logo" src="/images/home/huge_logo.webp" alt="Logo Spatul'As X Corentin">
+    <div class="message-container">
+        <h1> Registrations are not open ! </h1>
+        <em> Come back later... </em>
+    </div>
+{{/if}}

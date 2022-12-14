@@ -5,7 +5,8 @@ var router = express.Router();
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('home', { title: 'Home' });
+  const registrationOpen = true;
+  res.render('home', { title: 'Home', registrationOpen: registrationOpen });
 });
 
 module.exports = router;
