@@ -1,3 +1,35 @@
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+label {
+    margin-bottom: 2px;
+    font-weight: bold;
+}
+
+input[type='text'], select {
+    background-color: var(--main-background-color);
+    border-bottom: 1px solid var(--text-color);
+    padding: 2px;
+}
+
+input[type="submit"] {
+    margin-top: 10px;
+    padding: 6px;
+    border: 1px solid var(--text-color);
+    background-color: var(--main-background-color);
+    font-weight: bold;
+    border-radius: 10px;
+}
+
+input[type="submit"]:hover {
+    cursor: pointer;
+    background-color: var(--text-color);
+    color: var(--main-background-color)
+}
+
 .huge-logo {
     width: 90%;
     align-self: center;
@@ -19,6 +51,31 @@
     font-size: 1.15rem;
 }
 
+.name-holder {
+    width: 100%;
+    margin-top: 20px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.input-div{
+    width: 95%;
+    margin-bottom: 10px;
+    
+    display: flex;
+    flex-direction: column;
+}
+
+.input-div-checkbox {
+    flex-direction: row;
+}
+
+.input-div-checkbox > input {
+    margin-right: 5px;
+}
+
 @media only screen and (min-width: 1020px) {
 
     .huge-logo {
@@ -35,5 +92,22 @@
     
     .message-container > em {
         font-size: 1.5rem;
+    }
+
+    .name-holder {
+        flex-direction: row;
+        justify-content: space-around;
+    }
+
+    .name-holder > .input-div {
+        width: 45%;
+    }
+
+    input[type="submit"] {
+        margin-top: 13px;
+        padding: 12px;
+        font-weight: bold;
+        font-size: 1.5rem;
+        border-radius: 20px;
     }
 }
