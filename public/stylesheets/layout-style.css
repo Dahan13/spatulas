@@ -116,7 +116,11 @@ footer {
 }
 
 .contacts-container {
-  width: 300px;
+  width: 100%;
+  min-width: 240px;
+  max-width: 400px;
+  padding: 5px;
+
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -125,7 +129,7 @@ footer {
 }
 
 .contacts-container > a > img {
-  height: 60px;
+  height: 50px;
 }
 
 .links-container {

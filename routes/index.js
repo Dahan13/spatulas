@@ -9,4 +9,8 @@ router.get('/', function(req, res, next) {
   res.render('home', { title: 'Home', registrationOpen: registrationOpen });
 });
 
+router.get('/queue', (req, res, next) => {
+  res.render('queue', { title: 'queue' });
+})
+
 module.exports = router;
