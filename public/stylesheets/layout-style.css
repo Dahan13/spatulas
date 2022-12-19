@@ -3,6 +3,7 @@
 :root {
   --main-background-color: #E0E0E0;
   --text-color: #2F2F2F;
+  --transparent-background: #2F2F2F88;
 }
 
 * {
@@ -141,6 +142,49 @@ footer {
 
 .links-container > a {
   margin-bottom: 2px;
+}
+
+/* Pop-up system */
+
+.veil {
+  position: fixed;
+  top: 0;
+  right: 0;
+
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+
+  background-color: var(--transparent-background);
+
+  display:flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.veil:hover {
+  cursor: pointer;
+}
+
+.popup {
+  cursor: auto;
+
+  width: 90%;
+  height: 50%;
+  margin-bottom: 15px;
+
+  background-color: var(--main-background-color);
+  border: 1px solid var(--text-color);
+  border-radius: 20px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.invisible {
+  display: none;
 }
 
 @media only screen and (min-width: 1020px) {
