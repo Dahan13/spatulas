@@ -37,8 +37,9 @@ a:hover {
 }
 
 h1 {
-  font-weight: 2rem;
-  margin-bottom: 5px 0px 0px 15px;
+  font-size: 2rem;
+  margin: 10px 0px 15px 0px;
+  text-align: center;
 }
 
 /* Headers rules */
@@ -96,6 +97,8 @@ header {
 .content {
   width: 95%;
   margin-bottom: 25px;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Footer rules */
@@ -113,7 +116,11 @@ footer {
 }
 
 .contacts-container {
-  width: 300px;
+  width: 100%;
+  min-width: 240px;
+  max-width: 400px;
+  padding: 5px;
+
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -122,7 +129,7 @@ footer {
 }
 
 .contacts-container > a > img {
-  height: 60px;
+  height: 50px;
 }
 
 .links-container {
@@ -154,6 +161,15 @@ footer {
   }
   
   .logo-holder > a > img {
+    height: 80px;
+  }
+
+  .protected-access {
+    margin-right: 6px;
+    height: 80px;
+  }
+  
+  .protected-access > a > img {
     height: 80px;
   }
 
