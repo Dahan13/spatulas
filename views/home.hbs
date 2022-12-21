@@ -15,9 +15,9 @@
         <div class="input-div">
             <label for="burger"> Burger </label>
             <select name="burger" id="burger">
-                <option value="classico"> Classico (5.00€): Steak, cheddar, homemade sauce </option>
-                <option value="chevre"> Chèvre (5.00€): Steak, goat cheese, homemade sauce </option>
-                <option value="vege"> Végé (5.00€): vegetarian steak, raclette, homemade sauce </option>
+                <option value="classico" id="classico" data-price="5.00"> Classico (5.00€): Steak, cheddar, homemade sauce </option>
+                <option value="chevre" id="chevre" data-price="5.00"> Chèvre (5.00€): Steak, goat cheese, homemade sauce </option>
+                <option value="vege" data-price="5.00"> Végé (5.00€): vegetarian steak, raclette, homemade sauce </option>
             </select>
         </div>
         <div class="input-div">
@@ -32,7 +32,7 @@
                 <option value="coke"> Coca Cola </option>
                 <option value="orangina"> Orangina </option>
                 <option value="ice-tea"> Ice Tea </option>
-                <option value="no-drink"> No Drink (-0.50€) </option>
+                <option value="no-drink" data-price="-0.50"> No Drink (-0.50€) </option>
             </select>
         </div>
         <div class="input-div">
@@ -43,10 +43,11 @@
         </div>
         <div class="input-div input-div-checkbox">
             <input type="checkbox" name="accept" id="accept">
-            <label for="accept"> I hereby consent to pay X.XX€ to receive my command</label>
+            <label for="accept"> I hereby consent to pay <bold id="price-range"> IF YOU SEE THIS PLEASE REPORT IT </bold> to receive my command</label>
         </div>
-        <input type="submit" value="Submit" />
+        <input type="submit" value="Submit" id="submit-button" disabled/>
     </form>
+    <script src='/javascripts/home.js'> </script>
 {{else}}
     <img class="huge-logo" src="/images/home/huge_logo.webp" alt="Logo Spatul'As X Corentin">
     <div class="message-container">

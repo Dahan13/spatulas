@@ -230,6 +230,7 @@ footer {
   }
   
   .contacts-container {
+    max-width: 500px;
     width: 500px;
     margin-top: 25px;
   }

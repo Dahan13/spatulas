@@ -5,7 +5,7 @@ var router = express.Router();
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  const registrationOpen = false;
+  const registrationOpen = true;
   res.render('home', { title: 'Home', registrationOpen: registrationOpen });
 });
 
