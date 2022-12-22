@@ -10,7 +10,7 @@ router.get('/', function(req, res, next) {
 });
 
 router.get('/queue', (req, res, next) => {
-  res.render('queue', { title: 'queue' });
+  res.render('queue', { title: 'queue', searching: false });
 })
 
 module.exports = router;

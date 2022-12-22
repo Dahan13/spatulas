@@ -1,21 +1,46 @@
+<link rel="stylesheet" href="/stylesheets/home-style.css"/>
 <link rel="stylesheet" href="/stylesheets/queue-style.css"/>
 <div class="queue-title">   
     <h1> Queue :</h1>
-    <img src="/images/queue/search.webp" alt="search">
+    <div>
+        <img id="search-button" src="/images/queue/search.webp" alt="search">
+        {{#if searching}}
+            <a class="close-button" href="/queue" aria-label="Cancel search"> </a>
+        {{/if}}
+    </div>
 </div>
 <div class="commands-container">
-    <div class="command-container">
-        <span> 1 </span>
-        <img src="/images/queue/ready.webp" alt="Ready">
+    <div class="command-container ready">
+        <p> 1 </p>
+        <div class="image-holder"></div>
+    </div>
+    <div class="command-container preparation">
+        <p> 2 </p>
+        <div class="image-holder"></div>
     </div>
     <div class="command-container">
-        <span> 2 </span>
-        <img src="/images/queue/preparation.webp" alt="In Preparation">
+        <p> 3 </p>
+        <div class="image-holder"></div>
     </div>
     <div class="command-container">
-        <span> 3 </span>
+        <p> 4 </p>
+        <div class="image-holder"></div>
+    </div>
+    <div class="command-container">
+        <p> 5 </p>
+        <div class="image-holder"></div>
+    </div>
+    <div class="command-container">
+        <p> 6 </p>
+        <div class="image-holder"></div>
     </div>
 </div>
+<div class="page-selector">
+    <a class="right-arrow" href="#" aria-label="Previous time frame"></a>
+    <span> XXhXX </span>
+    <a class="left-arrow" href="#" aria-label="Next time frame"></a>
+</div>
+<script src="javascripts/queue.js"></script>
 
 
 

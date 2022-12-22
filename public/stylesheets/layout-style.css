@@ -4,6 +4,7 @@
   --main-background-color: #E0E0E0;
   --text-color: #2F2F2F;
   --transparent-background: #2F2F2F88;
+  --ready-color: #55D400;
 }
 
 * {
@@ -59,6 +60,7 @@ header {
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
+  z-index: 1000;
 }
 
 .header-filler {
@@ -170,7 +172,7 @@ footer {
   cursor: auto;
 
   width: 90%;
-  height: 50%;
+  min-height: 50%;
   margin-bottom: 15px;
 
   background-color: var(--main-background-color);
@@ -185,6 +187,23 @@ footer {
 
 .invisible {
   display: none;
+}
+
+.close-button {
+  display: block;
+
+  -webkit-clip-path: polygon(20% 0%, 0% 20%, 30% 50%, 0% 80%, 20% 100%, 50% 70%, 80% 100%, 100% 80%, 70% 50%, 100% 20%, 80% 0%, 50% 30%); 
+  clip-path: polygon(20% 0%, 0% 20%, 30% 50%, 0% 80%, 20% 100%, 50% 70%, 80% 100%, 100% 80%, 70% 50%, 100% 20%, 80% 0%, 50% 30%);
+
+  width: 25px;
+  height: 25px;
+  background: var(--text-color);
+  z-index: 1;
+  margin: 3px;
+}
+
+.close-button:hover {
+  cursor: pointer;
 }
 
 @media only screen and (min-width: 1020px) {
@@ -249,5 +268,16 @@ footer {
   
   .links-container > a {
     margin-bottom: 2px;
+  }
+
+  .popup {
+    width: 1000px;
+    min-height: 30%;
+  }
+
+  .close-button {
+    height: 35px;
+    width: 35px;
+    margin: 5px;
   }
 }

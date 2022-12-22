@@ -1,3 +1,5 @@
+/* Top of the page */
+
 h1 {
     text-align: left;
     margin: 0;
@@ -14,11 +16,187 @@ h1 {
     margin: 10px 0px 0px 0px;
 }
 
-.queue-title > img {
+.queue-title > div {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+.queue-title > div > img {
     height: 42px;
     margin: 3px;
+    margin-right: 5px;
 }
 
-.queue-title > img:hover {
+.queue-title > div > img:hover {
     cursor: pointer;
+}
+
+/* Queue content */
+
+.commands-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-around;
+
+    width: 100%;
+    margin-top: 20px;
+}
+
+.command-container {
+    width: 100px;
+    margin: 5px;
+
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.command-container > p {
+    font-size: 4rem;
+    font-weight: bold;
+
+    width: 100%;
+    text-align: center;
+}
+
+.ready > .image-holder {
+    content: url("/images/queue/ready.webp");
+    float: left;
+
+    height: 50px;
+}
+
+.ready > p {
+    color: var(--ready-color);
+    width: auto;
+}
+
+.preparation > .image-holder {
+    content: url("/images/queue/preparation.webp");
+    float: left;
+
+    height: 50px;
+}
+
+.preparation > p {
+    width: auto;
+}
+
+/* Page selector */
+
+.page-selector {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+
+    width: 200px;
+    margin-top: 30px;
+    align-self: center;
+}
+
+.page-selector > span {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.right-arrow {
+    -webkit-clip-path: polygon(0 50%, 100% 100%, 100% 0); 
+    clip-path: polygon(0 50%, 100% 100%, 100% 0);
+    background: var(--text-color);
+
+    width: 20px;
+    height: 20px;
+}
+
+.left-arrow {
+    -webkit-clip-path: polygon(100% 50%, 0 100%, 0 0); 
+    clip-path: polygon(100% 50%, 0 100%, 0 0);
+    background: var(--text-color);
+
+    width: 20px;
+    height: 20px;
+}
+
+.right-arrow:hover, .left-arrow:hover {
+    cursor: pointer;
+}
+
+/* Some form tweaks for the popup */
+
+form {
+    padding: 12px 6px 12px 6px;
+}
+
+h2 {
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+    text-align: center;
+    font-weight: bolder;
+}
+
+@media only screen and (min-width: 1020px) {
+
+    .command-container {
+        width: 180px;
+        margin: 14px;
+    }
+
+    .command-container > p {
+        font-size: 8rem;
+    }
+
+    .ready > .image-holder {
+        height: 100px;
+    }
+    
+    .preparation > .image-holder {
+        height: 100px;
+    }
+
+    .page-selector {
+        width: 300px;
+        margin-top: 50px;
+    }
+
+    .page-selector > span {
+        font-size: 1.6rem;
+    }
+
+    .right-arrow {
+        width: 30px;
+        height: 30px;
+    }
+    
+    .left-arrow {
+        width: 30px;
+        height: 30px;
+    }
+
+    form {
+        padding: 20px 10px 20px 10px;
+    }
+
+    h2 {
+        font-size: 2rem;
+    }
+
+    label {
+        font-size: 1.4rem;
+    }
+
+    input {
+        font-size: 1.2rem;
+    }
+
+    .input-div {
+        margin-bottom: 20px;
+    }
+
+
 }
