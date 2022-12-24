@@ -1,4 +1,13 @@
+.input-div {
+    margin-top: 20px;
+}
+
 /* Navigation */
+
+h1 {
+    border-bottom: 3px solid var(--text-color);
+    text-align: left;
+}
 
 nav {
     display: flex;
@@ -35,4 +44,53 @@ nav > a > p {
     color: var(--text-color);
     width: 100%;
     text-align: center;
+}
+
+/* Kitchen */
+
+table {
+    border-collapse: collapse;
+    width: 95%;
+    align-self: center;
+}
+
+h2 {
+    border-bottom: 2px solid var(--text-color);
+    margin: 20px 0 10px 0;
+}
+
+td {
+    text-align: center;
+}
+
+tr {
+    border-bottom: 1px solid var(--text-color);
+}
+
+tr:last-of-type {
+    border: none;
+}
+
+@media only screen and (min-width: 1020px) {
+
+    .input-div {
+        margin-top: 30px;
+    }
+
+    nav {
+        flex-direction: row;
+        margin-top: 80px;
+    }
+
+    h2 {
+        margin: 30px 0 20px 0;
+    }
+
+    th {
+        font-size: 1.2rem;
+    }
+
+    td {
+        font-size: 1.1rem;
+    }
 }
