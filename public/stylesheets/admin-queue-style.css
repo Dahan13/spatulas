@@ -1,0 +1,173 @@
+.command-container {
+    width: 225px;
+    border: 1px solid var(--text-color);
+    padding: 2px;
+    border-radius: 5px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.command-sub-container {
+    display:flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+
+    margin-bottom: 5px;
+}
+
+/* Sub container 1 */
+
+.title {
+    font-size: 1.3rem;
+    font-weight: bold;
+    text-align: center;
+    margin-left: 7px;
+}
+
+/* Sub container 2 */
+
+.command-id {
+    font-size: 4rem;
+    font-weight: bold;
+
+    width: 100%;
+    text-align: center;
+    margin-left: 5px;
+}
+
+.com-id {
+    display:flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+}
+
+.ready > .command-sub-container > .com-id > .image-holder {
+    content: url("/images/queue/ready.webp");
+    float: left;
+
+    height: 50px;
+    margin-right: 3px;
+}
+
+.ready > .command-sub-container > .com-id > .command-id {
+    color: var(--ready-color);
+    width: auto;
+}
+
+.prepare > .command-sub-container > .com-id > .image-holder {
+    content: url("/images/queue/preparation.webp");
+    float: left;
+
+    height: 50px;
+    margin-right: 3px;
+}
+
+.prepare > .command-sub-container > .com-id > .command-id {
+    width: auto;
+}
+
+.command-all {
+    margin-right: 7px;
+}
+
+.command-widgets {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    margin-top: 10px;
+}
+
+.command-widgets > div {
+    height: 28px;
+    width: 28px;
+    padding: 2px;
+    margin: 4px;
+
+    border: 1px solid var(--text-color);
+    border-radius: 3px;
+}
+
+.command-widgets > div:last-of-type {
+    border: none;
+}
+
+.command-widgets > div:hover, .command-widgets > .activated {
+    cursor: pointer;
+    background-color: var(--text-color);
+}
+
+.command-widgets > div:last-of-type {
+    cursor: auto;
+    background-color: var(--main-background-color);
+}
+
+/* Widgets */
+
+.wprepare {
+    content: url("/images/spadmin/prepare_black.webp")
+}
+
+.wprepare:hover {
+    content: url("/images/spadmin/prepare_white.webp")
+}
+
+.send {
+    content: url("/images/spadmin/ready_black.webp")
+}
+
+.send:hover {
+    content: url("/images/spadmin/ready_white.webp")
+}
+
+.ready > .command-sub-container > .command-all > .command-widgets > .validate {
+    content: url("/images/spadmin/validate.webp")
+}
+
+.ready > .command-sub-container > .command-all > .command-widgets > .validate:hover {
+    cursor: pointer;
+}
+
+@media only screen and (min-width: 1020px) {
+    .command-container {
+        width: 450px;
+    }
+
+    .title {
+        font-size: 1.8rem;
+    }
+
+    .command-widgets > div {
+        height: 50px;
+        width: 50px;
+        padding: 4px;
+        margin: 8px;
+    
+        border: 1px solid var(--text-color);
+        border-radius: 6px;
+    }
+
+    .command-all {
+        margin-left: auto;
+        font-size: 1.5rem;
+    }
+
+    .command-id {
+        font-size: 8rem;
+    }
+
+    .ready > .command-sub-container > .com-id > .image-holder {
+        height: 100px;
+    }
+    
+    .prepare > .command-sub-container > .com-id > .image-holder {
+        height: 100px;
+    }
+}
