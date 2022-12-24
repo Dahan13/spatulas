@@ -2,7 +2,7 @@ const mysql = require('mysql')
 const waitPort = require('wait-port');
 
 require('dotenv').config(); // ! Acquiring environnement variables
-  
+
 // Setting up parameters of the port we need to wait for
 const params = {
     host : process.env.MYSQL_HOST,

@@ -1,0 +1,27 @@
+<link rel="stylesheet" href="/stylesheets/spadmin-style.css"/>
+{{#if authentified}}
+<nav> 
+    <a href="/spadmin/manage">
+        <img src="images/spadmin/manage.webp" alt="Manage">
+        <p> Administration window </p>
+    </a>
+    <a href="/spadmin/queue">
+        <img src="images/layout/queue.webp" alt="Admin queue">
+        <p> Manage queue </p>
+    </a>
+    <a href="/spadmin/kitchen">
+        <img src="images/queue/preparation.webp" alt="kitchen">
+        <p> Kitchen tab </p>
+    </a>
+</nav>
+{{else}}
+<link rel="stylesheet" href="/stylesheets/home-style.css"/>
+<h1> Authentification : </h1>
+<form action="/spadmin" method="POST">
+    <div class="input-div">
+        <label for="password"> Password : </label>
+        <input type="text" id="password" name="password"/>
+    </div>
+    <input type="submit" value="Submit" id="submit-button"/>
+</form>
+{{/if}}
