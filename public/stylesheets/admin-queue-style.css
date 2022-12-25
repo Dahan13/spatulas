@@ -69,6 +69,10 @@
     margin-right: 3px;
 }
 
+.prepare.ready > .command-sub-container > .com-id > .image-holder {
+    content: url("/images/queue/ready.webp");
+}
+
 .prepare > .command-sub-container > .com-id > .command-id {
     width: auto;
 }
@@ -119,11 +123,19 @@
     content: url("/images/spadmin/prepare_white.webp")
 }
 
+.wprepare.activated {
+    content: url("/images/spadmin/prepare_white.webp");
+}
+
 .send {
     content: url("/images/spadmin/ready_black.webp")
 }
 
 .send:hover {
+    content: url("/images/spadmin/ready_white.webp")
+}
+
+.send.activated {
     content: url("/images/spadmin/ready_white.webp")
 }
 

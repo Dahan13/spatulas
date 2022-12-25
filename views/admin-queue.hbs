@@ -6,16 +6,16 @@
     <div>
         <img id="search-button" src="/images/queue/search.webp" alt="search">
         {{#if searching}}
-            <a class="close-button" href="/queue" aria-label="Cancel search"> </a>
+            <a class="close-button" href="/spadmin/queue" aria-label="Cancel search"> </a>
         {{/if}}
     </div>
 </div>
 <div class="commands-container">
 
-    <div class="command-container ready">
+    <div class="command-container ready prepare" id="com-1">
         <div class="command-sub-container">
             <p class="title"> John Doe </p>
-            <div class="close-button"> </div>
+            <div class="close-button" data-id="1"> </div>
         </div>
         <div class="command-sub-container">
             <div class="com-id">
@@ -29,24 +29,18 @@
                     <p> Coca Cola </p>
                 </div>
                 <div class="command-widgets">
-                    <div class="wprepare">
-
-                    </div>
-                    <div class="send">
-
-                    </div>
-                    <div class="validate">
-
-                    </div>
+                    <div class="wprepare activated" data-id="1"> </div>
+                    <div class="send activated" data-id="1"> </div>
+                    <div class="validate" data-id="1"> </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="command-container prepare">
+    <div class="command-container prepare" id="com-2">
         <div class="command-sub-container">
             <p class="title"> John Doe </p>
-            <div class="close-button"> </div>
+            <div class="close-button" data-id="2"> </div>
         </div>
         <div class="command-sub-container">
             <div class="com-id">
@@ -60,24 +54,18 @@
                     <p> Coca Cola </p>
                 </div>
                 <div class="command-widgets">
-                    <div class="wprepare">
-
-                    </div>
-                    <div class="send">
-
-                    </div>
-                    <div class="validate">
-
-                    </div>
+                    <div class="wprepare activated" data-id="2"> </div>
+                    <div class="send" data-id="2"> </div>
+                    <div class="validate" data-id="2"> </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="command-container">
+    <div class="command-container" id="com-3">
         <div class="command-sub-container">
             <p class="title"> John Doe </p>
-            <div class="close-button"> </div>
+            <div class="close-button" data-id="3"> </div>
         </div>
         <div class="command-sub-container">
             <div class="com-id">
@@ -91,24 +79,18 @@
                     <p> Coca Cola </p>
                 </div>
                 <div class="command-widgets">
-                    <div class="wprepare">
-
-                    </div>
-                    <div class="send">
-
-                    </div>
-                    <div class="validate">
-
-                    </div>
+                    <div class="wprepare" data-id="3"> </div>
+                    <div class="send" data-id="3"> </div>
+                    <div class="validate" data-id="3"> </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="command-container">
+    <div class="command-container" id="com-4">
         <div class="command-sub-container">
             <p class="title"> John Doe </p>
-            <div class="close-button"> </div>
+            <div class="close-button" data-id="4"> </div>
         </div>
         <div class="command-sub-container">
             <div class="com-id">
@@ -122,15 +104,9 @@
                     <p> Coca Cola </p>
                 </div>
                 <div class="command-widgets">
-                    <div class="wprepare">
-
-                    </div>
-                    <div class="send">
-
-                    </div>
-                    <div class="validate">
-
-                    </div>
+                    <div class="wprepare" data-id="4"> </div>
+                    <div class="send" data-id="4"> </div>
+                    <div class="validate" data-id="4"> </div>
                 </div>
             </div>
         </div>
@@ -143,3 +119,4 @@
     <a class="left-arrow" href="#" aria-label="Next time frame"></a>
 </div>
 <script src="/javascripts/queue.js"></script>
+<script src="/javascripts/queueAdmin.js"></script>

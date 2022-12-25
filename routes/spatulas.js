@@ -7,7 +7,7 @@ router.get('/', function(req, res, next) {
 });
 
 router.get('/queue', (req, res, next) => {
-  res.render('admin-queue', { title: 'Manage Queue' });
+  res.render('admin-queue', { title: 'Manage Queue', searching: true });
 })
 
 router.get('/manage', (req, res, next) => {
