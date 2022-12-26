@@ -1,5 +1,18 @@
 #!/usr/bin/env node
+const waitPort = require('wait-port');
 
+require('dotenv').config(); // ! Acquiring environnement variables
+
+// Setting up parameters of the port we need to wait for
+const params = {
+    host : 'localhost', // process.env.MYSQL_HOST,
+    port : 3306
+}
+
+waitPort(params)
+    .then(({ open, ipVersion }) => {
+        if (open) {
+console.log('\x1b[31m%s\x1b[0m' , 'Opened MySQL port IPV' + ipVersion + " detected. Proceding with app launch...\n\n");
 /**
  * Module dependencies.
  */
@@ -88,3 +101,9 @@ function onListening() {
     : 'port ' + addr.port;
   debug('Listening on ' + bind);
 }
+
+        }
+      })
+    .catch((err) => {
+      console.log(`An unknown error occured while waiting for the port: ${err}`);
+});

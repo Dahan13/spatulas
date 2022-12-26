@@ -1,7 +1,8 @@
 var express = require('express');
 var router = express.Router();
-// const pool = require("./database.js")
+let { createDatabase } = require("./databaseUtilities.js");
 
+createDatabase();
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
