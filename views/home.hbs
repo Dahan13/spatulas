@@ -4,35 +4,36 @@
     <form action="register" method="POST">
         <div class="name-holder">
             <div class="input-div">
-                <label for="last-name"> Last Name </label>
-                <input type="text" id="last-name" name="last-name" placeholder="Doe">
+                <label for="lastName"> Last Name </label>
+                <input type="text" id="lastName" name="lastName" placeholder="Doe">
             </div>
             <div class="input-div">
-                <label for="first-name"> First Name </label>
-                <input type="text" id="first-name" name="first-name" placeholder="John">
+                <label for="firstName"> First Name </label>
+                <input type="text" id="firstName" name="firstName" placeholder="John">
             </div>
         </div>
         <div class="input-div">
             <label for="burger"> Burger </label>
             <select name="burger" id="burger">
-                <option value="classico" id="classico" data-price="5.00"> Classico (5.00€): Steak, cheddar, homemade sauce </option>
-                <option value="chevre" id="chevre" data-price="5.00"> Chèvre (5.00€): Steak, goat cheese, homemade sauce </option>
-                <option value="vege" data-price="5.00"> Végé (5.00€): vegetarian steak, raclette, homemade sauce </option>
+                {{#each burgers}}
+                    <option value={{this.identifier}} id={{this.identifier}} {{#if this.price }} data-price={{this.price}} {{/if}}> {{this.name}} ({{#if this.price}}{{this.price}}{{else}}0.00{{/if}}€) {{#if this.description}}: {{this.description}} {{/if}} </option>
+                {{/each}}
             </select>
         </div>
         <div class="input-div">
             <label for="fries"> Fries </label>
             <select name="fries" id="fries">
-                <option value="paprika"> Paprika fries </option>
+                {{#each fries}}
+                    <option value={{this.identifier}} id={{this.identifier}} {{#if this.price }} data-price={{this.price}} {{/if}}> {{this.name}} ({{#if this.price}}{{this.price}}{{else}}0.00{{/if}}€) {{#if this.description}}: {{this.description}} {{/if}} </option>
+                {{/each}}
             </select>
         </div>
         <div class="input-div">
             <label for="drink"> Drink </label>
             <select name="drink" id="drink">
-                <option value="coke"> Coca Cola </option>
-                <option value="orangina"> Orangina </option>
-                <option value="ice-tea"> Ice Tea </option>
-                <option value="no-drink" data-price="-0.50"> No Drink (-0.50€) </option>
+                {{#each drinks}}
+                    <option value={{this.identifier}} id={{this.identifier}} {{#if this.price }} data-price={{this.price}} {{/if}}> {{this.name}} ({{#if this.price}}{{this.price}}{{else}}0.00{{/if}}€) {{#if this.description}}: {{this.description}} {{/if}} </option>
+                {{/each}}
             </select>
         </div>
         <div class="input-div">

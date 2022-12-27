@@ -15,11 +15,28 @@ createDatabase();
 /* GET home page. */
 router.get('/', function(req, res, next) {
   const registrationOpen = true;
-  res.render('home', { title: 'Home', registrationOpen: registrationOpen });
+  getBurgers((burgers) => {
+    getFries((fries) => {
+      getDrinks((drinks) => {
+        res.render('home', { title: 'Home', registrationOpen: registrationOpen, burgers: burgers, fries: fries, drinks: drinks });
+      })
+    })
+  })
 });
 
 router.get('/queue', (req, res, next) => {
-  res.render('queue', { title: 'queue', searching: false });
+  getUsers((users) => {
+    res.render('queue', { title: 'queue', searching: false, users: users, notEmpty: users.length ? true : false });
+  })
 })
 
+router.post('/register', (req, res, next) => {
+  if (req.body.lastName && req.body.firstName && req.body.burger && req.body.fries && req.body.drink && req.body.time && req.body.accept == 'on') {
+    insertUser(req.body.lastName, req.body.firstName, req.body.burger, req.body.fries, req.body.drink, req.body.time)
+    res.redirect('/queue');
+  } else {
+    res.redirect('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
+  }
+  
+})
 module.exports = router;

@@ -1,6 +1,6 @@
 // Input validation
-const firstNameInput = document.getElementById("first-name");
-const lastNameInput = document.getElementById("last-name");
+const firstNameInput = document.getElementById("firstName");
+const lastNameInput = document.getElementById("lastName");
 const checkbox = document.getElementById("accept");
 const submitButton = document.getElementById("submit-button");
 

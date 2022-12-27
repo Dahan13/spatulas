@@ -9,32 +9,20 @@
         {{/if}}
     </div>
 </div>
+{{#if notEmpty}}
 <div class="commands-container">
-    <div class="command-container ready">
-        <p> 1 </p>
-        <div class="image-holder"></div>
-    </div>
-    <div class="command-container preparation">
-        <p> 2 </p>
-        <div class="image-holder"></div>
-    </div>
-    <div class="command-container">
-        <p> 3 </p>
-        <div class="image-holder"></div>
-    </div>
-    <div class="command-container">
-        <p> 4 </p>
-        <div class="image-holder"></div>
-    </div>
-    <div class="command-container">
-        <p> 5 </p>
-        <div class="image-holder"></div>
-    </div>
-    <div class="command-container">
-        <p> 6 </p>
-        <div class="image-holder"></div>
-    </div>
+    {{#each users}}
+        {{#unless this.delivered}}
+            <div class="command-container {{#if this.ready}} ready {{else}} {{#if this.preparation}} preparation {{/if}} {{/if}} ">
+                <p> {{this.userId}} </p>
+                <div class="image-holder"></div>
+            </div>
+        {{/unless}}
+    {{/each}}
 </div>
+{{else}}
+    <h2 style="margin-top: 50px; text-align:center"> <em> Wow ! Such void ! </em> </h2>
+{{/if}}
 <div class="page-selector">
     <a class="right-arrow" href="#" aria-label="Previous time frame"></a>
     <span> XXhXX </span>
