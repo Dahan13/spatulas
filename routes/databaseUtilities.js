@@ -26,6 +26,15 @@ function createDatabase() {
     })
 }
 
+/**
+ * Insert a user into the database
+ * @param {string} lastName 
+ * @param {string} firstName 
+ * @param {string} burger 
+ * @param {string} fries 
+ * @param {string} drink 
+ * @param {int} time 
+ */
 function insertUser(lastName, firstName, burger, fries, drink, time) {
     pool.execute('INSERT INTO spatulasUsers (lastName, firstName, burger, fries, drink, time) VALUES (?, ?, ?, ?, ?, ?)', [lastName, firstName, burger, fries, drink, time], (err, rows, fields) => {
         if (err) {
@@ -34,6 +43,13 @@ function insertUser(lastName, firstName, burger, fries, drink, time) {
     })
 }
 
+/**
+ * Insert a burger into the database
+ * @param {string} identifier 
+ * @param {string} name 
+ * @param {string} description 
+ * @param {float} price 
+ */
 function insertBurger(identifier, name, description = null, price = null) {
     pool.execute('INSERT INTO spatulasBurgers VALUES (?, ?, ?, ?)', [identifier, name, description, price], (err, rows, fields) => {
         if (err) {
@@ -42,6 +58,13 @@ function insertBurger(identifier, name, description = null, price = null) {
     })
 }
 
+/**
+ * Insert a fries into the database
+ * @param {string} identifier 
+ * @param {string} name 
+ * @param {string} description 
+ * @param {float} price 
+ */
 function insertFries(identifier, name, description = null, price = null) {
     pool.execute('INSERT INTO spatulasFries VALUES (?, ?, ?, ?)', [identifier, name, description, price], (err, rows, fields) => {
         if (err) {
@@ -50,10 +73,73 @@ function insertFries(identifier, name, description = null, price = null) {
     })
 }
 
+/**
+ * Insert a drink into the database
+ * @param {string} identifier 
+ * @param {string} name 
+ * @param {string} description 
+ * @param {float} price 
+ */
 function insertDrink(identifier, name, description = null, price = null) {
     pool.execute('INSERT INTO spatulasDrinks VALUES (?, ?, ?, ?)', [identifier, name, description, price], (err, rows, fields) => {
         if (err) {
             console.log(err);
+        }
+    })
+}
+
+/**
+ * Returns a list containing all users
+ * @param {function} callback 
+ */
+function getUsers(callback) {
+    pool.query('SELECT * FROM spatulasUsers', (err, rows, fields) => {
+        if (err) {
+            console.log(err);
+        } else {
+            callback(rows, fields);
+        }
+    })
+}
+
+/**
+ * Returns a list containing all burgers
+ * @param {function} callback 
+ */
+function getBurgers(callback) {
+    pool.query('SELECT * FROM spatulasBurgers', (err, rows, fields) => {
+        if (err) {
+            console.log(err);
+        } else {
+            callback(rows, fields);
+        }
+    })
+}
+
+/**
+ * Returns a list containing all fries
+ * @param {function} callback 
+ */
+function getFries(callback) {
+    pool.query('SELECT * FROM spatulasFries', (err, rows, fields) => {
+        if (err) {
+            console.log(err);
+        } else {
+            callback(rows, fields);
+        }
+    })
+}
+
+/**
+ * Returns a list containing all drinks
+ * @param {function} callback 
+ */
+function getDrinks(callback) {
+    pool.query('SELECT * FROM spatulasDrinks', (err, rows, fields) => {
+        if (err) {
+            console.log(err);
+        } else {
+            callback(rows, fields);
         }
     })
 }
@@ -63,7 +149,11 @@ module.exports = {
     insertUser,
     insertBurger,
     insertFries,
-    insertDrink
+    insertDrink,
+    getUsers,
+    getBurgers,
+    getFries,
+    getDrinks
 }
 
 
