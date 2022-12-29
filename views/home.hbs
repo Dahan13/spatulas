@@ -39,7 +39,9 @@
         <div class="input-div">
             <label for="time"> Pick up time </label>
             <select name="time" id="time">
-                <option value="19">19h00</option>
+                {{#each times}}
+                    <option value={{this}}>{{this}}</option>
+                {{/each}}
             </select>
         </div>
         <div class="input-div input-div-checkbox">

@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+let pool = require('./databaseConnector')
 let { createDatabase, insertUser, insertBurger, insertFries, insertDrink, getUsers, getBurgers, getFries, getDrinks } = require("./databaseUtilities.js");
 let { getTimes } = require('./settingsUtilities');
 
@@ -16,12 +17,17 @@ createDatabase();
 /* GET home page. */
 router.get('/', function(req, res, next) {
   const registrationOpen = true;
-  getBurgers((burgers) => {
-    getFries((fries) => {
-      getDrinks((drinks) => {
-        res.render('home', { title: 'Home', registrationOpen: registrationOpen, burgers: burgers, fries: fries, drinks: drinks });
-      })
-    })
+  pool.getConnection((err, conn) => {
+    getBurgers((burgers, ) => {
+      getFries((fries) => {
+        getDrinks((drinks) => {
+          getTimes((times) => {
+            res.render('home', { title: 'Home', registrationOpen: registrationOpen, burgers: burgers, fries: fries, drinks: drinks, times: times });
+          }, conn)
+        }, conn)
+      }, conn)
+    }, conn)
+    pool.releaseConnection(conn);
   })
 });
 

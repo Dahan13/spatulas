@@ -92,8 +92,9 @@ function insertDrink(identifier, name, description = null, price = null) {
  * Returns a list containing all users
  * @param {function} callback 
  */
-function getUsers(callback) {
-    pool.query('SELECT * FROM spatulasUsers', (err, rows, fields) => {
+function getUsers(callback, connection = null) {
+    db = (connection) ? connection : pool
+    db.query('SELECT * FROM spatulasUsers', (err, rows, fields) => {
         if (err) {
             console.log(err);
         } else {
@@ -106,8 +107,9 @@ function getUsers(callback) {
  * Returns a list containing all burgers
  * @param {function} callback 
  */
-function getBurgers(callback) {
-    pool.query('SELECT * FROM spatulasBurgers', (err, rows, fields) => {
+function getBurgers(callback, connection = null) {
+    db = (connection) ? connection : pool
+    db.query('SELECT * FROM spatulasBurgers', (err, rows, fields) => {
         if (err) {
             console.log(err);
         } else {
@@ -120,8 +122,9 @@ function getBurgers(callback) {
  * Returns a list containing all fries
  * @param {function} callback 
  */
-function getFries(callback) {
-    pool.query('SELECT * FROM spatulasFries', (err, rows, fields) => {
+function getFries(callback, connection = null) {
+    db = (connection) ? connection : pool
+    db.query('SELECT * FROM spatulasFries', (err, rows, fields) => {
         if (err) {
             console.log(err);
         } else {
@@ -134,8 +137,9 @@ function getFries(callback) {
  * Returns a list containing all drinks
  * @param {function} callback 
  */
-function getDrinks(callback) {
-    pool.query('SELECT * FROM spatulasDrinks', (err, rows, fields) => {
+function getDrinks(callback, connection = null) {
+    db = (connection) ? connection : pool
+    db.query('SELECT * FROM spatulasDrinks', (err, rows, fields) => {
         if (err) {
             console.log(err);
         } else {
