@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 let pool = require('./databaseConnector')
 let { createDatabase, insertUser, insertBurger, insertFries, insertDrink, getUsers, getBurgers, getFries, getDrinks } = require("./databaseUtilities.js");
-let { getTimes } = require('./settingsUtilities');
+let { getTimes, getRegistration, getRegistrationDay } = require('./settingsUtilities');
 
 createDatabase();
 // insertUser('Doe', 'John', 'classico', 'paprika', 'coca', 1900);
@@ -16,18 +16,21 @@ createDatabase();
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  const registrationOpen = true;
-  pool.getConnection((err, conn) => {
-    getBurgers((burgers, ) => {
-      getFries((fries) => {
-        getDrinks((drinks) => {
-          getTimes((times) => {
-            res.render('home', { title: 'Home', registrationOpen: registrationOpen, burgers: burgers, fries: fries, drinks: drinks, times: times });
+  getRegistration((registStatus) => {
+    getRegistrationDay((day) => {
+      pool.getConnection((err, conn) => {
+        getBurgers((burgers, ) => {
+          getFries((fries) => {
+            getDrinks((drinks) => {
+              getTimes((times) => {
+                res.render('home', { title: 'Home', registrationOpen: registStatus, burgers: burgers, fries: fries, drinks: drinks, times: times, day: day });
+              }, conn)
+            }, conn)
           }, conn)
         }, conn)
-      }, conn)
-    }, conn)
-    pool.releaseConnection(conn);
+        pool.releaseConnection(conn);
+      })
+    })
   })
 });
 

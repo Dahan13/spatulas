@@ -23,8 +23,15 @@ function getRegistration(callback) {
     })
 }
 
+function getRegistrationDay(callback) {
+    readIni((data) => {
+        callback(data.General.registrationDay);
+    })
+}
+
 function getTimes(callback) {
     readIni((data) => {
+        data.Time.array.sort();
         callback(data.Time.array);
     })
 }
@@ -39,6 +46,13 @@ function setPassword(password) {
 function setRegistration(boolean) {
     readIni((data) => {
         data.General.registrationOpen = boolean;
+        fs.writeFileSync('./settings.ini', ini.stringify(data));
+    })
+}
+
+function setRegistrationDay(day) {
+    readIni((data) => {
+        data.General.registrationDay = day;
         fs.writeFileSync('./settings.ini', ini.stringify(data));
     })
 }
@@ -65,9 +79,11 @@ module.exports = {
     readIni,
     getPassword,
     getRegistration,
+    getRegistrationDay,
     getTimes,
     setPassword,
     setRegistration,
+    setRegistrationDay,
     addTime,
     removeTime
 }
