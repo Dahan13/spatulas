@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 let { createDatabase, insertUser, insertBurger, insertFries, insertDrink, getUsers, getBurgers, getFries, getDrinks } = require("./databaseUtilities.js");
+let { getTimes } = require('./settingsUtilities');
 
 createDatabase();
 // insertUser('Doe', 'John', 'classico', 'paprika', 'coca', 1900);
