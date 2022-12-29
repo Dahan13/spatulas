@@ -24,7 +24,7 @@ router.get('/', function(req, res, next) {
             getDrinks((drinks) => {
               getTimes((times) => {
                 res.render('home', { title: 'Home', registrationOpen: registStatus, burgers: burgers, fries: fries, drinks: drinks, times: times, day: day });
-              }, conn)
+              }, true)
             }, conn)
           }, conn)
         }, conn)
