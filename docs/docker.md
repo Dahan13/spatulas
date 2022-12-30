@@ -35,3 +35,8 @@ $ docker stop <container id>
 $ docker rm <container id>
 ```
 <br>
+
+- Save an image as an archive
+```bash
+$ docker save --output Path\To\Folder\app.tar docker.io/result/latest
+```

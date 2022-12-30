@@ -16,8 +16,10 @@ services:
 
   mysql:
     image: mysql:5.7
+    command: --init-file /data/application/init.sql
     volumes:
       - todo-mysql-data:/var/lib/mysql
+      - ./init.sql:/data/application/init.sql
     environment: 
       MYSQL_ROOT_PASSWORD: secret
       MYSQL_DATABASE: spatulas
