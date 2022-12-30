@@ -1,8 +1,9 @@
 var express = require('express');
+const { body, query } = require('express-validator');
 var router = express.Router();
 let pool = require('./databaseConnector')
-let { createDatabase, insertUser, insertBurger, insertFries, insertDrink, getUsers, getBurgers, getFries, getDrinks } = require("./databaseUtilities.js");
-let { getTimes, getRegistration, getRegistrationDay } = require('./settingsUtilities');
+let { createDatabase, insertUser, getUsers, getBurgers, getFries, getDrinks, checkBurger, checkDrink, checkFries, searchUser } = require("./databaseUtilities.js");
+let { getTimes, getRegistration, getRegistrationDay, checkTime } = require('./settingsUtilities');
 
 createDatabase();
 // insertUser('Doe', 'John', 'classico', 'paprika', 'coca', 1900);
@@ -15,38 +16,72 @@ createDatabase();
 // insertDrink('nodrink', 'No drink', null, -0.5)
 
 /* GET home page. */
-router.get('/', function(req, res, next) {
-  getRegistration((registStatus) => {
-    getRegistrationDay((day) => {
-      pool.getConnection((err, conn) => {
-        getBurgers((burgers, ) => {
-          getFries((fries) => {
-            getDrinks((drinks) => {
-              getTimes((times) => {
-                res.render('home', { title: 'Home', registrationOpen: registStatus, burgers: burgers, fries: fries, drinks: drinks, times: times, day: day });
-              }, true)
+router.get('/',
+  query('error').trim().escape(),
+  function(req, res, next) {
+    getRegistration((registStatus) => {
+      getRegistrationDay((day) => {
+        pool.getConnection((err, conn) => {
+          getBurgers((burgers, ) => {
+            getFries((fries) => {
+              getDrinks((drinks) => {
+                getTimes((times) => {
+                  res.render('home', { title: 'Home', registrationOpen: registStatus, burgers: burgers, fries: fries, drinks: drinks, times: times, day: day, error: (req.query.error) ? req.query.error : null });
+                }, true, conn)
+              }, conn)
             }, conn)
           }, conn)
-        }, conn)
-        pool.releaseConnection(conn);
+          pool.releaseConnection(conn);
+        })
       })
     })
-  })
 });
 
-router.get('/queue', (req, res, next) => {
-  getUsers((users) => {
-    res.render('queue', { title: 'queue', searching: false, users: users, notEmpty: users.length ? true : false });
-  })
+router.get('/queue', 
+  query('first-name').trim().escape(),
+  query('last-name').trim().escape(),
+  query('index').trim().escape().toInt(),
+  (req, res, next) => {
+    if (req.query['first-name'] && req.query['last-name']) {
+      searchUser(req.query['first-name'], req.query['last-name'], (users) => {
+        res.render('queue', { title: 'queue', searching: true, users: users, notEmpty: users.length ? true : false });
+      })
+    } else {
+      getTimes((times) => {
+        let index = (req.query.index && req.query.index < times.length && req.query.index >= 0) ? req.query.index : 0; // First we get our index and define it to 0 if the value is wrong
+          getUsers((users) => {
+            res.render('queue', { title: 'queue', searching: false, users: users, notEmpty: users.length ? true : false, timeStamp: times[index], previousTime: (index > 0) ? "/queue?index=" + (index - 1) : null, nextTime: (index < times.length - 1) ? "/queue?index=" + (index + 1) : null });
+          }, times[index])
+      }, false)
+    }
 })
 
-router.post('/register', (req, res, next) => {
-  if (req.body.lastName && req.body.firstName && req.body.burger && req.body.fries && req.body.drink && req.body.time && req.body.accept == 'on') {
-    insertUser(req.body.lastName, req.body.firstName, req.body.burger, req.body.fries, req.body.drink, req.body.time)
-    res.redirect('/queue');
-  } else {
-    res.redirect('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
-  }
-  
+router.post('/register', 
+  body('lastName').trim().escape(), // Sanitizing user inputs
+  body('firstName').trim().escape(),
+  body('burger').trim().escape(),
+  body('fries').trim().escape(),
+  body('drink').trim().escape(),
+  body('accept').trim().escape(),
+  (req, res, next) => {
+    pool.getConnection((err, conn) => {
+      checkBurger(req.body.burger, (burgerBool) => {
+        checkDrink(req.body.drink, (drinkBool) => {
+          checkFries(req.body.fries, (friesBool) => {
+            checkTime(req.body.time, (timeBool) => { // Checking that all inputs are in database
+              if (req.body.lastName && req.body.firstName && req.body.burger && req.body.fries && req.body.drink && req.body.time && req.body.accept == 'on' && burgerBool && drinkBool && friesBool && timeBool) {
+                insertUser(req.body.lastName, req.body.firstName, req.body.burger, req.body.fries, req.body.drink, req.body.time, conn)
+                res.redirect('/queue');
+              } else {
+                res.redirect('/?error=true');
+              }
+            }, true, conn)
+          }, conn)
+        }, conn)
+      }, conn)
+      pool.releaseConnection(conn);
+    })
 })
+
+
 module.exports = router;

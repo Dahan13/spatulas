@@ -35,8 +35,9 @@ function createDatabase() {
  * @param {string} drink 
  * @param {int} time 
  */
-function insertUser(lastName, firstName, burger, fries, drink, time) {
-    pool.execute('INSERT INTO spatulasUsers (lastName, firstName, burger, fries, drink, time) VALUES (?, ?, ?, ?, ?, ?)', [lastName, firstName, burger, fries, drink, time], (err, rows, fields) => {
+function insertUser(lastName, firstName, burger, fries, drink, time, connection = null) {
+    db = (connection) ? connection : pool
+    db.execute('INSERT INTO spatulasUsers (lastName, firstName, burger, fries, drink, time) VALUES (?, ?, ?, ?, ?, ?)', [lastName, firstName, burger, fries, drink, time], (err, rows, fields) => {
         if (err) {
             console.log(err);
         }
@@ -50,8 +51,9 @@ function insertUser(lastName, firstName, burger, fries, drink, time) {
  * @param {string} description 
  * @param {float} price 
  */
-function insertBurger(identifier, name, description = null, price = null) {
-    pool.execute('INSERT INTO spatulasBurgers VALUES (?, ?, ?, ?)', [identifier, name, description, price], (err, rows, fields) => {
+function insertBurger(identifier, name, description = null, price = null, connection = null) {
+    db = (connection) ? connection : pool
+    db.execute('INSERT INTO spatulasBurgers VALUES (?, ?, ?, ?)', [identifier, name, description, price], (err, rows, fields) => {
         if (err) {
             console.log(err);
         }
@@ -65,8 +67,9 @@ function insertBurger(identifier, name, description = null, price = null) {
  * @param {string} description 
  * @param {float} price 
  */
-function insertFries(identifier, name, description = null, price = null) {
-    pool.execute('INSERT INTO spatulasFries VALUES (?, ?, ?, ?)', [identifier, name, description, price], (err, rows, fields) => {
+function insertFries(identifier, name, description = null, price = null, connection = null) {
+    db = (connection) ? connection : pool
+    db.execute('INSERT INTO spatulasFries VALUES (?, ?, ?, ?)', [identifier, name, description, price], (err, rows, fields) => {
         if (err) {
             console.log(err);
         }
@@ -80,8 +83,9 @@ function insertFries(identifier, name, description = null, price = null) {
  * @param {string} description 
  * @param {float} price 
  */
-function insertDrink(identifier, name, description = null, price = null) {
-    pool.execute('INSERT INTO spatulasDrinks VALUES (?, ?, ?, ?)', [identifier, name, description, price], (err, rows, fields) => {
+function insertDrink(identifier, name, description = null, price = null, connection = null) {
+    db = (connection) ? connection : pool
+    db.execute('INSERT INTO spatulasDrinks VALUES (?, ?, ?, ?)', [identifier, name, description, price], (err, rows, fields) => {
         if (err) {
             console.log(err);
         }
@@ -92,14 +96,40 @@ function insertDrink(identifier, name, description = null, price = null) {
  * Returns a list containing all users
  * @param {function} callback 
  */
-function getUsers(callback, connection = null) {
+function getUsers(callback, timeStamp = null, connection = null) {
     db = (connection) ? connection : pool
-    db.query('SELECT * FROM spatulasUsers', (err, rows, fields) => {
-        if (err) {
-            console.log(err);
-        } else {
-            callback(rows, fields);
-        }
+    if (timeStamp) {
+        db.execute('SELECT * FROM spatulasUsers WHERE time=?', [timeStamp], (err, rows, fields) => {
+            if (err) {
+                console.log(err);
+            } else {
+                callback(rows, fields);
+            }
+        })
+    } else {
+        db.query('SELECT * FROM spatulasUsers', (err, rows, fields) => {
+            if (err) {
+                console.log(err);
+            } else {
+                callback(rows, fields);
+            }
+        })
+    }
+}
+
+/**
+ * This function search for users according to last and first name.
+ * MAKE SURE THAT FIRST AND LAST NAME ARE SANITIZED, THIS FUNCTION DO NOT USE PRE-COMPILED STATEMENTS
+ * @param {String} firstName 
+ * @param {String} lastName 
+ * @param {function} callback 
+ * @param {int} limit 
+ * @param {*} connection 
+ */
+function searchUser(firstName, lastName, callback, limit = 20, connection = null) {
+    db = (connection) ? connection : pool
+    db.query('SELECT * FROM spatulasUsers WHERE firstName LIKE \'' + firstName + '%\' AND lastName LIKE \'' + lastName + '%\' LIMIT 0, ?', [limit], (err, rows, fields) => {
+        callback(rows, fields);
     })
 }
 
@@ -148,6 +178,57 @@ function getDrinks(callback, connection = null) {
     })
 }
 
+/**
+ * Give to callback function a boolean indicating whether the identifier is in the database or not.
+ * @param {*} value
+ */
+function checkBurger(value, callback, connection = null) {
+    conn = (connection) ? connection : pool;
+    getBurgers((rows) => {
+        for (let i = 0; i < rows.length; i++) {
+            if (value == rows[i].identifier) {
+                callback(true);
+                return;
+            }
+        }
+        callback(false);
+    }, conn)
+}
+
+/**
+ * Give to callback function a boolean indicating whether the identifier is in the database or not.
+ * @param {*} value
+ */
+function checkFries(value, callback, connection = null) {
+    conn = (connection) ? connection : pool;
+    getFries((rows) => {
+        for (let i = 0; i < rows.length; i++) {
+            if (value == rows[i].identifier) {
+                callback(true);
+                return;
+            }
+        }
+        callback(false);
+    }, conn)
+}
+
+/**
+ * Give to callback function a boolean indicating whether the identifier is in the database or not.
+ * @param {*} value
+ */
+function checkDrink(value, callback, connection = null) {
+    conn = (connection) ? connection : pool;
+    getDrinks((rows) => {
+        for (let i = 0; i < rows.length; i++) {
+            if (value == rows[i].identifier) {
+                callback(true);
+                return;
+            }
+        }
+        callback(false);
+    }, conn)
+}
+
 module.exports = {
     createDatabase,
     insertUser,
@@ -155,9 +236,13 @@ module.exports = {
     insertFries,
     insertDrink,
     getUsers,
+    searchUser,
     getBurgers,
     getFries,
-    getDrinks
+    getDrinks,
+    checkBurger,
+    checkFries,
+    checkDrink
 }
 
 

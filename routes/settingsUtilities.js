@@ -37,28 +37,38 @@ function getLimit(callback) {
     })
 }
 
-function getTimes(callback, onlyAvailable = false) {
+function getTimes(callback, onlyAvailable = false, connection = null) {
+    conn = (connection) ? connection : pool;
     readIni((data) => {
         if (onlyAvailable) { // If we only want to times where there is still places (command limit not reach)
-            pool.getConnection((err, conn) => {
-                getLimit((limit) => {
-                    conn.query('SELECT COUNT(*) AS count, time FROM spatulasUsers GROUP BY time', (err, rows, fields) => {  // We associate each time stamp with its number of commands
-                        pool.releaseConnection(conn);
-                        for (let i = 0; i < rows.length; i++) {
-                            if (rows[i].count >= limit) { // If a commands count is above the limit for a timestamp
-                                data.Time.array = data.Time.array.filter(time => time != rows[i].time)
-                            }
+            getLimit((limit) => {
+                conn.query('SELECT COUNT(*) AS count, time FROM spatulasUsers GROUP BY time', (err, rows, fields) => {  // We associate each time stamp with its number of commands
+                    for (let i = 0; i < rows.length; i++) {
+                        if (rows[i].count >= limit) { // If a commands count is above the limit for a timestamp
+                            data.Time.array = data.Time.array.filter(time => time != rows[i].time)
                         }
-                        data.Time.array.sort();
-                        callback(data.Time.array);
-                    })
-                })   
-            })  
+                    }
+                    data.Time.array.sort();
+                    callback(data.Time.array);
+                })
+            })
         } else {
             data.Time.array.sort();
             callback(data.Time.array);
         } 
     })
+}
+
+function checkTime(value, callback, onlyAvailable = false, connection = null) {
+    getTimes((times) => {
+        for (let i = 0; i < times.length; i++) {
+            if (value == times[i]) {
+                callback(true);
+                return;
+            }
+        }
+        callback(false);
+    }, onlyAvailable, connection)
 }
 
 function setPassword(password) {
@@ -114,6 +124,7 @@ module.exports = {
     getRegistrationDay,
     getLimit,
     getTimes,
+    checkTime,
     setPassword,
     setRegistration,
     setRegistrationDay,

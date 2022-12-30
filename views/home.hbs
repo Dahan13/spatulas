@@ -1,6 +1,10 @@
 <link rel="stylesheet" href="/stylesheets/home-style.css"/>
+
 {{#if registrationOpen}}
     <h1> Registration for {{day}} </h1>
+    {{#if error}}
+        <p style="text-align: center; color: red; font-size:1.2rem"> Error. Please try again </p>
+    {{/if}}
     <form action="register" method="POST">
         <div class="name-holder">
             <div class="input-div">

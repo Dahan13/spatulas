@@ -23,11 +23,17 @@
 {{else}}
     <h2 style="margin-top: 50px; text-align:center"> <em> Wow ! Such void ! </em> </h2>
 {{/if}}
-<div class="page-selector">
-    <a class="right-arrow" href="#" aria-label="Previous time frame"></a>
-    <span> XXhXX </span>
-    <a class="left-arrow" href="#" aria-label="Next time frame"></a>
-</div>
+{{#unless searching}}
+    <div class="page-selector">
+        {{#if previousTime}}
+            <a class="right-arrow" href={{previousTime}} aria-label="Previous time frame"></a>
+        {{/if}}
+        <span> {{timeStamp}} </span>
+        {{#if nextTime}}
+            <a class="left-arrow" href={{nextTime}} aria-label="Next time frame"></a>
+        {{/if}}
+    </div>
+{{/unless}}
 <script src="javascripts/queue.js"></script>
 
 
