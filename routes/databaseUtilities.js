@@ -149,6 +149,53 @@ function getBurgers(callback, connection = null) {
 }
 
 /**
+ * Count the number of each burger
+ * @param {function} callback 
+ * @param {*} connection 
+ */
+function countBurgers(callback, connection = null) {
+    db = (connection) ? connection : pool;
+    db.query('SELECT count(*) AS count, name FROM (SELECT burger, identifier, name FROM spatulasUsers INNER JOIN spatulasBurgers ON spatulasUsers.burger = spatulasBurgers.identifier) AS burgerClient GROUP BY name', (err, rows, fields) => {
+        if (err) {
+            console.log(err);
+        }
+        callback(rows)
+    })
+}
+
+/**
+ * Count the number of each drink
+ * @param {function} callback 
+ * @param {*} connection 
+ */
+function countDrinks(callback, connection = null) {
+    db = (connection) ? connection : pool;
+    db.query('SELECT count(*) AS count, name FROM (SELECT drink, identifier, name FROM spatulasUsers INNER JOIN spatulasDrinks ON spatulasUsers.drink = spatulasDrinks.identifier) AS drinkClient GROUP BY name', (err, rows, fields) => {
+        if (err) {
+            console.log(err);
+        }
+        callback(rows)
+    })
+}
+
+
+/**
+ * Count the number of each fries
+ * @param {function} callback 
+ * @param {*} connection 
+ */
+function countFries(callback, connection = null) {
+    db = (connection) ? connection : pool;
+    db.query('SELECT count(*) AS count, name FROM (SELECT fries, identifier, name FROM spatulasUsers INNER JOIN spatulasFries ON spatulasUsers.fries = spatulasFries.identifier) AS friesClient GROUP BY name', (err, rows, fields) => {
+        if (err) {
+            console.log(err);
+        }
+        callback(rows)
+    })
+}
+
+
+/**
  * Returns a list containing all fries
  * @param {function} callback 
  */
@@ -238,8 +285,11 @@ module.exports = {
     getUsers,
     searchUser,
     getBurgers,
+    countBurgers,
     getFries,
+    countFries,
     getDrinks,
+    countDrinks,
     checkBurger,
     checkFries,
     checkDrink
