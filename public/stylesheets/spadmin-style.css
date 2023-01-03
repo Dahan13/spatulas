@@ -59,6 +59,10 @@ h2 {
     margin: 20px 0 10px 0;
 }
 
+h3 {
+    margin: 10px 0 5px 0;
+}
+
 td {
     text-align: center;
 }
@@ -69,6 +73,14 @@ tr {
 
 tr:last-of-type {
     border: none;
+}
+
+.one-line-form {
+    flex-direction: row;
+}
+
+.one-line-form > input[type='submit'] {
+    margin-left: 10px;
 }
 
 @media only screen and (min-width: 1020px) {
@@ -92,5 +104,9 @@ tr:last-of-type {
 
     td {
         font-size: 1.1rem;
+    }
+
+    .one-line-form > input[type='submit'] {
+        margin-left: 50px;
     }
 }

@@ -2,7 +2,7 @@ var express = require('express');
 const { body, query } = require('express-validator');
 var router = express.Router();
 let pool = require('./databaseConnector')
-let { createDatabase, insertUser, getUsers, getBurgers, getFries, getDrinks, checkBurger, checkDrink, checkFries, searchUser } = require("./databaseUtilities.js");
+let { createDatabase, insertUser, getUsers, getBurgers, getFries, getDrinks, checkBurger, checkDrink, checkFries, searchUser, countBurgers, countDrinks } = require("./databaseUtilities.js");
 let { getTimes, getRegistration, getRegistrationDay, checkTime } = require('./settingsUtilities');
 
 createDatabase();
@@ -28,9 +28,9 @@ router.get('/',
                 getTimes((times) => {
                   res.render('home', { title: 'Home', registrationOpen: registStatus, burgers: burgers, fries: fries, drinks: drinks, times: times, day: day, error: (req.query.error) ? req.query.error : null });
                 }, true, conn)
-              }, conn)
-            }, conn)
-          }, conn)
+              }, false, conn)
+            }, false, conn)
+          }, false, conn)
           pool.releaseConnection(conn);
         })
       })
@@ -51,7 +51,7 @@ router.get('/queue',
         let index = (req.query.index && req.query.index < times.length && req.query.index >= 0) ? req.query.index : 0; // First we get our index and define it to 0 if the value is wrong
           getUsers((users) => {
             res.render('queue', { title: 'queue', searching: false, users: users, notEmpty: users.length ? true : false, timeStamp: times[index], previousTime: (index > 0) ? "/queue?index=" + (index - 1) : null, nextTime: (index < times.length - 1) ? "/queue?index=" + (index + 1) : null });
-          }, times[index])
+          }, 0, times[index])
       }, false)
     }
 })

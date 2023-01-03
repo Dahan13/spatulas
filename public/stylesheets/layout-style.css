@@ -207,6 +207,15 @@ footer {
   cursor: pointer;
 }
 
+.error-message {
+  text-align: center; 
+  color: red; 
+  font-size:1.2rem; 
+  background-color: #FF000044; 
+  padding: 2px; 
+  border-radius: 10px;
+}
+
 @media only screen and (min-width: 1020px) {
 
   /* Headers rules on big screens */

@@ -1,4 +1,4 @@
-const { count } = require('console');
+const { count, time } = require('console');
 var fs = require('fs');
 var ini = require('ini');
 const pool = require('./databaseConnector');
@@ -80,7 +80,7 @@ function setPassword(password) {
 
 function setRegistration(boolean) {
     readIni((data) => {
-        data.General.registrationOpen = boolean;
+        data.General.registrationOpen = parseInt(boolean, 10);
         fs.writeFileSync('./settings.ini', ini.stringify(data));
     })
 }
@@ -100,6 +100,7 @@ function setLimit(newLimit) {
 }
 
 function addTime(timeValue) {
+    console.log(timeValue)
     if (timeValue.length == 5 && timeValue.split('h').length == 2) {
         readIni((data) => {
             if ((data.Time.array.filter(time => time == timeValue)).length == 0) {

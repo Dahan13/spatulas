@@ -13,10 +13,17 @@
 <div class="commands-container">
     {{#each users}}
         {{#unless this.delivered}}
+        <div class="command-wrapper">
+            <div class="command-name-container">
+                <p> {{this.firstName}} </p>
+                <p> {{this.lastName}} </p>
+            </div>
             <div class="command-container {{#if this.ready}} ready {{else}} {{#if this.preparation}} preparation {{/if}} {{/if}} ">
                 <p> {{this.userId}} </p>
                 <div class="image-holder"></div>
             </div>
+        </div>
+            
         {{/unless}}
     {{/each}}
 </div>

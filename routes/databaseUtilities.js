@@ -95,11 +95,12 @@ function insertDrink(identifier, name, description = null, price = null, connect
 /**
  * Returns a list containing all users
  * @param {function} callback 
+ * @param {int} deliveredOnly : 0 if you want users that have not received their command, 1 otherwise
  */
-function getUsers(callback, timeStamp = null, connection = null) {
+function getUsers(callback, deliveredOnly = 0, timeStamp = null, connection = null) {
     db = (connection) ? connection : pool
     if (timeStamp) {
-        db.execute('SELECT * FROM spatulasUsers WHERE time=?', [timeStamp], (err, rows, fields) => {
+        db.execute('SELECT * FROM spatulasUsers WHERE time=? AND delivered=?', [timeStamp, deliveredOnly], (err, rows, fields) => {
             if (err) {
                 console.log(err);
             } else {
@@ -107,7 +108,7 @@ function getUsers(callback, timeStamp = null, connection = null) {
             }
         })
     } else {
-        db.query('SELECT * FROM spatulasUsers', (err, rows, fields) => {
+        db.execute('SELECT * FROM spatulasUsers WHERE delivered=?', [deliveredOnly],(err, rows, fields) => {
             if (err) {
                 console.log(err);
             } else {
@@ -137,11 +138,14 @@ function searchUser(firstName, lastName, callback, limit = 20, connection = null
  * Returns a list containing all burgers
  * @param {function} callback 
  */
-function getBurgers(callback, connection = null) {
+function getBurgers(callback, addURL = false, connection = null) {
     db = (connection) ? connection : pool
     db.query('SELECT * FROM spatulasBurgers', (err, rows, fields) => {
-        if (err) {
-            console.log(err);
+        if (addURL) {
+            for (let i = 0; i < rows.length; i++) {
+                rows[i].url = '/spadmin/deleteBurger/' + rows[i].identifier;
+            }
+            callback(rows, fields);
         } else {
             callback(rows, fields);
         }
@@ -153,14 +157,17 @@ function getBurgers(callback, connection = null) {
  * @param {function} callback 
  * @param {*} connection 
  */
-function countBurgers(callback, connection = null) {
+function countBurgers(callback, toPrepareOnly = false, connection = null) {
     db = (connection) ? connection : pool;
-    db.query('SELECT count(*) AS count, name FROM (SELECT burger, identifier, name FROM spatulasUsers INNER JOIN spatulasBurgers ON spatulasUsers.burger = spatulasBurgers.identifier) AS burgerClient GROUP BY name', (err, rows, fields) => {
-        if (err) {
-            console.log(err);
-        }
-        callback(rows)
-    })
+    if (toPrepareOnly) {
+        db.query('SELECT count(*) AS count, name FROM (SELECT burger, identifier, name FROM spatulasUsers INNER JOIN spatulasBurgers ON spatulasUsers.burger = spatulasBurgers.identifier WHERE spatulasUsers.preparation = 1 AND spatulasUsers.ready = 0) AS burgerClient GROUP BY name', (err, rows, fields) => {
+            callback(rows);
+        })
+    } else {
+        db.query('SELECT count(*) AS count, name FROM (SELECT burger, identifier, name FROM spatulasUsers INNER JOIN spatulasBurgers ON spatulasUsers.burger = spatulasBurgers.identifier) AS burgerClient GROUP BY name', (err, rows, fields) => {
+            callback(rows);
+        })
+    }
 }
 
 /**
@@ -168,14 +175,18 @@ function countBurgers(callback, connection = null) {
  * @param {function} callback 
  * @param {*} connection 
  */
-function countDrinks(callback, connection = null) {
+function countDrinks(callback, toPrepareOnly = false, connection = null) {
     db = (connection) ? connection : pool;
-    db.query('SELECT count(*) AS count, name FROM (SELECT drink, identifier, name FROM spatulasUsers INNER JOIN spatulasDrinks ON spatulasUsers.drink = spatulasDrinks.identifier) AS drinkClient GROUP BY name', (err, rows, fields) => {
-        if (err) {
-            console.log(err);
-        }
-        callback(rows)
-    })
+    if (toPrepareOnly) {
+        db.query('SELECT count(*) AS count, name FROM (SELECT drink, identifier, name FROM spatulasUsers INNER JOIN spatulasDrinks ON spatulasUsers.drink = spatulasDrinks.identifier WHERE spatulasUsers.preparation = 1 AND spatulasUsers.ready = 0) AS drinkClient GROUP BY name', (err, rows, fields) => {
+            callback(rows)
+        })
+    } else {
+        db.query('SELECT count(*) AS count, name FROM (SELECT drink, identifier, name FROM spatulasUsers INNER JOIN spatulasDrinks ON spatulasUsers.drink = spatulasDrinks.identifier) AS drinkClient GROUP BY name', (err, rows, fields) => {
+            callback(rows);
+        })
+    }
+    
 }
 
 
@@ -184,14 +195,17 @@ function countDrinks(callback, connection = null) {
  * @param {function} callback 
  * @param {*} connection 
  */
-function countFries(callback, connection = null) {
+function countFries(callback, toPrepareOnly = false, connection = null) {
     db = (connection) ? connection : pool;
-    db.query('SELECT count(*) AS count, name FROM (SELECT fries, identifier, name FROM spatulasUsers INNER JOIN spatulasFries ON spatulasUsers.fries = spatulasFries.identifier) AS friesClient GROUP BY name', (err, rows, fields) => {
-        if (err) {
-            console.log(err);
-        }
-        callback(rows)
-    })
+    if (toPrepareOnly) {
+        db.query('SELECT count(*) AS count, name FROM (SELECT fries, identifier, name FROM spatulasUsers INNER JOIN spatulasFries ON spatulasUsers.fries = spatulasFries.identifier WHERE spatulasUsers.preparation = 1 AND spatulasUsers.ready = 0) AS friesClient GROUP BY name', (err, rows, fields) => {
+            callback(rows)
+        })
+    } else {
+        db.query('SELECT count(*) AS count, name FROM (SELECT fries, identifier, name FROM spatulasUsers INNER JOIN spatulasFries ON spatulasUsers.fries = spatulasFries.identifier) AS friesClient GROUP BY name', (err, rows, fields) => {
+            callback(rows);
+        })
+    }
 }
 
 
@@ -199,11 +213,14 @@ function countFries(callback, connection = null) {
  * Returns a list containing all fries
  * @param {function} callback 
  */
-function getFries(callback, connection = null) {
+function getFries(callback, addURL = false, connection = null) {
     db = (connection) ? connection : pool
     db.query('SELECT * FROM spatulasFries', (err, rows, fields) => {
-        if (err) {
-            console.log(err);
+        if (addURL) {
+            for (let i = 0; i < rows.length; i++) {
+                rows[i].url = '/spadmin/deleteFries/' + rows[i].identifier;
+            }
+            callback(rows, fields);
         } else {
             callback(rows, fields);
         }
@@ -214,11 +231,14 @@ function getFries(callback, connection = null) {
  * Returns a list containing all drinks
  * @param {function} callback 
  */
-function getDrinks(callback, connection = null) {
+function getDrinks(callback, addURL = false, connection = null) {
     db = (connection) ? connection : pool
     db.query('SELECT * FROM spatulasDrinks', (err, rows, fields) => {
-        if (err) {
-            console.log(err);
+        if (addURL) {
+            for (let i = 0; i < rows.length; i++) {
+                rows[i].url = '/spadmin/deleteDrink/' + rows[i].identifier;
+            }
+            callback(rows, fields);
         } else {
             callback(rows, fields);
         }
@@ -239,7 +259,7 @@ function checkBurger(value, callback, connection = null) {
             }
         }
         callback(false);
-    }, conn)
+    }, false, conn)
 }
 
 /**
@@ -276,6 +296,36 @@ function checkDrink(value, callback, connection = null) {
     }, conn)
 }
 
+/**
+ * Delete the burger in the database with the specified Id
+ * @param {String} burgerId 
+ * @param {*} connection 
+ */
+function deleteBurger(burgerId, connection = null) {
+    conn = (connection) ? connection : pool;
+    conn.execute('DELETE FROM spatulasBurgers WHERE identifier = ?', [burgerId]);
+}
+
+/**
+ * Delete the fries in the database with the specified Id
+ * @param {String} friesId 
+ * @param {*} connection 
+ */
+function deleteFries(friesId, connection = null) {
+    conn = (connection) ? connection : pool;
+    conn.execute('DELETE FROM spatulasFries WHERE identifier = ?', [friesId]);
+}
+
+/**
+ * Delete the drink in the database with the specified Id
+ * @param {String} drinkId 
+ * @param {*} connection 
+ */
+function deleteDrink(drinkId, connection = null) {
+    conn = (connection) ? connection : pool;
+    conn.execute('DELETE FROM spatulasDrinks WHERE identifier = ?', [drinkId]);
+}
+
 module.exports = {
     createDatabase,
     insertUser,
@@ -292,7 +342,8 @@ module.exports = {
     countDrinks,
     checkBurger,
     checkFries,
-    checkDrink
+    checkDrink,
+    deleteBurger,
+    deleteFries,
+    deleteDrink
 }
-
-
