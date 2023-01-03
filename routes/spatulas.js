@@ -2,7 +2,7 @@ var express = require('express');
 const { body, query } = require('express-validator');
 var router = express.Router();
 let pool = require('./databaseConnector')
-let { createDatabase, insertUser, getUsers, getBurgers, getFries, getDrinks, checkBurger, checkDrink, checkFries, searchUser, countBurgers, countFries, countDrinks, insertBurger, deleteBurger, deleteFries, deleteDrink, insertFries, insertDrink } = require("./databaseUtilities.js");
+let { createDatabase, insertUser, getUsers, getBurgers, getFries, getDrinks, checkBurger, checkDrink, checkFries, searchUser, countBurgers, countFries, countDrinks, insertBurger, deleteBurger, deleteFries, deleteDrink, insertFries, insertDrink, clearUsers } = require("./databaseUtilities.js");
 let { getTimes, getRegistration, getRegistrationDay, checkTime, getLimit, setRegistration, setRegistrationDay, setLimit, addTime, removeTime } = require('./settingsUtilities');
 
 /* GET users listing. */
@@ -81,6 +81,11 @@ router.post('/removeTimeStamp', (req, res, next) => {
 
 router.post('/updateLimit', (req, res, next) => {
   setLimit(req.body.limit);
+  res.redirect('/spadmin/manage#generalParameters');
+})
+
+router.get('/clearUsers', (req,res,next) => {
+  clearUsers();
   res.redirect('/spadmin/manage#generalParameters');
 })
 

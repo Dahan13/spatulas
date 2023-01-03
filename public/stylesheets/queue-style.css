@@ -44,10 +44,24 @@ h1 {
     width: 100%;
     margin-top: 20px;
 }
+.command-wrapper {
+    margin: 10px 5px 10px 5px;
 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.command-name-container > p {
+    font-size: 1.1rem;
+    font-weight: bold;
+    text-align: center;
+}
 .command-container {
     width: 100px;
-    margin: 5px;
+    margin-top: -12px;
+    margin-bottom: -8px;
 
     display: flex;
     flex-direction: row;
@@ -142,9 +156,12 @@ h2 {
 
 @media only screen and (min-width: 1020px) {
 
+    .command-wrapper {
+        margin: 28px 14px 28px 14px;
+    }
+
     .command-container {
         width: 180px;
-        margin: 14px;
     }
 
     .command-container > p {

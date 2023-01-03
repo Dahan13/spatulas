@@ -22,6 +22,9 @@
                 <p> {{this.userId}} </p>
                 <div class="image-holder"></div>
             </div>
+            {{#if ../searching}}
+                <p> {{this.time}} </p>
+            {{/if}}
         </div>
             
         {{/unless}}

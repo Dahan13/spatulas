@@ -134,6 +134,11 @@ function searchUser(firstName, lastName, callback, limit = 20, connection = null
     })
 }
 
+function clearUsers(connection = null) {
+    db = (connection) ? connection : pool
+    conn.execute('TRUNCATE TABLE spatulasUsers');
+}   
+
 /**
  * Returns a list containing all burgers
  * @param {function} callback 
@@ -334,6 +339,7 @@ module.exports = {
     insertDrink,
     getUsers,
     searchUser,
+    clearUsers,
     getBurgers,
     countBurgers,
     getFries,

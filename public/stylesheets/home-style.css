@@ -15,7 +15,7 @@ input[type='text'], select, input[type='number'] {
     padding: 2px;
 }
 
-input[type="submit"] {
+input[type="submit"], button {
     margin-top: 10px;
     padding: 6px;
     border: 3px solid var(--main-background-color);
@@ -24,12 +24,12 @@ input[type="submit"] {
     font-weight: bold;
 }
 
-input[type="submit"]:hover {
+input[type="submit"]:hover, button:hover {
     cursor: pointer;
     border: 3px solid var(--text-color);
 }
 
-input[type="submit"]:disabled {
+input[type="submit"]:disabled, button:disabled {
     cursor: not-allowed;
     background-color: var(--main-background-color);
     color: var(--text-color);
@@ -110,7 +110,7 @@ input[type="submit"]:disabled {
         width: 45%;
     }
 
-    input[type="submit"] {
+    input[type="submit"], button {
         margin-top: 13px;
         padding: 12px;
         font-weight: bold;
