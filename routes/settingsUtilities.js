@@ -88,6 +88,26 @@ function setPassword(password) {
     })
 }
 
+function checkPassword(password, callback) {
+    getPassword((realPassword) => {
+        callback(password == realPassword);
+    })
+}
+
+function authenticate(req, res, callback) {
+    if (req.cookies.spatulasPower) {
+        getPassword((password) => {
+            if (password == req.cookies.spatulasPower) {
+                callback();
+            } else {
+                res.redirect('/');
+            }
+        })
+    } else {
+        res.redirect('/');
+    }
+}
+
 function setRegistration(boolean) {
     readIni((data) => {
         data.General.registrationOpen = parseInt(boolean, 10);
@@ -138,9 +158,11 @@ module.exports = {
     getTimeIndex,
     checkTime,
     setPassword,
+    checkPassword,
     setRegistration,
     setRegistrationDay,
     setLimit,
     addTime,
-    removeTime
+    removeTime,
+    authenticate
 }

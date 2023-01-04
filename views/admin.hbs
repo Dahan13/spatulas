@@ -6,6 +6,14 @@
 
 <h1> Manage the website </h1>
 
+<form action="/spadmin/changePassword" method="POST" class="one-line-form">
+    <div class="input-div">
+        <label for="password"> Master Password </label>
+        <input type="password" id="password" name="password" required>
+    </div>
+    <input type="submit" value="Change password" id="general-parameters-password-submit-button"/>
+</form>
+
 <h2 id="generalParameters"> General Parameters : </h2>
     <form action="/spadmin/updateRegistration" method="POST">
         <input type="submit" value={{#if regisBool}}"Close registration" {{else}} "Open registration" {{/if}} id="general-parameters-registration-submit-button"/>

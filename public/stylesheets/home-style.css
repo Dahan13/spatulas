@@ -9,7 +9,7 @@ label {
     font-weight: bold;
 }
 
-input[type='text'], select, input[type='number'] {
+input[type='text'], input[type='password'], select, input[type='number'] {
     background-color: var(--main-background-color);
     border-bottom: 1px solid var(--text-color);
     padding: 2px;
