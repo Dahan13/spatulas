@@ -4,7 +4,7 @@ const pool = require('./databaseConnector');
  * This function will create all tables for the website to properly function, only if they are not already created.
  */
 function createDatabase() {
-    pool.query("CREATE TABLE IF NOT EXISTS spatulasUsers (userId INT PRIMARY KEY NOT NULL AUTO_INCREMENT, lastName VARCHAR(255), firstName VARCHAR(255), burger VARCHAR(255), fries VARCHAR(255), drink VARCHAR(255), time VARCHAR(5), preparation INT(1) DEFAULT 0, ready INT(1) DEFAULT 0, delivered INT(1) DEFAULT 0)", (err, rows, fields) => {
+    pool.query("CREATE TABLE IF NOT EXISTS spatulasUsers (userId INT PRIMARY KEY NOT NULL AUTO_INCREMENT, lastName VARCHAR(255), firstName VARCHAR(255), burger VARCHAR(255), fries VARCHAR(255), drink VARCHAR(255), time VARCHAR(5), preparation INT(1) DEFAULT 0, ready INT(1) DEFAULT 0, delivered INT(1) DEFAULT 0, price FLOAT)", (err, rows, fields) => {
         if (err) {
             console.log(err);
         }
@@ -35,9 +35,10 @@ function createDatabase() {
  * @param {string} drink 
  * @param {int} time 
  */
-function insertUser(lastName, firstName, burger, fries, drink, time, connection = null) {
+function insertUser(lastName, firstName, burger, fries, drink, time, price, connection = null) {
+    console.log(price);
     db = (connection) ? connection : pool
-    db.execute('INSERT INTO spatulasUsers (lastName, firstName, burger, fries, drink, time) VALUES (?, ?, ?, ?, ?, ?)', [lastName, firstName, burger, fries, drink, time], (err, rows, fields) => {
+    db.execute('INSERT INTO spatulasUsers (lastName, firstName, burger, fries, drink, time, price) VALUES (?, ?, ?, ?, ?, ?, ?)', [lastName, firstName, burger, fries, drink, time, price], (err, rows, fields) => {
         if (err) {
             console.log(err);
         }
@@ -331,6 +332,29 @@ function deleteDrink(drinkId, connection = null) {
     conn.execute('DELETE FROM spatulasDrinks WHERE identifier = ?', [drinkId]);
 }
 
+function calculatePrice(burgerId, friesId, drinkId, callback, connection = null) {
+    if (connection == null) {
+        pool.getConnection((err, conn) => {
+            conn.execute('SELECT price FROM spatulasBurgers WHERE identifier = ?', [burgerId], (err, burger, fields) => {
+                conn.execute('SELECT price FROM spatulasFries WHERE identifier = ?', [friesId], (err, fries, fields) => {
+                    conn.execute('SELECt price FROM spatulasDrinks WHERE identifier = ?', [drinkId], (err, drink, fields) => {
+                        callback(burger[0].price + fries[0].price + drink[0].price);
+                        pool.releaseConnection(conn);
+                    })
+                })
+            })
+        })
+    } else {
+        connection.execute('SELECT price FROM spatulasBurgers WHERE identifier = ?', [burgerId], (err, burger, fields) => {
+            connection.execute('SELECT price FROM spatulasFries WHERE identifier = ?', [friesId], (err, fries, fields) => {
+                connection.execute('SELECT price FROM spatulasDrinks WHERE identifier = ?', [drinkId], (err, drink, fields) => {
+                    callback(burger[0].price + fries[0].price + drink[0].price);
+                })
+            })
+        })
+    }
+}
+
 module.exports = {
     createDatabase,
     insertUser,
@@ -351,5 +375,6 @@ module.exports = {
     checkDrink,
     deleteBurger,
     deleteFries,
-    deleteDrink
+    deleteDrink,
+    calculatePrice
 }
