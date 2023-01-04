@@ -3,7 +3,7 @@ const { body, query } = require('express-validator');
 var router = express.Router();
 let pool = require('./databaseConnector')
 let { createDatabase, insertUser, getUsers, getBurgers, getFries, getDrinks, checkBurger, checkDrink, checkFries, searchUser, countBurgers, countDrinks } = require("./databaseUtilities.js");
-let { getTimes, getRegistration, getRegistrationDay, checkTime } = require('./settingsUtilities');
+let { getTimes, getRegistration, getRegistrationDay, checkTime, getTimeIndex } = require('./settingsUtilities');
 
 createDatabase();
 // insertUser('Doe', 'John', 'classico', 'paprika', 'coca', 1900);
@@ -62,6 +62,7 @@ router.post('/register',
   body('burger').trim().escape(),
   body('fries').trim().escape(),
   body('drink').trim().escape(),
+  body("time").trim().escape(),
   body('accept').trim().escape(),
   (req, res, next) => {
     pool.getConnection((err, conn) => {
@@ -71,7 +72,9 @@ router.post('/register',
             checkTime(req.body.time, (timeBool) => { // Checking that all inputs are in database
               if (req.body.lastName && req.body.firstName && req.body.burger && req.body.fries && req.body.drink && req.body.time && req.body.accept == 'on' && burgerBool && drinkBool && friesBool && timeBool) {
                 insertUser(req.body.lastName, req.body.firstName, req.body.burger, req.body.fries, req.body.drink, req.body.time, conn)
-                res.redirect('/queue');
+                getTimeIndex(req.body.time, (index) => {
+                  res.redirect('/queue?index=' + index);
+                }, conn)
               } else {
                 res.redirect('/?error=true');
               }

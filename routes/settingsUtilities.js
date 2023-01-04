@@ -71,6 +71,16 @@ function checkTime(value, callback, onlyAvailable = false, connection = null) {
     }, onlyAvailable, connection)
 }
 
+function getTimeIndex(value, callback, connection = null) {
+    getTimes((times) => {
+        for (let i = 0; i < times.length; i++) {
+            if (value == times[i]) {
+                callback(i);
+            }
+        }
+    }, false, connection)
+}
+
 function setPassword(password) {
     readIni((data) => {
         data.General.masterPassword = password;
@@ -125,6 +135,7 @@ module.exports = {
     getRegistrationDay,
     getLimit,
     getTimes,
+    getTimeIndex,
     checkTime,
     setPassword,
     setRegistration,
