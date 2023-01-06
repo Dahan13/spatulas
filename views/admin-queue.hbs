@@ -11,121 +11,55 @@
     </div>
 </div>
 <div class="commands-container">
-
+{{#if notEmpty}}
+    {{#each users}}
+        {{#unless this.delivered}}
 <div class="command-wrapper">
-    <div class="command-container ready prepare" id="com-1">
+    <div class="command-container {{#if this.ready}} ready {{else}} {{#if this.preparation}} preparation {{/if}} {{/if}}" id={{this.userId}}>
         <div class="command-sub-container">
-            <p class="title"> John Doe </p>
-            <div class="close-button" data-id="1"> </div>
+            <p class="title"> {{this.firstName}} {{this.lastName}} </p>
+            <div class="close-button" data-id={{this.userId}}> </div>
         </div>
         <div class="command-sub-container">
             <div class="com-id">
-                <p class="command-id"> 1 </p>
+                <p class="command-id"> {{this.userId}} </p>
                 <div class="image-holder"> </div>
             </div>
             <div class="command-all">
                 <div class="command-infos">
-                    <p> Classico </p>
-                    <p> Frites paprika </p>
-                    <p> Coca Cola </p>
+                    <p> {{this.burger}} </p>
+                    <p> {{this.fries}} </p>
+                    <p> {{this.drink}} </p>
                 </div>
                 <div class="command-widgets">
-                    <div class="wprepare activated" data-id="1"> </div>
-                    <div class="send activated" data-id="1"> </div>
-                    <div class="validate" data-id="1"> </div>
+                    <div class="wprepare {{#if this.preparation}} activated {{/if}}" data-id={{this.userId}}> </div>
+                    <div class="send {{#if this.ready}} activated {{/if}}" data-id={{this.userId}}> </div>
+                    <div class="validate" data-id={{this.userId}}> </div>
                 </div>
             </div>
         </div>
+        <span class="price-tag"> {{this.price}}€ </span>
     </div>
+    {{#if ../searching}}
+        <p style="margin-top:8px"> {{this.time}} </p>
+    {{/if}}
 </div>
-    
-<div class="command-wrapper">
-    <div class="command-container prepare" id="com-2">
-        <div class="command-sub-container">
-            <p class="title"> John Doe </p>
-            <div class="close-button" data-id="2"> </div>
-        </div>
-        <div class="command-sub-container">
-            <div class="com-id">
-                <p class="command-id"> 2 </p>
-                <div class="image-holder"> </div>
-            </div>
-            <div class="command-all">
-                <div class="command-infos">
-                    <p> Classico </p>
-                    <p> Frites paprika </p>
-                    <p> Coca Cola </p>
-                </div>
-                <div class="command-widgets">
-                    <div class="wprepare activated" data-id="2"> </div>
-                    <div class="send" data-id="2"> </div>
-                    <div class="validate" data-id="2"> </div>
-                </div>
-            </div>
-        </div>
+        {{/unless}}
+    {{/each}}
+{{else}}
+    <h2 style="margin-top: 50px; text-align:center"> <em> Wow ! Such void ! </em> </h2>
+{{/if}}
+</div>
+{{#unless searching}}
+    <div class="page-selector">
+        {{#if previousTime}}
+            <a class="right-arrow" href={{previousTime}} aria-label="Previous time frame"></a>
+        {{/if}}
+        <span> {{timeStamp}} </span>
+        {{#if nextTime}}
+            <a class="left-arrow" href={{nextTime}} aria-label="Next time frame"></a>
+        {{/if}}
     </div>
-</div>
-    
-<div class="command-wrapper">
-    <div class="command-container" id="com-3">
-        <div class="command-sub-container">
-            <p class="title"> John Doe </p>
-            <div class="close-button" data-id="3"> </div>
-        </div>
-        <div class="command-sub-container">
-            <div class="com-id">
-                <p class="command-id"> 3 </p>
-                <div class="image-holder"> </div>
-            </div>
-            <div class="command-all">
-                <div class="command-infos">
-                    <p> Classico </p>
-                    <p> Frites paprika </p>
-                    <p> Coca Cola </p>
-                </div>
-                <div class="command-widgets">
-                    <div class="wprepare" data-id="3"> </div>
-                    <div class="send" data-id="3"> </div>
-                    <div class="validate" data-id="3"> </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-    
-<div class="command-wrapper">
-    <div class="command-container" id="com-4">
-        <div class="command-sub-container">
-            <p class="title"> John Doe </p>
-            <div class="close-button" data-id="4"> </div>
-        </div>
-        <div class="command-sub-container">
-            <div class="com-id">
-                <p class="command-id"> 4 </p>
-                <div class="image-holder"> </div>
-            </div>
-            <div class="command-all">
-                <div class="command-infos">
-                    <p> Classico </p>
-                    <p> Frites paprika </p>
-                    <p> Coca Cola </p>
-                </div>
-                <div class="command-widgets">
-                    <div class="wprepare" data-id="4"> </div>
-                    <div class="send" data-id="4"> </div>
-                    <div class="validate" data-id="4"> </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-    
-
-</div>
-<div class="page-selector">
-    <a class="right-arrow" href="#" aria-label="Previous time frame"></a>
-    <span> XXhXX </span>
-    <a class="left-arrow" href="#" aria-label="Next time frame"></a>
-</div>
+{{/unless}}
 <script src="/javascripts/queue.js"></script>
 <script src="/javascripts/queueAdmin.js"></script>

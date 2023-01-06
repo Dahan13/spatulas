@@ -1,6 +1,6 @@
 // Defining utility functions
 function getCommand(id) {
-    return document.getElementById("com-" + id);
+    return document.getElementById(id);
 }
 
 function clickSend(evenement) {

@@ -355,6 +355,44 @@ function calculatePrice(burgerId, friesId, drinkId, callback, connection = null)
     }
 }
 
+/**
+ * Given an array of Objects, convert all mention of food Id to corresponding food name
+ * @param {[Object]} users 
+ * @param {*} callback 
+ * @param {*} conn 
+ */
+function convertFoodIdToFoodName(users, callback, conn = null) {
+    db = (conn) ? conn : pool;
+    db.query('SELECT identifier, name FROM spatulasBurgers', (err, burgers, fields) => {
+        db.query('SELECT identifier, name FROM spatulasDrinks', (err, drinks, fields) => {
+            db.query('SELECT identifier, name FROM spatulasFries', (err, fries, fields) => {
+                let burgersFinder = {};
+                for (let i = 0; i < burgers.length; i++) {
+                    burgersFinder[burgers[i].identifier] = burgers[i].name;
+                }
+
+                let drinksFinder = {};
+                for (let i = 0; i < drinks.length; i++) {
+                    drinksFinder[drinks[i].identifier] = drinks[i].name;
+                }
+
+                let friesFinder = {};
+                for (let i = 0; i < fries.length; i++) {
+                    friesFinder[fries[i].identifier] = fries[i].name;
+                }
+                console.log(burgersFinder, drinksFinder, friesFinder);
+                for (let i = 0; i < users.length; i++) {
+                    users[i].burger = burgersFinder[users[i].burger];
+                    users[i].fries = friesFinder[users[i].fries];
+                    users[i].drink = drinksFinder[users[i].drink];
+                }
+                callback(users)
+            })
+        })
+    })
+    
+}
+
 module.exports = {
     createDatabase,
     insertUser,
@@ -376,5 +414,6 @@ module.exports = {
     deleteBurger,
     deleteFries,
     deleteDrink,
-    calculatePrice
+    calculatePrice,
+    convertFoodIdToFoodName
 }

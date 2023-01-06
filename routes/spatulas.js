@@ -2,7 +2,7 @@ var express = require('express');
 const { body, query } = require('express-validator');
 var router = express.Router();
 let pool = require('./databaseConnector')
-let { getBurgers, getFries, getDrinks, searchUser, countBurgers, countFries, countDrinks, insertBurger, deleteBurger, deleteFries, deleteDrink, insertFries, insertDrink, clearUsers } = require("./databaseUtilities.js");
+let { getUsers, getBurgers, getFries, getDrinks, searchUser, countBurgers, countFries, countDrinks, insertBurger, deleteBurger, deleteFries, deleteDrink, insertFries, insertDrink, clearUsers, convertFoodIdToFoodName } = require("./databaseUtilities.js");
 let { getTimes, getRegistration, getRegistrationDay, getLimit, setRegistration, setRegistrationDay, setLimit, addTime, removeTime, getPassword, checkPassword, authenticate, setPassword } = require('./settingsUtilities');
 
 /* GET users listing. */
@@ -23,9 +23,28 @@ body('password').trim().escape(),
   })
 })
 
-router.get('/queue', (req, res, next) => {
+router.get('/queue',
+query('first-name').trim().escape(),
+query('last-name').trim().escape(),
+query('index').trim().escape().toInt(),
+(req, res, next) => {
   authenticate(req, res, () => {
-    res.render('admin-queue', { title: 'Manage Queue', searching: true });
+    if (req.query['first-name'] && req.query['last-name']) {
+      searchUser(req.query['first-name'], req.query['last-name'], (users) => {
+        convertFoodIdToFoodName(users, (users) => {
+          res.render('admin-queue', { title: 'queue', searching: true, users: users, notEmpty: users.length ? true : false });
+        })
+      })
+    } else {
+      getTimes((times) => {
+        let index = (req.query.index && req.query.index < times.length && req.query.index >= 0) ? req.query.index : 0; // First we get our index and define it to 0 if the value is wrong
+          getUsers((users) => {
+            convertFoodIdToFoodName(users, (users) => {
+              res.render('admin-queue', { title: 'queue', searching: false, users: users, notEmpty: users.length ? true : false, timeStamp: times[index], previousTime: (index > 0) ? "/spadmin/queue?index=" + (index - 1) : null, nextTime: (index < times.length - 1) ? "/spadmin/queue?index=" + (index + 1) : null });
+            })
+          }, 0, times[index])
+      }, false)
+    }
   })
 })
 

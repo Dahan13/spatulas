@@ -147,6 +147,12 @@
     cursor: pointer;
 }
 
+.price-tag {
+    font-size: 1.3rem;
+    font-weight: bold;
+    text-align: center;
+}
+
 @media only screen and (min-width: 1020px) {
     .command-container {
         width: 450px;
@@ -181,5 +187,11 @@
     
     .prepare > .command-sub-container > .com-id > .image-holder {
         height: 100px;
+    }
+
+    .price-tag {
+        font-size: 2rem;
+        font-weight: bold;
+        text-align: center;
     }
 }
