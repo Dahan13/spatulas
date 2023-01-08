@@ -29,22 +29,26 @@ query('last-name').trim().escape(),
 query('index').trim().escape().toInt(),
 (req, res, next) => {
   authenticate(req, res, () => {
-    if (req.query['first-name'] && req.query['last-name']) {
-      searchUser(req.query['first-name'], req.query['last-name'], (users) => {
-        convertFoodIdToFoodName(users, (users) => {
-          res.render('admin-queue', { title: 'queue', searching: true, users: users, notEmpty: users.length ? true : false });
-        })
-      })
-    } else {
-      getTimes((times) => {
-        let index = (req.query.index && req.query.index < times.length && req.query.index >= 0) ? req.query.index : 0; // First we get our index and define it to 0 if the value is wrong
-          getUsers((users) => {
-            convertFoodIdToFoodName(users, (users) => {
-              res.render('admin-queue', { title: 'queue', searching: false, users: users, notEmpty: users.length ? true : false, timeStamp: times[index], previousTime: (index > 0) ? "/spadmin/queue?index=" + (index - 1) : null, nextTime: (index < times.length - 1) ? "/spadmin/queue?index=" + (index + 1) : null });
-            })
-          }, 0, times[index])
-      }, false)
-    }
+    pool.getConnection((err, conn) => {
+      if (req.query['first-name'] && req.query['last-name']) {
+        searchUser(req.query['first-name'], req.query['last-name'], (users) => {
+          convertFoodIdToFoodName(users, (users) => {
+            res.render('admin-queue', { title: 'queue', searching: true, users: users, notEmpty: users.length ? true : false });
+            pool.releaseConnection(conn);
+          }, conn)
+        }, 20, conn)
+      } else {
+        getTimes((times) => {
+          let index = (req.query.index && req.query.index < times.length && req.query.index >= 0) ? req.query.index : 0; // First we get our index and define it to 0 if the value is wrong
+            getUsers((users) => {
+              convertFoodIdToFoodName(users, (users) => {
+                res.render('admin-queue', { title: 'queue', searching: false, users: users, notEmpty: users.length ? true : false, timeStamp: times[index], previousTime: (index > 0) ? "/spadmin/queue?index=" + (index - 1) : null, nextTime: (index < times.length - 1) ? "/spadmin/queue?index=" + (index + 1) : null });
+                pool.releaseConnection(conn);
+              }, conn)
+            }, 0, times[index], conn)
+        }, false)
+      }
+    })
   })
 })
 

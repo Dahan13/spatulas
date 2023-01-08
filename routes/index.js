@@ -1,7 +1,7 @@
 var express = require('express');
 const { body, query } = require('express-validator');
 var router = express.Router();
-let pool = require('./databaseConnector')
+let pool = require('./databaseConnector');
 let { createDatabase, insertUser, getUsers, getBurgers, getFries, getDrinks, checkBurger, checkDrink, checkFries, searchUser, calculatePrice, convertFoodIdToFoodName } = require("./databaseUtilities.js");
 let { getTimes, getRegistration, getRegistrationDay, checkTime, getTimeIndex, checkPassword } = require('./settingsUtilities');
 

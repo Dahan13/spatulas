@@ -380,7 +380,6 @@ function convertFoodIdToFoodName(users, callback, conn = null) {
                 for (let i = 0; i < fries.length; i++) {
                     friesFinder[fries[i].identifier] = fries[i].name;
                 }
-                console.log(burgersFinder, drinksFinder, friesFinder);
                 for (let i = 0; i < users.length; i++) {
                     users[i].burger = burgersFinder[users[i].burger];
                     users[i].fries = friesFinder[users[i].fries];
