@@ -58,33 +58,48 @@ for (let i = 0; i < closers.length; i++) {
 }
 
 // WebSocket communication
-const socket = new WebSocket('ws://' + window.location.hostname + ":8000");
+let error = document.querySelector('.error-message');
+let url = 'ws://' + window.location.hostname + ":8000";
+let password = `; ${document.cookie}`.split(`; ${'spatulasPower'}=`)[1];
+let socket = start(url);
 
-// Connection opened
-socket.addEventListener('open', (event) => {
-    socket.send('Hello Server!');
-});
+function start(webSocketURL) {
+    ws = new WebSocket(webSocketURL);
+    
+    ws.onopen = (evt) =>  {
+        if (!error.classList.contains('invisible')) { // Removing the error message if it was here
+            error.classList.toggle('invisible');
+        }
+    }
+    
+    ws.onclose = function() {
+        if (error.classList.contains('invisible')) {
+            error.classList.toggle('invisible');
+        }
+        setTimeout(function(){socket = start(url)}, 10000)  
+    }
 
-// Listen for messages
-socket.addEventListener('message', (event) => {
-    console.log('Message from server ', event.data);
-});
-
-socket.onmessage = (evt) => {
-    console.log("test")
+    return ws
 }
 
-// Utiliser cet évènement pour mettre en place un message d'erreur qui indique si le websocket est deconnecté
-socket.onopen = (evt) => {
-    console.log("open");
+
+// Adding event listeners to link the socket with 
+for (let i = 0; i < senders.length; i++) {
+    senders[i].addEventListener('click', sendPayload);
+    preparers[i].addEventListener('click', sendPayload);
+    closers[i].addEventListener('click', sendPayload);
+    validators[i].addEventListener('click', sendPayload);
 }
 
-// ! This function may create an infinite recursion, redo it without recursion call to automatically restart the ws
-function start(websocketServerLocation){
-    ws = new WebSocket(websocketServerLocation);
-    ws.onmessage = function(evt) { alert('message received'); };
-    ws.onclose = function(){
-        // Try to reconnect in 5 seconds
-        setTimeout(function(){start(websocketServerLocation)}, 5000);
-    };
+function sendPayload(evenement) {
+    let id = evenement.target.dataset.id
+    let payload;
+    if (evenement.target.classList.contains('wprepare')) {
+        payload = 0;
+    } else if (evenement.target.classList.contains('send')) {
+        payload = 1;
+    } else if (evenement.target.classList.contains('validate') || evenement.target.classList.contains('close-button')) {
+        payload = 2;
+    }
+    socket.send(password + "  " + id + "  " + payload)
 }

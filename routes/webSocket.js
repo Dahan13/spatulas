@@ -1,4 +1,5 @@
 const { WebSocket } = require('ws');
+const { checkPassword } = require('./settingsUtilities')
 
 const server = new WebSocket.Server({
   port: 8000
@@ -10,8 +11,16 @@ server.on('connection', function(socket) {
 
   // When you receive a message, send that message to every socket.
   socket.on('message', function(msg) {
-    console.log('SOCKET Received : ', msg.toString('utf8'));
-    sockets.forEach(s => s.send(msg));
+    msg = msg.toString('utf8');
+    console.log('SOCKET Received : ', msg);
+    result = msg.split('  ');
+    checkPassword(result[0], (auth) => {
+      if (auth) {
+        let userId = result[1];
+        let payload = result[2];
+      }
+    })
+    
   });
 
   // When a socket closes, or disconnects, remove it from the array.
