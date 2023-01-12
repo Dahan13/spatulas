@@ -73,10 +73,13 @@ function start(webSocketURL) {
     }
     
     ws.onclose = function() {
-        if (error.classList.contains('invisible')) {
-            error.classList.toggle('invisible');
-        }
-        setTimeout(function(){socket = start(url)}, 10000)  
+        
+        setTimeout(() => {
+            if (error.classList.contains('invisible')) {
+                error.classList.toggle('invisible');
+            }
+            setTimeout(function(){socket = start(url)}, 10000)
+        }, 1000);
     }
 
     return ws

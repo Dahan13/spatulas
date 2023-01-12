@@ -392,6 +392,54 @@ function convertFoodIdToFoodName(users, callback, conn = null) {
     
 }
 
+function togglePrepare(userId, conn = null) {
+    if (conn) {
+        conn.execute('SELECT preparation FROM spatulasUsers WHERE userId=?', [userId], (err, rows, fields) => {
+            conn.query('UPDATE spatulasUsers SET preparation = ? WHERE userId = ?', [(rows[0].preparation) ? 0 : 1, userId]); 
+        })
+    } else {
+        pool.getConnection((err, conn) => {
+            conn.execute('SELECT preparation FROM spatulasUsers WHERE userId=?', [userId], (err, rows, fields) => {
+                conn.query('UPDATE spatulasUsers SET preparation = ? WHERE userId = ?', [(rows[0].preparation) ? 0 : 1, userId], () => {
+                    pool.releaseConnection(conn);
+                }); 
+            })            
+        })
+    }
+}
+
+function toggleReady(userId, conn = null) {
+    if (conn) {
+        conn.execute('SELECT ready FROM spatulasUsers WHERE userId=?', [userId], (err, rows, fields) => {
+            conn.query('UPDATE spatulasUsers SET ready = ? WHERE userId = ?', [(rows[0].ready) ? 0 : 1, userId]); 
+        })
+    } else {
+        pool.getConnection((err, conn) => {
+            conn.execute('SELECT ready FROM spatulasUsers WHERE userId=?', [userId], (err, rows, fields) => {
+                conn.query('UPDATE spatulasUsers SET ready = ? WHERE userId = ?', [(rows[0].ready) ? 0 : 1, userId], () => {
+                    pool.releaseConnection(conn);
+                }); 
+            })            
+        })
+    }
+}
+
+function toggleDelivered(userId, conn = null) {
+    if (conn) {
+        conn.execute('SELECT delivered FROM spatulasUsers WHERE userId=?', [userId], (err, rows, fields) => {
+            conn.query('UPDATE spatulasUsers SET delivered = ? WHERE userId = ?', [(rows[0].delivered) ? 0 : 1, userId]); 
+        })
+    } else {
+        pool.getConnection((err, conn) => {
+            conn.execute('SELECT delivered FROM spatulasUsers WHERE userId=?', [userId], (err, rows, fields) => {
+                conn.query('UPDATE spatulasUsers SET delivered = ? WHERE userId = ?', [(rows[0].delivered) ? 0 : 1, userId], () => {
+                    pool.releaseConnection(conn);
+                }); 
+            })            
+        })
+    }
+}
+
 module.exports = {
     createDatabase,
     insertUser,
@@ -414,5 +462,8 @@ module.exports = {
     deleteFries,
     deleteDrink,
     calculatePrice,
-    convertFoodIdToFoodName
+    convertFoodIdToFoodName,
+    togglePrepare,
+    toggleReady,
+    toggleDelivered
 }

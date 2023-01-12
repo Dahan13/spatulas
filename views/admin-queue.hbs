@@ -18,7 +18,7 @@
     {{#each users}}
         {{#unless this.delivered}}
 <div class="command-wrapper">
-    <div class="command-container {{#if this.ready}} ready {{else}} {{#if this.preparation}} preparation {{/if}} {{/if}}" id={{this.userId}}>
+    <div class="command-container {{#if this.ready}} ready {{/if}} {{#if this.preparation}} prepare {{/if}}" id={{this.userId}}>
         <div class="command-sub-container">
             <p class="title"> {{this.firstName}} {{this.lastName}} </p>
             <div class="close-button" data-id={{this.userId}}> </div>

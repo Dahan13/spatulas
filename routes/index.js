@@ -2,7 +2,7 @@ var express = require('express');
 const { body, query } = require('express-validator');
 var router = express.Router();
 let pool = require('./databaseConnector');
-let { createDatabase, insertUser, getUsers, getBurgers, getFries, getDrinks, checkBurger, checkDrink, checkFries, searchUser, calculatePrice, convertFoodIdToFoodName } = require("./databaseUtilities.js");
+let { createDatabase, insertUser, getUsers, getBurgers, getFries, getDrinks, checkBurger, checkDrink, checkFries, searchUser, calculatePrice } = require("./databaseUtilities.js");
 let { getTimes, getRegistration, getRegistrationDay, checkTime, getTimeIndex, checkPassword } = require('./settingsUtilities');
 
 createDatabase();
@@ -46,13 +46,13 @@ router.get('/queue',
   (req, res, next) => {
     if (req.query['first-name'] && req.query['last-name']) {
       searchUser(req.query['first-name'], req.query['last-name'], (users) => {
-        res.render('queue', { title: 'queue', searching: true, users: users, notEmpty: users.length ? true : false });
+        res.render('queue', { title: 'Queue', searching: true, users: users, notEmpty: users.length ? true : false });
       })
     } else {
       getTimes((times) => {
         let index = (req.query.index && req.query.index < times.length && req.query.index >= 0) ? req.query.index : 0; // First we get our index and define it to 0 if the value is wrong
           getUsers((users) => {
-            res.render('queue', { title: 'queue', searching: false, users: users, notEmpty: users.length ? true : false, timeStamp: times[index], previousTime: (index > 0) ? "/queue?index=" + (index - 1) : null, nextTime: (index < times.length - 1) ? "/queue?index=" + (index + 1) : null });
+            res.render('queue', { title: 'Queue', searching: false, users: users, notEmpty: users.length ? true : false, timeStamp: times[index], previousTime: (index > 0) ? "/queue?index=" + (index - 1) : null, nextTime: (index < times.length - 1) ? "/queue?index=" + (index + 1) : null });
           }, 0, times[index])
       }, false)
     }
