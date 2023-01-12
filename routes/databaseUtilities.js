@@ -3,23 +3,24 @@ const pool = require('./databaseConnector');
 /**
  * This function will create all tables for the website to properly function, only if they are not already created.
  */
-function createDatabase() {
-    pool.query("CREATE TABLE IF NOT EXISTS spatulasUsers (userId INT PRIMARY KEY NOT NULL AUTO_INCREMENT, lastName VARCHAR(255), firstName VARCHAR(255), burger VARCHAR(255), fries VARCHAR(255), drink VARCHAR(255), time VARCHAR(5), preparation INT(1) DEFAULT 0, ready INT(1) DEFAULT 0, delivered INT(1) DEFAULT 0, price FLOAT)", (err, rows, fields) => {
+function createDatabase(conn = null) {
+    db = (conn) ? conn : pool
+    db.query("CREATE TABLE IF NOT EXISTS spatulasUsers (userId INT PRIMARY KEY NOT NULL AUTO_INCREMENT, lastName VARCHAR(255), firstName VARCHAR(255), burger VARCHAR(255), fries VARCHAR(255), drink VARCHAR(255), time VARCHAR(5), preparation INT(1) DEFAULT 0, ready INT(1) DEFAULT 0, delivered INT(1) DEFAULT 0, price FLOAT)", (err, rows, fields) => {
         if (err) {
             console.log(err);
         }
     })
-    pool.query("CREATE TABLE IF NOT EXISTS spatulasBurgers (identifier VARCHAR(255) PRIMARY KEY, name VARCHAR(255), description VARCHAR(255), price FLOAT DEFAULT 0.0)", (err, rows, fields) => {
+    db.query("CREATE TABLE IF NOT EXISTS spatulasBurgers (identifier VARCHAR(255) PRIMARY KEY, name VARCHAR(255), description VARCHAR(255), price FLOAT DEFAULT 0.0)", (err, rows, fields) => {
         if (err) {
             console.log(err);
         }
     })
-    pool.query("CREATE TABLE IF NOT EXISTS spatulasFries (identifier VARCHAR(255) PRIMARY KEY, name VARCHAR(255), description VARCHAR(255), price FLOAT DEFAULT 0.0)", (err, rows, fields) => {
+    db.query("CREATE TABLE IF NOT EXISTS spatulasFries (identifier VARCHAR(255) PRIMARY KEY, name VARCHAR(255), description VARCHAR(255), price FLOAT DEFAULT 0.0)", (err, rows, fields) => {
         if (err) {
             console.log(err);
         }
     })
-    pool.query("CREATE TABLE IF NOT EXISTS spatulasDrinks (identifier VARCHAR(255) PRIMARY KEY, name VARCHAR(255), description VARCHAR(255), price FLOAT DEFAULT 0.0)", (err, rows, fields) => {
+    db.query("CREATE TABLE IF NOT EXISTS spatulasDrinks (identifier VARCHAR(255) PRIMARY KEY, name VARCHAR(255), description VARCHAR(255), price FLOAT DEFAULT 0.0)", (err, rows, fields) => {
         if (err) {
             console.log(err);
         }
@@ -440,6 +441,21 @@ function toggleDelivered(userId, conn = null) {
     }
 }
 
+function purgeDatabase() {
+    pool.getConnection((err, conn) => {
+        conn.execute('DROP TABLE spatulasUsers', () => {
+            conn.execute('DROP TABLE spatulasBurgers', () => {
+                conn.execute('DROP TABLE spatulasFries', () => {
+                    conn.execute('DROP TABLE spatulasDrinks', () => {
+                        createDatabase(conn);
+                        pool.releaseConnection(conn);
+                    })
+                });
+            });
+        })
+    })
+}
+
 module.exports = {
     createDatabase,
     insertUser,
@@ -465,5 +481,6 @@ module.exports = {
     convertFoodIdToFoodName,
     togglePrepare,
     toggleReady,
-    toggleDelivered
+    toggleDelivered,
+    purgeDatabase
 }

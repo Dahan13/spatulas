@@ -2,7 +2,7 @@ var express = require('express');
 const { body, query } = require('express-validator');
 var router = express.Router();
 let pool = require('./databaseConnector')
-let { getUsers, getBurgers, getFries, getDrinks, searchUser, countBurgers, countFries, countDrinks, insertBurger, deleteBurger, deleteFries, deleteDrink, insertFries, insertDrink, clearUsers, convertFoodIdToFoodName } = require("./databaseUtilities.js");
+let { getUsers, getBurgers, getFries, getDrinks, searchUser, countBurgers, countFries, countDrinks, insertBurger, deleteBurger, deleteFries, deleteDrink, insertFries, insertDrink, clearUsers, convertFoodIdToFoodName, purgeDatabase } = require("./databaseUtilities.js");
 let { getTimes, getRegistration, getRegistrationDay, getLimit, setRegistration, setRegistrationDay, setLimit, addTime, removeTime, getPassword, checkPassword, authenticate, setPassword } = require('./settingsUtilities');
 
 /* GET users listing. */
@@ -148,6 +148,13 @@ router.get('/clearUsers', (req,res,next) => {
   authenticate(req, res, () => {
     clearUsers();
     res.redirect('/spadmin/manage#generalParameters');
+  })
+})
+
+router.get('/clearDatabases', (req,res,next) => {
+  authenticate(req, res, () => {
+    purgeDatabase();
+    res.redirect('/spadmin/manage');
   })
 })
 
