@@ -37,7 +37,6 @@ function createDatabase(conn = null) {
  * @param {int} time 
  */
 function insertUser(lastName, firstName, burger, fries, drink, time, price, connection = null) {
-    console.log(price);
     db = (connection) ? connection : pool
     db.execute('INSERT INTO spatulasUsers (lastName, firstName, burger, fries, drink, time, price) VALUES (?, ?, ?, ?, ?, ?, ?)', [lastName, firstName, burger, fries, drink, time, price], (err, rows, fields) => {
         if (err) {
@@ -97,12 +96,12 @@ function insertDrink(identifier, name, description = null, price = null, connect
 /**
  * Returns a list containing all users
  * @param {function} callback 
- * @param {int} deliveredOnly : 0 if you want users that have not received their command, 1 otherwise
+ * @param {int} deliveryStatus : 0 if you want users that have not received their command, 1 otherwise
  */
-function getUsers(callback, deliveredOnly = 0, timeStamp = null, connection = null) {
+function getUsers(callback, deliveryStatus = 0, timeStamp = null, connection = null) {
     db = (connection) ? connection : pool
     if (timeStamp) {
-        db.execute('SELECT * FROM spatulasUsers WHERE time=? AND delivered=?', [timeStamp, deliveredOnly], (err, rows, fields) => {
+        db.execute('SELECT * FROM spatulasUsers WHERE time=? AND delivered=?', [timeStamp, deliveryStatus], (err, rows, fields) => {
             if (err) {
                 console.log(err);
             } else {
@@ -110,7 +109,7 @@ function getUsers(callback, deliveredOnly = 0, timeStamp = null, connection = nu
             }
         })
     } else {
-        db.execute('SELECT * FROM spatulasUsers WHERE delivered=?', [deliveredOnly],(err, rows, fields) => {
+        db.execute('SELECT * FROM spatulasUsers WHERE delivered=?', [deliveryStatus],(err, rows, fields) => {
             if (err) {
                 console.log(err);
             } else {
@@ -129,9 +128,9 @@ function getUsers(callback, deliveredOnly = 0, timeStamp = null, connection = nu
  * @param {int} limit 
  * @param {*} connection 
  */
-function searchUser(firstName, lastName, callback, limit = 20, connection = null) {
+function searchUser(firstName, lastName, callback, deliveryStatus = 0, limit = 20, connection = null) {
     db = (connection) ? connection : pool
-    db.query('SELECT * FROM spatulasUsers WHERE firstName LIKE \'' + firstName + '%\' AND lastName LIKE \'' + lastName + '%\' LIMIT 0, ?', [limit], (err, rows, fields) => {
+    db.query('SELECT * FROM spatulasUsers WHERE firstName LIKE \'' + firstName + '%\' AND lastName LIKE \'' + lastName + '%\' AND delivered=? LIMIT 0, ?', [limit, deliveryStatus], (err, rows, fields) => {
         callback(rows, fields);
     })
 }

@@ -36,7 +36,7 @@ query('index').trim().escape().toInt(),
             res.render('admin-queue', { title: 'Queue Manager', searching: true, users: users, notEmpty: users.length ? true : false });
             pool.releaseConnection(conn);
           }, conn)
-        }, 20, conn)
+        }, 0, 20, conn)
       } else {
         getTimes((times) => {
           let index = (req.query.index && req.query.index < times.length && req.query.index >= 0) ? req.query.index : 0; // First we get our index and define it to 0 if the value is wrong
