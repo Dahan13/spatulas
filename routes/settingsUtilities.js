@@ -48,12 +48,10 @@ function getTimes(callback, onlyAvailable = false, connection = null) {
                             data.Time.array = data.Time.array.filter(time => time != rows[i].time)
                         }
                     }
-                    data.Time.array.sort();
                     callback(data.Time.array);
                 })
             })
         } else {
-            data.Time.array.sort();
             callback(data.Time.array);
         } 
     })
@@ -130,11 +128,11 @@ function setLimit(newLimit) {
 }
 
 function addTime(timeValue) {
-    console.log(timeValue)
     if (timeValue.length == 5 && timeValue.split('h').length == 2) {
         readIni((data) => {
             if ((data.Time.array.filter(time => time == timeValue)).length == 0) {
                 data.Time.array.push(timeValue);
+                data.Time.array.sort();
                 fs.writeFileSync('./settings.ini', ini.stringify(data));
             }
         })

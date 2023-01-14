@@ -6,21 +6,21 @@ function getCommand(id) {
 function clickSend(evenement) {
     let id = evenement.target.dataset.id;
     let command = getCommand(id);
-    command.classList.toggle("ready")
+    command.childNodes[1].classList.toggle("ready")
     evenement.target.classList.toggle("activated");
 }
 
 function clickPrepare(evenement) {
     let id = evenement.target.dataset.id;
     let command = getCommand(id);
-    command.classList.toggle("prepare")
+    command.childNodes[1].classList.toggle("prepare")
     evenement.target.classList.toggle("activated");
 }
 
 function clickValidate(evenement) {
     let id = evenement.target.dataset.id;
     let command = getCommand(id);
-    if (command.classList.contains("ready")) {
+    if (command.childNodes[1].classList.contains("ready")) {
         command.remove();
     }
 }
