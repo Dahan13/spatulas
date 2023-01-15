@@ -1,4 +1,6 @@
 var express = require('express');
+var fs = require('fs');
+var stringify = require('csv-stringify');
 const { body, query } = require('express-validator');
 var router = express.Router();
 let pool = require('./databaseConnector')
@@ -197,6 +199,26 @@ router.get('/deleteDrink/:drinkId', (req, res, next) => {
   authenticate(req, res, () => {
     deleteDrink(req.params.drinkId);
     res.redirect('/spadmin/manage#drinkMenu');
+  })
+})
+
+router.get('/downloadUsers', (req, res, next) => {
+  authenticate(req, res, () => {
+    pool.query('SELECT * FROM spatulasUsers ORDER BY time', (err, rows) => {
+      stringify.stringify(rows, {
+        header: true
+      }, (err, output) => {
+        fs.writeFile('./users.csv', output, 'utf-8', () => {
+          res.download('./users.csv', () => {
+            fs.unlink('./users.csv', (err) => {
+              if (err) {
+                console.log(err);
+              }
+            });
+          });
+        })
+      })
+    })
   })
 })
 

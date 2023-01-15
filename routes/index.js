@@ -6,14 +6,6 @@ let { createDatabase, insertUser, getUsers, getBurgers, getFries, getDrinks, che
 let { getTimes, getRegistration, getRegistrationDay, checkTime, getTimeIndex, checkPassword } = require('./settingsUtilities');
 
 createDatabase();
-// insertUser('Doe', 'John', 'classico', 'paprika', 'coca', 1900);
-// insertBurger('classico', 'Classico', 'Steak, cheddar, homemade sauce', 5.0);
-// insertBurger('chevre', 'Chèvre', 'Steak, goat cheese, honey, homemade sauce', 5.0);
-// insertBurger('vege', 'Végé', 'Vegetarian steak, raclette, homemade sauce', 5.0);
-// insertFries('paprika', 'Frites paprika');
-// insertDrink('coca', 'Coca Cola');
-// insertDrink('orangina', 'Orangina');
-// insertDrink('nodrink', 'No drink', null, -0.5)
 
 /* GET home page. */
 router.get('/',
@@ -27,7 +19,7 @@ router.get('/',
               getDrinks((drinks) => {
                 getTimes((times) => {
                   checkPassword(req.cookies.spatulasPower, (auth) => {
-                    res.render('home', { title: 'Home', registrationOpen: (registStatus || auth), burgers: burgers, fries: fries, drinks: drinks, times: times, day: day, error: (req.query.error) ? req.query.error : null });
+                    res.render('home', { title: 'Home', registrationOpen: (registStatus || auth), userRegistrationOpen: registStatus, adminRegistrationOpen: auth,burgers: burgers, fries: fries, drinks: drinks, times: times, day: day, error: (req.query.error) ? req.query.error : null });
                   })
                 }, true, conn)
               }, false, conn)
@@ -90,5 +82,16 @@ router.post('/register',
     })
 })
 
+router.get('/terms', (req, res, next) => {
+  res.render('gtou', { title: "General Terms of Use" });
+})
+
+router.get('/cookies', (req, res, next) => {
+  res.render('cookies', { title: "Cookies" });
+})
+
+router.get('/credits', (req, res, next) => {
+  res.render('credits', { title: "Credits" });
+})
 
 module.exports = router;

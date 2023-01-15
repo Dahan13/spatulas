@@ -1,4 +1,11 @@
 <link rel="stylesheet" href="/stylesheets/home-style.css"/>
+{{#unless userRegistrationOpen}}
+    {{#if adminRegistrationOpen}}
+        <div class="error-message"> <p> Registration are closed. </p>
+            <p> However you retain access as an administrator. </p>
+        </div>
+    {{/if}}
+{{/unless}}
 
 {{#if registrationOpen}}
     <h1> Registration for {{day}} </h1>
@@ -50,7 +57,7 @@
         </div>
         <div class="input-div input-div-checkbox">
             <input type="checkbox" name="accept" id="accept">
-            <label for="accept"> I hereby consent to pay <bold id="price-range"> !IF YOU SEE THIS PLEASE REPORT IT! </bold> to receive my command</label>
+            <label for="accept"> <p> I agree to the General Terms of Use of the website </p> <p> I hereby consent to pay <bold id="price-range"> !IF YOU SEE THIS PLEASE REPORT IT! </bold> to receive my command. </p> </label>
         </div>
         <input type="submit" value="Submit" id="submit-button" disabled/>
     </form>

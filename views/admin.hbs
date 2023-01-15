@@ -3,8 +3,8 @@
 <link rel="stylesheet" href="/stylesheets/admin-queue-style.css"/>
 <link rel="stylesheet" href="/stylesheets/spadmin-style.css"/>
 
-
-<h1> Manage the website </h1>
+<a class="go-back" href="/spadmin/"></a>
+<h1 style="margin-top:10px"> Manage the website </h1>
 
 <form action="/spadmin/changePassword" method="POST" class="one-line-form">
     <div class="input-div">
@@ -70,6 +70,7 @@
         <input type="submit" value="Update limit" id="general-parameters-limit-submit-button"/>
     </form>
 
+    <a href="/spadmin/downloadUsers" class="button" style="align-self: center;"> <button> Download user database </button> </a>
     <a href="/spadmin/clearUsers" class="button" style="align-self: center;" onclick="return confirm('Are you sure ? There is no going back')"> <button> Delete ALL users </button> </a>
 
 <h2> Food count : </h2>

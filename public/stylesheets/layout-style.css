@@ -216,6 +216,18 @@ footer {
   border-radius: 10px;
 }
 
+.go-back {
+  width: 25px;
+  height: 25px;
+
+  -webkit-clip-path: polygon(100% 0%, 75% 50%, 100% 100%, 25% 100%, 0% 50%, 25% 0%); 
+  clip-path: polygon(100% 0%, 75% 50%, 100% 100%, 25% 100%, 0% 50%, 25% 0%);
+  background-color: var(--text-color);
+
+  margin-top: 15px;
+  margin-bottom: -8px;
+}
+
 @media only screen and (min-width: 1020px) {
 
   /* Headers rules on big screens */
@@ -289,5 +301,10 @@ footer {
     height: 35px;
     width: 35px;
     margin: 5px;
+  }
+
+  .go-back {
+    width: 35px;
+    height: 35px;
   }
 }
