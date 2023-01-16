@@ -3,21 +3,15 @@
 ## Requirements :
 
 - A working version of Docker
-- A working web browser
 
 ## How to launch :
 
-This project uses docker to launch and run without having to bother with installing NodeJS, MySQL, etc... <br>
-Extract and open a terminal in this project folder, then type :
+Download the release you want. Move the Spatulas.zip archive to where you want it and dezip it. 
 
-```bash
-$ docker-compose build
-```
-
-After the image is built, you can launch a container using it :
+Then, in that same folder, type in the terminal :
 
 ```bash
 $ docker-compose up -d
 ```
 
-Now you can open <a href="http://localhost:8080/"> your localhost </a> and enjoy it !
+After docker is done, you can open <a href="http://localhost:8080/"> your localhost </a> or the website in any devices if online. Before anything, you should change the master password in '/spadmin' to replace the default 'abcd' password.
