@@ -154,6 +154,29 @@ h2 {
     font-weight: bolder;
 }
 
+.reloader {
+    margin-top: 25px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.reloader > img {
+    width: 35px;
+    height: 35px
+}
+
+.reloader > img {
+    cursor: pointer;
+}
+
+.reloader > p {
+    margin-right: 10px;
+    font-weight: bold;
+    color: #5A5A5A
+}
+
 @media only screen and (min-width: 1020px) {
 
     .command-wrapper {
@@ -215,5 +238,17 @@ h2 {
         margin-bottom: 20px;
     }
 
-
+    .reloader {
+        margin-top: 50px;
+    }
+    
+    .reloader > img {
+        width: 50px;
+        height: 50px
+    }
+    
+    .reloader > p {
+        font-size: 1.2rem;
+        margin-right: 20px;
+    }
 }

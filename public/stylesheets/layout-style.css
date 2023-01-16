@@ -217,15 +217,13 @@ footer {
 }
 
 .go-back {
-  width: 25px;
-  height: 25px;
-
-  -webkit-clip-path: polygon(100% 0%, 75% 50%, 100% 100%, 25% 100%, 0% 50%, 25% 0%); 
-  clip-path: polygon(100% 0%, 75% 50%, 100% 100%, 25% 100%, 0% 50%, 25% 0%);
-  background-color: var(--text-color);
-
   margin-top: 15px;
   margin-bottom: -8px;
+}
+
+.go-back > img {
+  width: 40px;
+  height: 40px;
 }
 
 @media only screen and (min-width: 1020px) {
@@ -303,8 +301,8 @@ footer {
     margin: 5px;
   }
 
-  .go-back {
-    width: 35px;
-    height: 35px;
+  .go-back > img {
+    width: 60px;
+    height: 60px;
   }
 }

@@ -41,3 +41,13 @@ searchButton.addEventListener('click', () => {
     // Showing the actual popup
     popupVeil.classList.toggle("invisible");
 })
+
+// This part handle the reload system
+const lastReloadTime = document.getElementById('last-update-time');
+const d = new Date();
+lastReloadTime.innerHTML = "" + d.getHours() + "h" + d.getMinutes();
+
+const reloadButton = document.getElementById('reload-button');
+reloadButton.addEventListener('click', () => {
+    window.location.reload();
+})
