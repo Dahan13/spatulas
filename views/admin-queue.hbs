@@ -4,7 +4,7 @@
 <div class="error-message invisible"> <p> Error : Connection with the server has been lost. Please wait to see if the connection is reestablished. </p>
     <p> If the problem persists, please contact an admin. </p>
 </div>
-<a class="go-back" href="/spadmin/"> <img src="/images/spadmin/back_arrow.webp" alt="Back Arrow"> </a>
+<a class="button" href="/spadmin/" style="margin-bottom:15px"> <button> Back </button> </a>
 <div class="queue-title">   
     <h1> Manage queue :</h1>
     <div>
@@ -58,10 +58,14 @@
     <div class="page-selector">
         {{#if previousTime}}
             <a class="right-arrow" href={{previousTime}} aria-label="Previous time frame"></a>
+        {{else}}
+            <div class="right-arrow arrow-placeholder" aria-label="Previous time frame placeholder"></div>
         {{/if}}
         <span> {{timeStamp}} </span>
         {{#if nextTime}}
             <a class="left-arrow" href={{nextTime}} aria-label="Next time frame"></a>
+        {{else}}
+            <div class="left-arrow arrow-placeholder" aria-label="Next time frame placeholder"></div>
         {{/if}}
     </div>
 {{/unless}}

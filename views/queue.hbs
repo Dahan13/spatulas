@@ -37,10 +37,14 @@
     <div class="page-selector">
         {{#if previousTime}}
             <a class="right-arrow" href={{previousTime}} aria-label="Previous time frame"></a>
+        {{else}}
+            <div class="right-arrow arrow-placeholder" aria-label="Previous time frame placeholder"></div>
         {{/if}}
         <span> {{timeStamp}} </span>
         {{#if nextTime}}
             <a class="left-arrow" href={{nextTime}} aria-label="Next time frame"></a>
+        {{else}}
+            <div class="left-arrow arrow-placeholder" aria-label="Next time frame placeholder"></div>
         {{/if}}
     </div>
 {{/unless}}

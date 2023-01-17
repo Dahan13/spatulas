@@ -45,7 +45,9 @@ searchButton.addEventListener('click', () => {
 // This part handle the reload system
 const lastReloadTime = document.getElementById('last-update-time');
 const d = new Date();
-lastReloadTime.innerHTML = "" + d.getHours() + "h" + d.getMinutes();
+let minutes = (("" + d.getMinutes()).length == 2) ? "" + d.getMinutes() : "0" + d.getMinutes(); // Make sur that hour and minute number have two length (01 instead of 1 for example)
+let hours = (("" + d.getHours()).length == 2) ? "" + d.getHours() : "0" + d.getHours();
+lastReloadTime.innerHTML = "" + hours + "h" + minutes;
 
 const reloadButton = document.getElementById('reload-button');
 reloadButton.addEventListener('click', () => {
