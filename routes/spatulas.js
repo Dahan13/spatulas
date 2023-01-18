@@ -162,6 +162,7 @@ router.get('/clearDatabases', (req,res,next) => {
 
 router.post('/AddBurger', (req, res, next) => {
   authenticate(req, res, () => {
+    req.body.bPrice = req.body.bPrice.replace(',', '.');
     insertBurger(req.body.bIdentifier, req.body.bName, (req.body.bDesc) ? req.body.bDesc : null, parseFloat(req.body.bPrice) ? parseFloat(req.body.bPrice) : null);
     res.redirect('/spadmin/manage#burgerMenu');
   })  
@@ -176,6 +177,7 @@ router.get('/deleteBurger/:burgerId', (req, res, next) => {
 
 router.post('/AddFries', (req, res, next) => {
   authenticate(req, res, () => {
+    req.body.fPrice = req.body.fPrice.replace(',', '.');
     insertFries(req.body.fIdentifier, req.body.fName, (req.body.fDesc) ? req.body.fDesc : null, parseFloat(req.body.fPrice) ? parseFloat(req.body.fPrice) : null);
     res.redirect('/spadmin/manage#friesMenu');
   })
@@ -190,6 +192,7 @@ router.get('/deleteFries/:friesId', (req, res, next) => {
 
 router.post('/AddDrink', (req, res, next) => {
   authenticate(req, res, () => {
+    req.body.dPrice = req.body.dPrice.replace(',', '.');
     insertDrink(req.body.dIdentifier, req.body.dName, (req.body.dDesc) ? req.body.dDesc : null, parseFloat(req.body.dPrice) ? parseFloat(req.body.dPrice) : null);
     res.redirect('/spadmin/manage#drinkMenu');
   })

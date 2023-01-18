@@ -122,8 +122,11 @@ function setRegistrationDay(day) {
 
 function setLimit(newLimit) {
     readIni((data) => {
-        data.Time.limit = newLimit;
-        fs.writeFileSync('./settings.ini', ini.stringify(data));
+        newLimit = parseInt(newLimit);
+        if (newLimit) {
+            data.Time.limit = newLimit;
+            fs.writeFileSync('./settings.ini', ini.stringify(data));
+        }
     })
 }
 
