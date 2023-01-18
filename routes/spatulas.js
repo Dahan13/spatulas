@@ -29,6 +29,11 @@ body('password').trim().escape(),
   }
 })
 
+router.get('/disconnect', (req, res, next) => {
+  res.cookie('spatulasPower', '');
+  res.redirect('/');
+})
+
 router.get('/queue',
 query('first-name').trim().escape(),
 query('last-name').trim().escape(),
