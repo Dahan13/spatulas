@@ -64,7 +64,7 @@ router.post('/register',
         checkDrink(req.body.drink, (drinkBool) => {
           checkFries(req.body.fries, (friesBool) => {
             checkTime(req.body.time, (timeBool) => { // Checking that all inputs are in database
-              if (req.body.lastName && req.body.firstName && req.body.burger && req.body.fries && req.body.drink && req.body.time && req.body.accept == 'on' && burgerBool && drinkBool && friesBool && timeBool) {
+              if (req.body.lastName && req.body.lastName.length <= 32 && req.body.firstName && req.body.firstName.length <= 32 && req.body.burger && req.body.fries && req.body.drink && req.body.time && req.body.accept == 'on' && burgerBool && drinkBool && friesBool && timeBool) {
                 calculatePrice(req.body.burger, req.body.fries, req.body.drink, (price) => {
                   insertUser(req.body.lastName, req.body.firstName, req.body.burger, req.body.fries, req.body.drink, req.body.time, price, conn);
                   getTimeIndex(req.body.time, (index) => {

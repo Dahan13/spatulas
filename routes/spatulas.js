@@ -17,12 +17,16 @@ router.get('/', function(req, res, next) {
 router.post('/', 
 body('password').trim().escape(),
 (req, res, next) => {
-  checkPassword(req.body.password, (result) => {
-    if (result) {
-      res.cookie('spatulasPower', req.body.password);
-    }
+  if (req.body.password.length <= 100) {
+    checkPassword(req.body.password, (result) => {
+      if (result) {
+        res.cookie('spatulasPower', req.body.password);
+      }
+      res.redirect('/spadmin');
+    })
+  } else {
     res.redirect('/spadmin');
-  })
+  }
 })
 
 router.get('/queue',
