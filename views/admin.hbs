@@ -71,7 +71,7 @@
     </form>
 
     <a href="/spadmin/downloadUsers" class="button" style="align-self: center;"> <button> Download user database </button> </a>
-    <a href="/spadmin/clearUsers" class="button" style="align-self: center;" onclick="return confirm('Are you sure ? There is no going back')"> <button> Delete ALL users </button> </a>
+    <a href="/spadmin/clearUsers" class="button" style="align-self: center;" onclick="return confirm('Are you sure ? There is no going back. You will lose all user data.')"> <button> Delete ALL users </button> </a>
 
 <h2> Food count : </h2>
 
@@ -228,4 +228,4 @@
         <input type="submit" value="Add drink" id="add-drink-submit-button"/>
     </form>
 
-<a href="/spadmin/clearDatabases" class="button" style="align-self: center;" onclick="return ((confirm('Are you sure ? There is no going back')) ? confirm('Are you REALLY REALLY sure ? There is no WAY to go back') : false )"> <button> Clear databases </button> </a>
+<a href="/spadmin/clearDatabases" class="button" style="align-self: center;" onclick="return ((confirm('Are you sure ? This will clear the content of all databases. There is no going back')) ? confirm('Are you REALLY REALLY sure ? There is no WAY to go back. You will lose the content of all databases') : false )"> <button> Clear databases </button> </a>
