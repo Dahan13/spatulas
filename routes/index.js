@@ -36,7 +36,7 @@ router.get('/queue',
   query('last-name').trim().escape(),
   query('index').trim().escape().toInt(),
   (req, res, next) => {
-    if (req.query['first-name'] && req.query['last-name']) {
+    if (req.query['first-name'] || req.query['last-name']) {
       searchUser(req.query['first-name'], req.query['last-name'], (users) => {
         res.render('queue', { title: 'Queue', searching: true, users: users, notEmpty: users.length ? true : false });
       })

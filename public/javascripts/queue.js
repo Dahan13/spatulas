@@ -28,9 +28,9 @@ searchButton.addEventListener('click', () => {
     const submitButton = document.getElementById("submit-button");
 
     function inputsChecker() {
-        if (firstNameInput.value.length >= 1 && lastNameInput.value.length >= 1 && submitButton.disabled) {
+        if ((firstNameInput.value.length >= 1 || lastNameInput.value.length >= 1) && submitButton.disabled) {
             submitButton.disabled = false;
-        } else if (firstNameInput.value.length < 1 || lastNameInput.value.length < 1) {
+        } else if (firstNameInput.value.length < 1 && lastNameInput.value.length < 1) {
             submitButton.disabled = true;
         }
     }
