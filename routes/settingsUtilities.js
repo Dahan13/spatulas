@@ -92,7 +92,7 @@ function checkPassword(password, callback) {
     })
 }
 
-function authenticate(req, res, callback) {
+function authenticate(req, res, callback, redirectionURL = '/') {
     if (req.cookies.spatulasPower) {
         getPassword((password) => {
             if (password == req.cookies.spatulasPower) {

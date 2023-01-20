@@ -18,7 +18,12 @@
   <body>
     <header> 
       <div class="logo-holder"> <a href="/"> <img src="/images/layout/logo.webp" alt="Logo Spatul'As X Corentin"> </a> </div>
-      <div class="protected-access"> <a href="/queue"> <img src="/images/layout/queue.webp" alt="Queue"> </a> </div>
+      <div class="protected-access"> 
+        {{#if admin}}
+          <a style="margin-right:5px" href="/spadmin"> <img src="/images/layout/cog.webp" alt="Admin"> </a>
+        {{/if}}
+        <a href="/queue"> <img src="/images/layout/queue.webp" alt="Queue"> </a>
+        </div>
     </header>
     <div class="main-content">
       <div class="header-filler"> </div>

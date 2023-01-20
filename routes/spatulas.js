@@ -10,7 +10,7 @@ let { getTimes, getRegistration, getRegistrationDay, getLimit, setRegistration, 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
   checkPassword(req.cookies.spatulasPower, (result) => {
-    res.render('auth', { title: 'Authentification', authentified: result });
+    res.render('auth', { title: 'Authentification', admin: result, authentified: result });
   })
 });
 
@@ -41,10 +41,10 @@ query('index').trim().escape().toInt(),
 (req, res, next) => {
   authenticate(req, res, () => {
     pool.getConnection((err, conn) => {
-      if (req.query['first-name'] && req.query['last-name']) {
+      if (req.query['first-name'] || req.query['last-name']) {
         searchUser(req.query['first-name'], req.query['last-name'], (users) => {
           convertFoodIdToFoodName(users, (users) => {
-            res.render('admin-queue', { title: 'Queue Manager', searching: true, users: users, notEmpty: users.length ? true : false });
+            res.render('admin-queue', { title: 'Queue Manager', admin: true, searching: true, users: users, notEmpty: users.length ? true : false });
             pool.releaseConnection(conn);
           }, conn)
         }, 0, 20, conn)
@@ -53,7 +53,7 @@ query('index').trim().escape().toInt(),
           let index = (req.query.index && req.query.index < times.length && req.query.index >= 0) ? req.query.index : 0; // First we get our index and define it to 0 if the value is wrong
             getUsers((users) => {
               convertFoodIdToFoodName(users, (users) => {
-                res.render('admin-queue', { title: 'Queue Manager', searching: false, users: users, notEmpty: users.length ? true : false, timeStamp: times[index], previousTime: (index > 0) ? "/spadmin/queue?index=" + (index - 1) : null, nextTime: (index < times.length - 1) ? "/spadmin/queue?index=" + (index + 1) : null });
+                res.render('admin-queue', { title: 'Queue Manager', admin: true, searching: false, users: users, notEmpty: users.length ? true : false, timeStamp: times[index], previousTime: (index > 0) ? "/spadmin/queue?index=" + (index - 1) : null, nextTime: (index < times.length - 1) ? "/spadmin/queue?index=" + (index + 1) : null });
                 pool.releaseConnection(conn);
               }, conn)
             }, 0, times[index], conn)
@@ -76,7 +76,7 @@ router.get('/manage', (req, res, next) => {
                     getRegistration((regisBool) => {
                       getRegistrationDay((day) => {
                         getLimit((limit) => {
-                          res.render('admin', { title: 'Administration', limit: limit, day: day, regisBool: regisBool, times: times, drinkCount: drinkCount, friesCount: friesCount, burgerCount: burgerCount, burgers: burgers, drinks: drinks, fries: fries });
+                          res.render('admin', { title: 'Administration', admin: true, limit: limit, day: day, regisBool: regisBool, times: times, drinkCount: drinkCount, friesCount: friesCount, burgerCount: burgerCount, burgers: burgers, drinks: drinks, fries: fries });
                           pool.releaseConnection(conn);
                         })
                       })
@@ -105,7 +105,7 @@ router.get('/kitchen', (req, res, next) => {
     pool.getConnection((err, conn) => {
       countBurgers((burgerCount) => {
         countFries((friesCount) => {
-          res.render('kitchen', { title: 'Kitchen tab', length: burgerCount.length + friesCount.length, burgerCounts: burgerCount, friesCounts: friesCount });
+          res.render('kitchen', { title: 'Kitchen tab', admin: true, length: burgerCount.length + friesCount.length, burgerCounts: burgerCount, friesCounts: friesCount });
           pool.releaseConnection(conn);
         }, 1, conn)
       }, 1, conn)
