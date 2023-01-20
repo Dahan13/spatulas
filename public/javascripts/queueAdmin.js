@@ -106,3 +106,9 @@ function sendPayload(evenement) {
     }
     socket.send(password + "  " + id + "  " + payload)
 }
+
+// Removing event listeners from the cancel search button to prevent fatal errors.
+const cancelSearch = document.getElementById('cancel-search');
+if (cancelSearch) {
+    cancelSearch.removeEventListener('click', sendPayload);
+}
