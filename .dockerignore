@@ -5,6 +5,7 @@ LICENSE.md
 
 # Dev workspace
 .vscode/
+.github/
 
 # Modules and dependencies
 node_modules/
