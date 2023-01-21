@@ -130,7 +130,7 @@ function getUsers(callback, deliveryStatus = 0, timeStamp = null, connection = n
  */
 function searchUser(firstName, lastName, callback, deliveryStatus = 0, limit = 20, connection = null) {
     db = (connection) ? connection : pool
-    db.query('SELECT * FROM spatulasUsers WHERE firstName LIKE \'' + firstName + '%\' AND lastName LIKE \'' + lastName + '%\' AND delivered=? LIMIT 0, ?', [deliveryStatus, limit], (err, rows, fields) => {
+    db.query('SELECT * FROM spatulasUsers WHERE firstName LIKE \'' + firstName + '%\' AND lastName LIKE \'' + lastName + '%\' AND delivered=? ORDER BY time LIMIT 0, ?', [deliveryStatus, limit], (err, rows, fields) => {
         callback(rows, fields);
     })
 }
@@ -282,7 +282,7 @@ function checkFries(value, callback, connection = null) {
             }
         }
         callback(false);
-    }, conn)
+    }, false, conn)
 }
 
 /**
@@ -299,7 +299,7 @@ function checkDrink(value, callback, connection = null) {
             }
         }
         callback(false);
-    }, conn)
+    }, false, conn)
 }
 
 /**

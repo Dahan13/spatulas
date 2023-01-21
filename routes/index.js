@@ -61,39 +61,54 @@ router.post('/register',
   body("time").trim().escape(),
   body('accept').trim().escape(),
   (req, res, next) => {
-    pool.getConnection((err, conn) => {
-      checkBurger(req.body.burger, (burgerBool) => {
-        checkDrink(req.body.drink, (drinkBool) => {
-          checkFries(req.body.fries, (friesBool) => {
-            checkTime(req.body.time, (timeBool) => { // Checking that all inputs are in database
-              if (req.body.lastName && req.body.lastName.length <= 32 && req.body.firstName && req.body.firstName.length <= 32 && req.body.burger && req.body.fries && req.body.drink && req.body.time && req.body.accept == 'on' && burgerBool && drinkBool && friesBool && timeBool) {
-                calculatePrice(req.body.burger, req.body.fries, req.body.drink, (price) => {
-                  insertUser(req.body.lastName, req.body.firstName, req.body.burger, req.body.fries, req.body.drink, req.body.time, price, conn);
-                  getTimeIndex(req.body.time, (index) => {
-                    res.redirect('/queue?index=' + index);
-                  }, conn)
-                }, conn);
-              } else {
-                res.redirect('/?error=true');
-              }
-            }, true, conn)
-          }, conn)
-        }, conn)
-      }, conn)
-      pool.releaseConnection(conn);
+    getRegistration((registStatus) => {
+      checkPassword(req.cookies.spatulasPower, (adminRegistStatus) => {
+        if (registStatus || adminRegistStatus) { // Only allowing to post new commands if registrations are open or if it's an admin
+          pool.getConnection((err, conn) => {
+            checkBurger(req.body.burger, (burgerBool) => {
+              checkDrink(req.body.drink, (drinkBool) => {
+                checkFries(req.body.fries, (friesBool) => {
+                  checkTime(req.body.time, (timeBool) => { // Checking that all inputs are in database
+                    if (req.body.lastName && req.body.lastName.length <= 32 && req.body.firstName && req.body.firstName.length <= 32 && req.body.burger && req.body.fries && req.body.drink && req.body.time && req.body.accept == 'on' && burgerBool && drinkBool && friesBool && timeBool) {
+                      calculatePrice(req.body.burger, req.body.fries, req.body.drink, (price) => {
+                        insertUser(req.body.lastName, req.body.firstName, req.body.burger, req.body.fries, req.body.drink, req.body.time, price, conn);
+                        getTimeIndex(req.body.time, (index) => {
+                          pool.releaseConnection(conn);
+                          res.redirect('/queue?index=' + index);
+                        }, conn)
+                      }, conn);
+                    } else {
+                      pool.releaseConnection(conn);
+                      res.redirect('/?error=true');
+                    }
+                  }, true, conn)
+                }, conn)
+              }, conn)
+            }, conn)
+          })
+        } else {
+          res.redirect('/');
+        }
+      })
     })
 })
 
 router.get('/terms', (req, res, next) => {
-  res.render('gtou', { title: "General Terms of Use" });
+  checkPassword(req.cookies.spatulasPower, (auth) => {
+    res.render('gtou', { title: "General Terms of Use", admin: auth });
+  })
 })
 
 router.get('/cookies', (req, res, next) => {
-  res.render('cookies', { title: "Cookies" });
+  checkPassword(req.cookies.spatulasPower, (auth) => {
+    res.render('cookies', { title: "Cookies", admin: auth });
+  })
 })
 
 router.get('/credits', (req, res, next) => {
-  res.render('credits', { title: "Credits" });
+  checkPassword(req.cookies.spatulasPower, (auth) => {
+    res.render('credits', { title: "Credits", admin: auth });
+  })
 })
 
 module.exports = router;
