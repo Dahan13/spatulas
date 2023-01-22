@@ -1,4 +1,4 @@
-version: '3.8'
+version: '4.0'
 
 services:
   app:
@@ -10,7 +10,7 @@ services:
       MYSQL_USER: root
       MYSQL_PASSWORD: secret
       MYSQL_DB: spatulas
-    image: dahan13/spatulas:v1.2
+    image: dahan13/spatulas:v2.0
     ports:
       - 8080:8080
       - 8000:8000

@@ -1,8 +1,8 @@
-version: '3.8'
+version: '4.0'
 
 services:
   app:
-    image: dahan13/spatulas:v1.2
+    image: dahan13/spatulas:v2.0
     environment:
       MYSQL_HOST: mysql
       MYSQL_USER: root
