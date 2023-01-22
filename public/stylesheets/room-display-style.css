@@ -1,0 +1,78 @@
+/* This display is only intended for large screens. Therefore, the CSS will break on smaller screens. */
+
+header, .header-filler {
+    display: none;
+}
+.content {
+    max-width: none;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    align-self: center;
+}
+th {
+    width: 50%;
+    border-right: 5px solid var(--text-color);
+
+    font-size: 8rem;
+    font-weight: bold;
+    padding: 10px;
+}
+
+th:last-of-type {
+    border-right: none;
+}
+
+tr {
+    border-bottom: 5px solid var(--text-color);
+}
+
+tr:last-of-type {
+    border-bottom: none;
+}
+
+td {
+    border-right: 5px solid var(--text-color);
+}
+
+td:last-of-type {
+    border-right: none;
+}
+
+.ready-container, .preparation-container {
+    padding: 15px 0px 15px 30px;
+
+    font-size: 14rem;
+    font-weight: bolder;
+
+    word-wrap: break-word;
+    word-break: break-word;
+}
+
+.ready-container > span, .preparation-container > span {
+    margin: 10px 20px 10px 0;
+    text-align: center;
+}
+
+.ready-container > p, .preparation-container > p {
+    font-size: 7rem; 
+    text-align: center; 
+    margin-top: 40px
+}
+
+.ready-container {
+    color: var(--ready-color)
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Hide scrollbar for IE, Edge and Firefox */
+  html {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }

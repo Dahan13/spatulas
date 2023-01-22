@@ -1,0 +1,29 @@
+<link rel="stylesheet" href="/stylesheets/room-display-style.css"/>
+
+<table>
+    <tr>
+        <th> Ready </th>
+        <th> In preparation </th>
+    </tr>
+    <tr>
+        <td class="ready-container">
+            {{#if userReady}}
+                {{#each userReady}}
+                    <span> {{this.userId}} </span>
+                {{/each}}
+            {{else}}
+                <p> Nothing is ready yet ! </p>
+            {{/if}}
+        </td>
+        <td class="preparation-container">
+            {{#if userPreparation}}
+                {{#each userPreparation}}
+                    <span> {{this.userId}} </span>
+                {{/each}}
+            {{else}}
+                <p> Nothing is in preparation yet ! </p>
+            {{/if}}
+        </td>
+    </tr>
+</table>
+<script src="/javascripts/display.js"></script>

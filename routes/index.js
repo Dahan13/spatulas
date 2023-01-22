@@ -111,4 +111,15 @@ router.get('/credits', (req, res, next) => {
   })
 })
 
+router.get('/display', (req, res, next) => {
+  pool.getConnection((err, conn) => {
+    conn.query("SELECT userId FROM spatulasUsers WHERE preparation=1 AND ready=0 ORDER BY time", (err, userPrep) => {
+      conn.query("SELECT userId FROM spatulasUsers WHERE ready=1 AND delivered=0 ORDER BY time", (err, userReady) => {
+        pool.releaseConnection(conn);
+        res.render('room-display', { title: "Room display", userReady: userReady, userPreparation: userPrep })
+      })
+    })
+  })
+})
+
 module.exports = router;
