@@ -7,6 +7,10 @@ header, .header-filler {
     max-width: none;
 }
 
+footer {
+    display: none;
+}
+
 table {
     border-collapse: collapse;
     width: 100%;
@@ -16,7 +20,7 @@ th {
     width: 50%;
     border-right: 5px solid var(--text-color);
 
-    font-size: 8rem;
+    font-size: 6rem;
     font-weight: bold;
     padding: 10px;
 }
@@ -26,6 +30,7 @@ th:last-of-type {
 }
 
 tr {
+    width: 100%;
     border-bottom: 5px solid var(--text-color);
 }
 
@@ -34,6 +39,7 @@ tr:last-of-type {
 }
 
 td {
+    width: 100%;
     border-right: 5px solid var(--text-color);
 }
 
@@ -41,18 +47,28 @@ td:last-of-type {
     border-right: none;
 }
 
+.wrapper {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+
+    width: 100%;
+}
+
 .ready-container, .preparation-container {
-    padding: 15px 0px 15px 30px;
+    display: flex;
+    justify-content: flex-start;
+    flex-wrap: wrap;
 
     font-size: 14rem;
+    height: 100%;
+    width: 50%;
     font-weight: bolder;
-
-    word-wrap: break-word;
-    word-break: break-word;
 }
 
 .ready-container > span, .preparation-container > span {
-    margin: 10px 20px 10px 0;
+    margin: 10px 25px 10px 25px;
     text-align: center;
 }
 
@@ -63,7 +79,12 @@ td:last-of-type {
 }
 
 .ready-container {
-    color: var(--ready-color)
+    color: var(--ready-color);
+}
+
+.preparation-container {
+    border-left: 5px solid var(--text-color);
+    margin-left: -3px;
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */

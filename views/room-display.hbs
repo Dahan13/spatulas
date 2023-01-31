@@ -3,26 +3,30 @@
 <table>
     <tr>
         <th> Ready </th>
-        <th> In preparation </th>
+        <th> Preparing </th>
     </tr>
     <tr>
-        <td class="ready-container">
-            {{#if userReady}}
-                {{#each userReady}}
-                    <span> {{this.userId}} </span>
-                {{/each}}
-            {{else}}
-                <p> Nothing is ready yet ! </p>
-            {{/if}}
-        </td>
-        <td class="preparation-container">
-            {{#if userPreparation}}
-                {{#each userPreparation}}
-                    <span> {{this.userId}} </span>
-                {{/each}}
-            {{else}}
-                <p> Nothing is in preparation yet ! </p>
-            {{/if}}
+        <td colspan="2">
+            <div class="wrapper">
+                <div class="ready-container"> 
+                    {{#if userReady}}
+                        {{#each userReady}}
+                            <span> {{this.userId}} </span>
+                        {{/each}}
+                    {{else}}
+                        <p> Nothing is ready yet ! </p>
+                    {{/if}}
+                </div>
+                <div class="preparation-container">
+                    {{#if userPreparation}}
+                        {{#each userPreparation}}
+                            <span> {{this.userId}} </span>
+                        {{/each}}
+                    {{else}}
+                        <p> Nothing is in preparation yet ! </p>
+                    {{/if}}
+                </div>
+            </div>
         </td>
     </tr>
 </table>
