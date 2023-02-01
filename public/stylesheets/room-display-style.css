@@ -61,15 +61,18 @@ td:last-of-type {
     justify-content: flex-start;
     flex-wrap: wrap;
 
-    font-size: 14rem;
+    font-size: 9rem;
     height: 100%;
     width: 50%;
     font-weight: bolder;
 }
 
 .ready-container > span, .preparation-container > span {
-    margin: 10px 25px 10px 25px;
     text-align: center;
+    border: 2px solid var(--text-color);
+    border-radius: 10px;
+    margin: 5px;
+    padding: 0 5px 0 5px;
 }
 
 .ready-container > p, .preparation-container > p {
