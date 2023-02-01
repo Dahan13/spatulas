@@ -19,7 +19,7 @@ router.get('/',
               getDrinks((drinks) => {
                 getTimes((times) => {
                   checkPassword(req.cookies.spatulasPower, (auth) => {
-                    res.render('home', { title: 'Home', admin: auth, registrationOpen: (registStatus || auth), userRegistrationOpen: registStatus, adminRegistrationOpen: auth,burgers: burgers, fries: fries, drinks: drinks, times: times, day: day, error: (req.query.error) ? req.query.error : null });
+                    res.render('home', { title: 'Home', admin: auth, registrationOpen: (registStatus || auth), userRegistrationOpen: registStatus, adminRegistrationOpen: auth, burgers: burgers, fries: fries, drinks: drinks, times: times, day: day, error: (req.query.error) ? req.query.error : null });
                   })
                 }, true, conn)
               }, false, conn)
@@ -39,13 +39,13 @@ router.get('/queue',
     checkPassword(req.cookies.spatulasPower, (auth) => {
       if (req.query['first-name'] || req.query['last-name']) {
         searchUser(req.query['first-name'], req.query['last-name'], (users) => {
-          res.render('queue', { title: 'Queue', admin: auth, searching: true, users: users, notEmpty: users.length ? true : false });
+          res.render('queue', { title: 'Queue', admin: auth, searching: true, users: users, notEmpty: (typeof users !== "undefined" && users.length > 0) ? true : false });
         })
       } else {
         getTimes((times) => {
           let index = (req.query.index && req.query.index < times.length && req.query.index >= 0) ? req.query.index : 0; // First we get our index and define it to 0 if the value is wrong
             getUsers((users) => {
-              res.render('queue', { title: 'Queue', admin: auth, searching: false, users: users, notEmpty: users.length ? true : false, timeStamp: times[index], previousTime: (index > 0) ? "/queue?index=" + (index - 1) : null, nextTime: (index < times.length - 1) ? "/queue?index=" + (index + 1) : null });
+              res.render('queue', { title: 'Queue', admin: auth, searching: false, users: users, notEmpty: (typeof users !== "undefined" && users.length > 0) ? true : false, timeStamp: times[index], previousTime: (index > 0) ? "/queue?index=" + (index - 1) : null, nextTime: (index < times.length - 1) ? "/queue?index=" + (index + 1) : null });
             }, 0, times[index])
         }, false)
       }
@@ -113,7 +113,7 @@ router.get('/credits', (req, res, next) => {
 
 router.get('/display', (req, res, next) => {
   pool.getConnection((err, conn) => {
-    conn.query("SELECT userId FROM spatulasUsers WHERE preparation=1 AND ready=0 ORDER BY time", (err, userPrep) => {
+    conn.query("SELECT userId FROM spatulasUsers WHERE preparation=1 AND ready=0 AND delivered=0 ORDER BY time", (err, userPrep) => {
       conn.query("SELECT userId FROM spatulasUsers WHERE ready=1 AND delivered=0 ORDER BY time", (err, userReady) => {
         pool.releaseConnection(conn);
         res.render('room-display', { title: "Room display", userReady: userReady, userPreparation: userPrep })
