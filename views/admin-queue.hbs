@@ -4,9 +4,9 @@
 <div class="error-message invisible"> <p> Error : Connection with the server has been lost. Please wait to see if the connection is reestablished. </p>
     <p> If the problem persists, please contact an admin. </p>
 </div>
-<a class="button" href="/spadmin/" style="margin-bottom:15px"> <button> Back </button> </a>
+
 <div class="queue-title">   
-    <h1> Manage queue :</h1>
+    <a class="button" href="/spadmin/" style="margin-bottom:15px"> <button> Back </button> </a>
     <div>
         <img id="search-button" src="/images/queue/search.webp" alt="search">
         {{#if searching}}
@@ -14,60 +14,175 @@
         {{/if}}
     </div>
 </div>
-<div class="commands-container">
 {{#if notEmpty}}
-    {{#each users}}
-        {{#unless this.delivered}}
+<h2> Ready : </h2>
+<div class="commands-container ready" id="ready-container">
+{{#each users}}
+    {{#if this.ready}}
+    {{#unless this.delivered}}
 <div class="command-wrapper" id={{this.userId}}>
-    <div class="command-container {{#if this.ready}} ready {{/if}} {{#if this.preparation}} prepare {{/if}}">
-        <div class="command-sub-container">
-            <p class="title"> {{this.firstName}} {{this.lastName}} </p>
-            <div class="close-button" data-id={{this.userId}}> </div>
-        </div>
-        <div class="command-sub-container">
-            <div class="com-id">
-                <p class="command-id"> {{this.userId}} </p>
-                <div class="image-holder"> </div>
+    <div class="command-container">
+        <div class="com-id">
+            <div>
+                {{this.userId}}
             </div>
-            <div class="command-all">
-                <div class="command-infos">
-                    <p> {{this.burger}} </p>
-                    <p> {{this.fries}} </p>
+        </div>
+        <div class="command-info-container">
+            <p class="title"> {{this.firstName}} {{this.lastName}} </p>
+            <div class="command-infos">
+                    <p> {{this.burger}}, </p>
+                    <p> {{this.fries}}, </p>
                     <p> {{this.drink}} </p>
                 </div>
-                <div class="command-widgets">
-                    <div class="wprepare {{#if this.preparation}} activated {{/if}}" data-id={{this.userId}}> </div>
-                    <div class="send {{#if this.ready}} activated {{/if}}" data-id={{this.userId}}> </div>
-                    <div class="validate" data-id={{this.userId}}> </div>
-                </div>
+        </div>
+        <div class="command-time-container">
+            <div>
+                {{this.time}}
             </div>
         </div>
-        <span class="price-tag"> {{this.price}}€ </span>
+        <div class="command-price-container">
+            <div>
+                {{this.price}}€
+            </div>
+        </div>
+        <div class="command-widgets">
+            <div class="wprepare {{#if this.preparation}} activated {{/if}}" data-id={{this.userId}}> </div>
+            <div class="send activated" data-id={{this.userId}}> </div>
+            <div class="validate" data-id={{this.userId}}> </div>
+        </div>
     </div>
-    {{#if ../searching}}
-        <p style="margin-top:8px"> {{this.time}} </p>
-    {{/if}}
 </div>
-        {{/unless}}
-    {{/each}}
+    {{/unless}}
+    {{/if}}
+{{/each}}
+</div>
+<h2> Preparing : </h2>
+<div class="commands-container prepare" id="preparation-container">
+{{#each users}}
+    {{#if this.preparation}}
+    {{#unless this.ready}}
+    {{#unless this.delivered}}
+<div class="command-wrapper" id={{this.userId}}>
+    <div class="command-container">
+        <div class="com-id">
+            <div>
+                {{this.userId}}
+            </div>
+        </div>
+        <div class="command-info-container">
+            <p class="title"> {{this.firstName}} {{this.lastName}} </p>
+            <div class="command-infos">
+                    <p> {{this.burger}}, </p>
+                    <p> {{this.fries}}, </p>
+                    <p> {{this.drink}} </p>
+                </div>
+        </div>
+        <div class="command-time-container">
+            <div>
+                {{this.time}}
+            </div>
+        </div>
+        <div class="command-price-container">
+            <div>
+                {{this.price}}€
+            </div>
+        </div>
+        <div class="command-widgets">
+            <div class="wprepare activated" data-id={{this.userId}}> </div>
+            <div class="send" data-id={{this.userId}}> </div>
+            <div class="validate" data-id={{this.userId}}> </div>
+        </div>
+    </div>
+</div>
+    {{/unless}}
+    {{/unless}}
+    {{/if}}
+{{/each}}
+</div>
+<h2> Wait list : </h2>
+<div class="commands-container" id="vanilla-container">
+{{#each users}}
+    {{#unless this.delivered}}
+    {{#unless this.ready}}
+    {{#unless this.preparation}}
+<div class="command-wrapper" id={{this.userId}}>
+    <div class="command-container">
+        <div class="com-id">
+            <div>
+                {{this.userId}}
+            </div>
+        </div>
+        <div class="command-info-container">
+            <p class="title"> {{this.firstName}} {{this.lastName}} </p>
+            <div class="command-infos">
+                    <p> {{this.burger}}, </p>
+                    <p> {{this.fries}}, </p>
+                    <p> {{this.drink}} </p>
+                </div>
+        </div>
+        <div class="command-time-container">
+            <div>
+                {{this.time}}
+            </div>
+        </div>
+        <div class="command-price-container">
+            <div>
+                {{this.price}}€
+            </div>
+        </div>
+        <div class="command-widgets">
+            <div class="wprepare" data-id={{this.userId}}> </div>
+            <div class="send" data-id={{this.userId}}> </div>
+            <div class="validate" data-id={{this.userId}}> </div>
+        </div>
+    </div>
+</div>
+    {{/unless}}
+    {{/unless}}
+    {{/unless}}
+{{/each}}
+</div>
+<h2> Delivered : </h2>
+<div class="commands-container delivered" id="delivered-container">
+{{#each users}}
+    {{#if this.delivered}}
+<div class="command-wrapper" id={{this.userId}}>
+    <div class="command-container">
+        <div class="com-id">
+            <div>
+                {{this.userId}}
+            </div>
+        </div>
+        <div class="command-info-container">
+            <p class="title"> {{this.firstName}} {{this.lastName}} </p>
+            <div class="command-infos">
+                    <p> {{this.burger}}, </p>
+                    <p> {{this.fries}}, </p>
+                    <p> {{this.drink}} </p>
+                </div>
+        </div>
+        <div class="command-time-container">
+            <div>
+                {{this.time}}
+            </div>
+        </div>
+        <div class="command-price-container">
+            <div>
+                {{this.price}}€
+            </div>
+        </div>
+        <div class="command-widgets">
+            <div class="wprepare {{#if this.preparation}} activated {{/if}}" data-id={{this.userId}}> </div>
+            <div class="send {{#if this.ready}} activated {{/if}}" data-id={{this.userId}}> </div>
+            <div class="validate activated" data-id={{this.userId}}> </div>
+        </div>
+    </div>
+</div>
+    {{/if}}
+{{/each}}
 {{else}}
-    <h2 style="margin-top: 50px; text-align:center"> <em> Wow ! Such void ! </em> </h2>
+<h2 style="margin-top: 50px; text-align:center; align-self:center"> <em> Wow ! Such void ! </em> </h2>
 {{/if}}
 </div>
-{{#unless searching}}
-    <div class="page-selector">
-        {{#if previousTime}}
-            <a class="right-arrow" href={{previousTime}} aria-label="Previous time frame"></a>
-        {{else}}
-            <div class="right-arrow arrow-placeholder" aria-label="Previous time frame placeholder"></div>
-        {{/if}}
-        <span> {{timeStamp}} </span>
-        {{#if nextTime}}
-            <a class="left-arrow" href={{nextTime}} aria-label="Next time frame"></a>
-        {{else}}
-            <div class="left-arrow arrow-placeholder" aria-label="Next time frame placeholder"></div>
-        {{/if}}
-    </div>
-{{/unless}}
 <script src="/javascripts/queue.js"></script>
 <script src="/javascripts/queueAdmin.js"></script>

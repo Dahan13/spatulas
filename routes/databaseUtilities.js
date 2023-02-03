@@ -128,11 +128,17 @@ function getUsers(callback, deliveryStatus = 0, timeStamp = null, connection = n
  * @param {int} limit 
  * @param {*} connection 
  */
-function searchUser(firstName, lastName, callback, deliveryStatus = 0, limit = 20, connection = null) {
+function searchUser(firstName, lastName, callback, deliveryStatus = null, limit = 20, connection = null) {
     db = (connection) ? connection : pool
-    db.query('SELECT * FROM spatulasUsers WHERE firstName LIKE \'' + firstName + '%\' AND lastName LIKE \'' + lastName + '%\' AND delivered=? ORDER BY time LIMIT 0, ?', [deliveryStatus, limit], (err, rows, fields) => {
-        callback(rows, fields);
-    })
+    if (deliveryStatus) {
+        db.query('SELECT * FROM spatulasUsers WHERE firstName LIKE \'' + firstName + '%\' AND lastName LIKE \'' + lastName + '%\' AND delivered=? ORDER BY time LIMIT 0, ?', [deliveryStatus, limit], (err, rows, fields) => {
+            callback(rows, fields);
+        })
+    } else {
+        db.query('SELECT * FROM spatulasUsers WHERE firstName LIKE \'' + firstName + '%\' AND lastName LIKE \'' + lastName + '%\' ORDER BY time LIMIT 0, ?', [limit], (err, rows, fields) => {
+            callback(rows, fields);
+        })
+    }
 }
 
 function clearUsers(connection = null) {

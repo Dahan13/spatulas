@@ -47,17 +47,14 @@ query('index').trim().escape().toInt(),
             res.render('admin-queue', { title: 'Queue Manager', admin: true, searching: true, users: users, notEmpty: (typeof users !== "undefined" && users.length > 0) ? true : false });
             pool.releaseConnection(conn);
           }, conn)
-        }, 0, 20, conn)
+        }, null, 999, conn)
       } else {
-        getTimes((times) => {
-          let index = (req.query.index && req.query.index < times.length && req.query.index >= 0) ? req.query.index : 0; // First we get our index and define it to 0 if the value is wrong
-            getUsers((users) => {
-              convertFoodIdToFoodName(users, (users) => {
-                res.render('admin-queue', { title: 'Queue Manager', admin: true, searching: false, users: users, notEmpty: (typeof users !== "undefined" && users.length > 0) ? true : false, timeStamp: times[index], previousTime: (index > 0) ? "/spadmin/queue?index=" + (index - 1) : null, nextTime: (index < times.length - 1) ? "/spadmin/queue?index=" + (index + 1) : null });
-                pool.releaseConnection(conn);
-              }, conn)
-            }, 0, times[index], conn)
-        }, false)
+        conn.query('SELECT * FROM spatulasUsers ORDER BY time', (err, users) => {
+          convertFoodIdToFoodName(users, (users) => {
+            res.render('admin-queue', { title: 'Queue Manager', admin: true, searching: false, users: users, notEmpty: (typeof users !== "undefined" && users.length > 0) ? true : false });
+            pool.releaseConnection(conn);
+          }, conn)
+        })
       }
     })
   })
