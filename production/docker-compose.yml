@@ -2,7 +2,7 @@ version: '4.0'
 
 services:
   app:
-    image: dahan13/spatulas:v2.0.1
+    image: dahan13/spatulas:v2.1
     environment:
       MYSQL_HOST: mysql
       MYSQL_USER: root
