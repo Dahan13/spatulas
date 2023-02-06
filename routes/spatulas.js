@@ -162,7 +162,9 @@ router.get('/clearUsers', (req,res,next) => {
 router.get('/clearDatabases', (req,res,next) => {
   authenticate(req, res, () => {
     purgeDatabase();
-    res.redirect('/spadmin/manage');
+    setTimeout(() => {
+      res.redirect('/spadmin/manage');
+    }, 1000) 
   })
 })
 

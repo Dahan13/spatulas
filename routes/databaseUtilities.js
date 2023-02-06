@@ -5,7 +5,7 @@ const pool = require('./databaseConnector');
  */
 function createDatabase(conn = null) {
     db = (conn) ? conn : pool
-    db.query("CREATE TABLE IF NOT EXISTS spatulasUsers (userId INT PRIMARY KEY NOT NULL AUTO_INCREMENT, lastName VARCHAR(255), firstName VARCHAR(255), burger VARCHAR(255), fries VARCHAR(255), drink VARCHAR(255), time VARCHAR(5), preparation INT(1) DEFAULT 0, ready INT(1) DEFAULT 0, delivered INT(1) DEFAULT 0, price FLOAT)", (err, rows, fields) => {
+    db.query("CREATE TABLE IF NOT EXISTS spatulasUsers (userId INT PRIMARY KEY NOT NULL AUTO_INCREMENT, lastName VARCHAR(255), firstName VARCHAR(255), burger VARCHAR(255), fries VARCHAR(255), drink VARCHAR(255), time VARCHAR(5), preparation INT(1) DEFAULT 0, ready INT(1) DEFAULT 0, delivered INT(1) DEFAULT 0, price FLOAT, lastUpdated TIMESTAMP DEFAULT NOW())", (err, rows, fields) => {
         if (err) {
             console.log(err);
         }
@@ -461,6 +461,13 @@ function purgeDatabase() {
     })
 }
 
+function refreshCommand(userId, callback, conn = null) {
+    let db = (conn) ? conn : pool
+    db.execute('UPDATE spatulasUsers SET lastUpdated = NOW() WHERE userId = ?', [userId], (err, rows) => {
+        callback();
+    }) 
+}
+
 module.exports = {
     createDatabase,
     insertUser,
@@ -487,5 +494,6 @@ module.exports = {
     togglePrepare,
     toggleReady,
     toggleDelivered,
-    purgeDatabase
+    purgeDatabase,
+    refreshCommand
 }

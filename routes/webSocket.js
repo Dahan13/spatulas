@@ -1,7 +1,8 @@
 const { WebSocket } = require('ws');
 const validator = require('validator');
+let pool = require('./databaseConnector');
 const { checkPassword } = require('./settingsUtilities')
-const { toggleReady, toggleDelivered, togglePrepare } = require("./databaseUtilities")
+const { toggleReady, toggleDelivered, togglePrepare, refreshCommand } = require("./databaseUtilities")
 
 
 const server = new WebSocket.Server({
@@ -19,17 +20,24 @@ server.on('connection', function(socket) {
     checkPassword(result[0], (auth) => {
       let userId = validator.toInt(result[1]);
       let action = validator.toInt(result[2]);
-      switch (action) {
-        case 0:
-          togglePrepare(userId);
-          break;
-        case 1:
-          toggleReady(userId);
-          break;
-        case 2:
-          toggleDelivered(userId);
-          break;
-      }
+      pool.getConnection((err, conn) => {
+        refreshCommand(userId, () => {
+          switch (action) {
+            case 0:
+              togglePrepare(userId, conn);
+              pool.releaseConnection(conn);
+              break;
+            case 1:
+              toggleReady(userId, conn);
+              pool.releaseConnection(conn);
+              break;
+            case 2:
+              toggleDelivered(userId, conn);
+              pool.releaseConnection(conn);
+              break;
+          }
+        }, conn)
+      })
     })
   });
 
