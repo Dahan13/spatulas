@@ -59,9 +59,8 @@ h1 {
     text-align: center;
 }
 .command-container {
-    width: 100px;
-    margin-top: -12px;
-    margin-bottom: -8px;
+    width: auto;
+    margin: -12px 20px -8px 20px;
 
     display: flex;
     flex-direction: row;
@@ -187,11 +186,7 @@ h2 {
 @media only screen and (min-width: 1020px) {
 
     .command-wrapper {
-        margin: 28px 14px 28px 14px;
-    }
-
-    .command-container {
-        width: 180px;
+        margin: 20px;
     }
 
     .command-container > p {

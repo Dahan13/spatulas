@@ -30,12 +30,12 @@ h2 {
     border: 1px solid var(--text-color);
 
     transform: translateX(0);
-    transition: transform 0.5s ease-in;
+    transition: transform 0.5s ease-out;
 }
 
 .transition {
-    transform: translateX(-120%);
-    transition: transform 0.5s ease-out;
+    transform: translateX(120%);
+    transition: transform 0.5s ease-in-out;
 }
 
 .command-wrapper:first-of-type {
