@@ -1,11 +1,9 @@
 <link rel="stylesheet" href="/stylesheets/home-style.css"/>
-{{#unless userRegistrationOpen}}
-    {{#if adminRegistrationOpen}}
-        <div class="error-message"> <p> Registration are closed. </p>
-            <p> However you retain access as an administrator. </p>
-        </div>
-    {{/if}}
-{{/unless}}
+{{#if adminRegistrationOpen}}
+    <div class="error-message"> <p> As an administrator, </p>
+        <p> You retain access to everything on this webpage, including all timestamps. </p>
+    </div>
+{{/if}}
 
 {{#if registrationOpen}}
     <h1> Registration for {{day}} </h1>

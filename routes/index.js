@@ -11,21 +11,21 @@ createDatabase();
 router.get('/',
   query('error').trim().escape(),
   function(req, res, next) {
-    getRegistration((registStatus) => {
-      getRegistrationDay((day) => {
-        pool.getConnection((err, conn) => {
-          getBurgers((burgers, ) => {
-            getFries((fries) => {
-              getDrinks((drinks) => {
-                getTimes((times) => {
-                  checkPassword(req.cookies.spatulasPower, (auth) => {
+    checkPassword(req.cookies.spatulasPower, (auth) => {
+      getRegistration((registStatus) => {
+        getRegistrationDay((day) => {
+          pool.getConnection((err, conn) => {
+            getBurgers((burgers, ) => {
+              getFries((fries) => {
+                getDrinks((drinks) => {
+                  getTimes((times) => {
                     res.render('home', { title: 'Home', admin: auth, registrationOpen: (registStatus || auth), userRegistrationOpen: registStatus, adminRegistrationOpen: auth, burgers: burgers, fries: fries, drinks: drinks, times: times, day: day, error: (req.query.error) ? req.query.error : null });
-                  })
-                }, true, conn)
+                  }, (auth) ? null : true, conn)
+                }, false, conn)
               }, false, conn)
             }, false, conn)
-          }, false, conn)
-          pool.releaseConnection(conn);
+            pool.releaseConnection(conn);
+          })
         })
       })
     })
@@ -81,7 +81,7 @@ router.post('/register',
                       pool.releaseConnection(conn);
                       res.redirect('/?error=true');
                     }
-                  }, true, conn)
+                  }, (adminRegistStatus) ? null : true, conn)
                 }, conn)
               }, conn)
             }, conn)
