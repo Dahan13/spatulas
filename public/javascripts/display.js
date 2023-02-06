@@ -1,3 +1,3 @@
 setTimeout(() => {
     window.location.reload();
-}, 10000);
+}, 8000);
