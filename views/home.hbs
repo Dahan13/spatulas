@@ -24,6 +24,7 @@
         <div class="input-div">
             <label for="burger"> Burger </label>
             <select name="burger" id="burger">
+                    <option disabled selected value="none"> -- Select an option -- </option>
                 {{#each burgers}}
                     <option value={{this.identifier}} id={{this.identifier}} {{#if this.price }} data-price={{this.price}} {{/if}}> {{this.name}} ({{#if this.price}}{{this.price}}{{else}}0.00{{/if}}€) {{#if this.description}}: {{this.description}} {{/if}} </option>
                 {{/each}}
@@ -32,6 +33,7 @@
         <div class="input-div">
             <label for="fries"> Fries </label>
             <select name="fries" id="fries">
+                <option disabled selected value="none"> -- Select an option -- </option>
                 {{#each fries}}
                     <option value={{this.identifier}} id={{this.identifier}} {{#if this.price }} data-price={{this.price}} {{/if}}> {{this.name}} ({{#if this.price}}{{this.price}}{{else}}0.00{{/if}}€) {{#if this.description}}: {{this.description}} {{/if}} </option>
                 {{/each}}
@@ -40,6 +42,7 @@
         <div class="input-div">
             <label for="drink"> Drink </label>
             <select name="drink" id="drink">
+                <option disabled selected value="none"> -- Select an option -- </option>
                 {{#each drinks}}
                     <option value={{this.identifier}} id={{this.identifier}} {{#if this.price }} data-price={{this.price}} {{/if}}> {{this.name}} ({{#if this.price}}{{this.price}}{{else}}0.00{{/if}}€) {{#if this.description}}: {{this.description}} {{/if}} </option>
                 {{/each}}
@@ -48,6 +51,7 @@
         <div class="input-div">
             <label for="time"> Pick up time </label>
             <select name="time" id="time">
+                <option disabled selected value="none"> -- Select an option -- </option>
                 {{#each times}}
                     <option value={{this}}>{{this}}</option>
                 {{/each}}

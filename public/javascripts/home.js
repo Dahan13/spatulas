@@ -3,28 +3,44 @@ const firstNameInput = document.getElementById("firstName");
 const lastNameInput = document.getElementById("lastName");
 const checkbox = document.getElementById("accept");
 const submitButton = document.getElementById("submit-button");
+const burgers = document.getElementById("burger");
+const fries = document.getElementById("fries");
+const drinks = document.getElementById("drink");
+const times = document.getElementById("time");
+const displayedPrice = document.getElementById("price-range");
+
+// Reseting on page load all inputs to the default value
+firstNameInput.value = "";
+lastNameInput.value = "";
+checkbox.checked = false;
+submitButton.disabled = true;
+burgers.selectedIndex = 0;
+fries.selectedIndex = 0;
+drinks.selectedIndex = 0;
+times.selectedIndex = 0;
 
 /**
  * This function will checks if all inputs were filled, thus allowing the submit button to be used 
  */
 function inputsChecker() {
-    if (firstNameInput.value.length >= 1 && lastNameInput.value.length >= 1 && checkbox.checked && submitButton.disabled) {
+    if (firstNameInput.value.length >= 1 && lastNameInput.value.length >= 1 && checkbox.checked && submitButton.disabled && burgers.options[burgers.selectedIndex].value != "none" && fries.options[fries.selectedIndex].value != "none" && drinks.options[drinks.selectedIndex].value != "none" && times.options[times.selectedIndex].value != "none") {
         submitButton.disabled = false;
-    } else if (firstNameInput.value.length < 1 || lastNameInput.value.length < 1 || !checkbox.checked) {
+    } else if (firstNameInput.value.length < 1 || lastNameInput.value.length < 1 || !checkbox.checked || burgers.options[burgers.selectedIndex].value == "none" || fries.options[fries.selectedIndex].value == "none" || drinks.options[drinks.selectedIndex].value == "none" || times.options[times.selectedIndex].value == "none") {
         submitButton.disabled = true;
     }
 }
 inputsChecker();
+console.log(burgers.options[burgers.selectedIndex].value)
 
 firstNameInput.addEventListener('input', inputsChecker);
 lastNameInput.addEventListener('input', inputsChecker);
 checkbox.addEventListener('input', inputsChecker);
+burgers.addEventListener('input', inputsChecker);
+fries.addEventListener('input', inputsChecker);
+drinks.addEventListener('input', inputsChecker);
+times.addEventListener('input', inputsChecker);
 
 // Price calculation
-const burgers = document.getElementById("burger");
-const fries = document.getElementById("fries");
-const drinks = document.getElementById("drink");
-const displayedPrice = document.getElementById("price-range");
 
 /**
  * This function will calculates the price of the current selected command
