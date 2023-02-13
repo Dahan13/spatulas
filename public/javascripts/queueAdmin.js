@@ -1,3 +1,7 @@
+setTimeout(() => {
+    window.location.reload();
+}, 600000);
+
 const vanillaCommandsContainer = document.getElementById("vanilla-container");
 const prepareCommandsContainer = document.getElementById("preparation-container");
 const readyCommandsContainer = document.getElementById("ready-container");

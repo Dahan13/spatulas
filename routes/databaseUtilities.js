@@ -96,28 +96,130 @@ function insertDrink(identifier, name, description = null, price = null, connect
 /**
  * Returns a list containing all users
  * @param {function} callback 
- * @param {int} deliveryStatus : 0 if you want users that have not received their command, 1 otherwise
+ * @param {string} orderCriteria
  */
-function getUsers(callback, deliveryStatus = 0, timeStamp = null, connection = null) {
-    db = (connection) ? connection : pool
-    if (timeStamp) {
-        db.execute('SELECT * FROM spatulasUsers WHERE time=? AND delivered=?', [timeStamp, deliveryStatus], (err, rows, fields) => {
-            if (err) {
-                console.log(err);
-            } else {
-                callback(rows, fields);
-            }
+function getUsers(callback, orderCriteria = null, connection = null) {
+    let db = (connection) ? connection : pool
+    if (orderCriteria) {
+        db.query('SELECT * FROM spatulasUsers ORDER BY ' + orderCriteria, (err, rows, fields) => {
+            callback(rows, fields);
         })
     } else {
-        db.execute('SELECT * FROM spatulasUsers WHERE delivered=?', [deliveryStatus],(err, rows, fields) => {
-            if (err) {
-                console.log(err);
-            } else {
-                callback(rows, fields);
-            }
+        db.query('SELECT * FROM spatulasUsers', (err, rows, fields) => {
+            callback(rows, fields);
         })
     }
 }
+
+/**
+ * Returns a list containing all untreated users
+ * @param {function} callback
+ * @param {int} userLimit
+ */
+function getUntreatedUsers(callback, orderCriteria = null, connection = null) {
+    let db = (connection) ? connection : pool
+    if (orderCriteria) {
+        db.query('SELECT * FROM spatulasUsers WHERE preparation=0 AND ready=0 AND delivered=0 ORDER BY ' + orderCriteria, (err, rows, fields) => {
+            callback(rows, fields);
+        })
+    } else {
+        db.query('SELECT * FROM spatulasUsers WHERE preparation=0 AND ready=0 AND delivered=0', (err, rows, fields) => {
+            callback(rows, fields);
+        })
+    }
+}
+
+/** 
+ * Returns a list containing all users in preparation
+ * @param {function} callback
+ * @param {int} userLimit
+ */
+function getPreparationUsers(callback, orderCriteria = null, connection = null) {
+    db = (connection) ? connection : pool
+    if (orderCriteria) {
+        db.query('SELECT * FROM spatulasUsers WHERE preparation=1 AND ready=0 AND delivered=0 ORDER BY ' + orderCriteria, (err, rows, fields) => {
+            callback(rows, fields);
+        })
+    } else {
+        db.query('SELECT * FROM spatulasUsers WHERE preparation=1 AND ready=0 AND delivered=0', (err, rows, fields) => {
+            callback(rows, fields);
+        })
+    }
+}
+
+/** 
+ * Returns a list containing all users ready
+ * @param {function} callback
+ * @param {int} userLimit
+ */
+function getReadyUsers(callback, orderCriteria = null, connection = null) {
+    db = (connection) ? connection : pool
+    if (orderCriteria) {
+        db.query('SELECT * FROM spatulasUsers WHERE ready=1 AND delivered=0 ORDER BY ' + orderCriteria, (err, rows, fields) => {
+            callback(rows, fields);
+        })
+    } else {
+        db.query('SELECT * FROM spatulasUsers WHERE ready=1 AND delivered=0', (err, rows, fields) => {
+            callback(rows, fields);
+        })
+    }
+}
+
+/**
+ * Returns a list containing all users delivered
+ * @param {function} callback
+ * @param {int} userLimit
+ */
+function getDeliveredUsers(callback, orderCriteria = null, connection = null) {
+    db = (connection) ? connection : pool
+    if (orderCriteria) {
+        db.query('SELECT * FROM spatulasUsers WHERE delivered=1 ORDER BY ' + orderCriteria, (err, rows, fields) => {
+            callback(rows, fields);
+        })
+    } else {
+        db.query('SELECT * FROM spatulasUsers WHERE delivered=1', (err, rows, fields) => {
+            callback(rows, fields);
+        })
+    }
+}
+
+/**
+ * This function returns a list of users according to their status, it can optionally order each category of users according to a criteria, and convert food identifiers to food names
+ * @param {function} callback
+ * @param {boolean} convertFood
+ * @param {string} orderCriteria1
+ * @param {string} orderCriteria2
+ * @param {string} orderCriteria3
+ * @param {string} orderCriteria4
+ */
+function getUsersByStatus(callback, convertFood = false, orderCriteria1 = null, orderCriteria2 = null, orderCriteria3 = null, orderCriteria4 = null) {
+    pool.getConnection((err, db) => {
+        getUntreatedUsers((untreatedUsers, fields) => {
+            getPreparationUsers((preparationUsers, fields) => {
+                getReadyUsers((readyUsers, fields) => {
+                    getDeliveredUsers((deliveredUsers, fields) => {
+                        if (convertFood) {
+                            convertFoodIdToFoodName(untreatedUsers, (untreatedUsers) => {
+                                convertFoodIdToFoodName(preparationUsers, (preparationUsers) => {
+                                    convertFoodIdToFoodName(readyUsers, (readyUsers) => {
+                                        convertFoodIdToFoodName(deliveredUsers, (deliveredUsers) => {
+                                            pool.releaseConnection(db);
+                                            callback(untreatedUsers.concat(preparationUsers).concat(readyUsers).concat(deliveredUsers))
+                                        }, db)
+                                    }, db)
+                                }, db)
+                            }, db)
+                        } else {
+                            pool.releaseConnection(db);
+                            callback(untreatedUsers.concat(preparationUsers).concat(readyUsers).concat(deliveredUsers))
+                        }
+                    }, orderCriteria4, db)
+                }, orderCriteria3, db)
+            }, orderCriteria2, db)
+        }, orderCriteria1, db)    
+    })
+}
+
 
 /**
  * This function search for users according to last and first name.
@@ -475,6 +577,11 @@ module.exports = {
     insertFries,
     insertDrink,
     getUsers,
+    getUntreatedUsers,
+    getPreparationUsers,
+    getReadyUsers,
+    getDeliveredUsers,
+    getUsersByStatus,
     searchUser,
     clearUsers,
     getBurgers,

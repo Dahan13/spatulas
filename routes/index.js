@@ -2,7 +2,7 @@ var express = require('express');
 const { body, query } = require('express-validator');
 var router = express.Router();
 let pool = require('./databaseConnector');
-let { createDatabase, insertUser, getUsers, getBurgers, getFries, getDrinks, checkBurger, checkDrink, checkFries, searchUser, calculatePrice } = require("./databaseUtilities.js");
+let { createDatabase, insertUser, getUsers, getPreparationUsers, getReadyUsers, getBurgers, getFries, getDrinks, checkBurger, checkDrink, checkFries, searchUser, calculatePrice } = require("./databaseUtilities.js");
 let { getTimes, getRegistration, getRegistrationDay, checkTime, getTimeIndex, checkPassword } = require('./settingsUtilities');
 
 createDatabase();
@@ -46,7 +46,7 @@ router.get('/queue',
           let index = (req.query.index && req.query.index < times.length && req.query.index >= 0) ? req.query.index : 0; // First we get our index and define it to 0 if the value is wrong
             getUsers((users) => {
               res.render('queue', { title: 'Queue', admin: auth, searching: false, users: users, notEmpty: (typeof users !== "undefined" && users.length > 0) ? true : false, timeStamp: times[index], previousTime: (index > 0) ? "/queue?index=" + (index - 1) : null, nextTime: (index < times.length - 1) ? "/queue?index=" + (index + 1) : null });
-            }, 0, times[index])
+            }, "lastUpdated")
         }, false)
       }
     })
@@ -113,12 +113,12 @@ router.get('/credits', (req, res, next) => {
 
 router.get('/display', (req, res, next) => {
   pool.getConnection((err, conn) => {
-    conn.query("SELECT userId FROM spatulasUsers WHERE preparation=1 AND ready=0 AND delivered=0 ORDER BY lastUpdated", (err, userPrep) => {
-      conn.query("SELECT userId FROM spatulasUsers WHERE ready=1 AND delivered=0 ORDER BY lastUpdated", (err, userReady) => {
+    getPreparationUsers((userPrep) => {
+      getReadyUsers((userReady) => {
         pool.releaseConnection(conn);
         res.render('room-display', { title: "Room display", userReady: userReady, userPreparation: userPrep })
-      })
-    })
+      }, "lastUpdated", conn)
+    }, "lastUpdated", conn)
   })
 })
 

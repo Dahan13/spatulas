@@ -4,7 +4,7 @@ var stringify = require('csv-stringify');
 const { body, query } = require('express-validator');
 var router = express.Router();
 let pool = require('./databaseConnector')
-let { getUsers, getBurgers, getFries, getDrinks, searchUser, countBurgers, countFries, countDrinks, insertBurger, deleteBurger, deleteFries, deleteDrink, insertFries, insertDrink, clearUsers, convertFoodIdToFoodName, purgeDatabase } = require("./databaseUtilities.js");
+let { getUntreatedUsers, getPreparationUsers, getReadyUsers, getDeliveredUsers, getBurgers, getFries, getDrinks, searchUser, countBurgers, countFries, countDrinks, insertBurger, deleteBurger, deleteFries, deleteDrink, insertFries, insertDrink, clearUsers, convertFoodIdToFoodName, purgeDatabase, getUsersByStatus } = require("./databaseUtilities.js");
 let { getTimes, getRegistration, getRegistrationDay, getLimit, setRegistration, setRegistrationDay, setLimit, addTime, removeTime, getPassword, checkPassword, authenticate, setPassword } = require('./settingsUtilities');
 
 /* GET users listing. */
@@ -40,23 +40,20 @@ query('last-name').trim().escape(),
 query('index').trim().escape().toInt(),
 (req, res, next) => {
   authenticate(req, res, () => {
-    pool.getConnection((err, conn) => {
-      if (req.query['first-name'] || req.query['last-name']) {
+    if (req.query['first-name'] || req.query['last-name']) {
+      pool.getConnection((err, conn) => {
         searchUser(req.query['first-name'], req.query['last-name'], (users) => {
           convertFoodIdToFoodName(users, (users) => {
             res.render('admin-queue', { title: 'Queue Manager', admin: true, searching: true, users: users, notEmpty: (typeof users !== "undefined" && users.length > 0) ? true : false });
             pool.releaseConnection(conn);
           }, conn)
         }, null, 999, conn)
-      } else {
-        conn.query('SELECT * FROM spatulasUsers ORDER BY time', (err, users) => {
-          convertFoodIdToFoodName(users, (users) => {
-            res.render('admin-queue', { title: 'Queue Manager', admin: true, searching: false, users: users, notEmpty: (typeof users !== "undefined" && users.length > 0) ? true : false });
-            pool.releaseConnection(conn);
-          }, conn)
-        })
-      }
-    })
+      })
+    } else {
+      getUsersByStatus((users) => {  
+        res.render('admin-queue', { title: 'Queue Manager', admin: true, searching: false, users: users, notEmpty: (typeof users !== "undefined" && users.length > 0) ? true : false });
+      }, true, 'userId', 'lastUpdated', 'lastUpdated', 'lastUpdated');     
+    }
   })
 })
 
