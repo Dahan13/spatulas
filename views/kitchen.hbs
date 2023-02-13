@@ -1,32 +1,33 @@
 <link rel="stylesheet" href="/stylesheets/home-style.css"/>
 <link rel="stylesheet" href="/stylesheets/spadmin-style.css"/>
+<link rel="stylesheet" href="/stylesheets/kitchen-style.css"/>
 <a class="button" href="/spadmin/" style="margin-bottom:15px"> <button> Back </button> </a>
-<h1> Kitchen tab </h1>
+<h1> Kitchen tab (&#215; <span id="command-count"> # </span>)</h1>
 
-{{#unless length}}
+{{#unless notEmpty}}
     <h2 style="margin-top: 50px; text-align:center; border: none"> <em> Wow ! Such void ! </em> </h2>
 {{else}}
-    <h2> Burgers : </h2>
-
-    <table>
-        {{#each burgerCounts}}
-            <tr>
-                <th> {{this.name}} </th>
-                <td> x{{this.count}} </td>
-            </tr>
+    <div class="commands-container">
+        {{#each users}}
+            <div class="command-wrapper">
+                <div class="command-container">
+                    <div class="com-id">
+                        <div>
+                            {{this.userId}}
+                        </div>
+                    </div>
+                    <div class="command-infos-container">
+                        <div class="command-infos">
+                            <p> {{this.burger}} </p>
+                            <p> {{this.fries}} </p>
+                            <p> {{this.drink}} </p>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
         {{/each}}
-    </table>
-
-    <h2> Fries : </h2>
-
-    <table>
-        {{#each friesCounts}}
-            <tr>
-                <th> {{this.name}} </th>
-                <td> x{{this.count}} </td>
-            </tr>
-        {{/each}}
-    </table>
+    </div>
 {{/unless}}
 <script src="/javascripts/kitchen.js"> </script>
 

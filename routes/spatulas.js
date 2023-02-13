@@ -97,12 +97,12 @@ router.post('/changePassword', (req, res, next) => {
 router.get('/kitchen', (req, res, next) => {
   authenticate(req, res, () => {
     pool.getConnection((err, conn) => {
-      countBurgers((burgerCount) => {
-        countFries((friesCount) => {
-          res.render('kitchen', { title: 'Kitchen tab', admin: true, length: burgerCount.length + friesCount.length, burgerCounts: burgerCount, friesCounts: friesCount });
+      getPreparationUsers((users) => {
+        convertFoodIdToFoodName(users, (users) => {
+          res.render('kitchen', { title: 'Kitchen Tab', admin: true, users: users, notEmpty: (typeof users !== "undefined" && users.length > 0) ? true : false });
           pool.releaseConnection(conn);
-        }, 1, conn)
-      }, 1, conn)
+        }, conn)
+      }, 'lastUpdated', conn)
     })
   })
 })
