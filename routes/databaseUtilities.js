@@ -1,5 +1,5 @@
 const pool = require('./databaseConnector');
-let { getTimes } = require('./settingsUtilities');
+let { getTimes, setRegistration } = require('./settingsUtilities');
 
 /**
  * This function will create all tables for the website to properly function, only if they are not already created.
@@ -29,7 +29,7 @@ function createDatabase(conn = null) {
 }
 
 /**
- * Insert a user into the database
+ * Insert a user into the database, it will also close registration if all time stamps are full
  * @param {string} lastName 
  * @param {string} firstName 
  * @param {string} burger 
@@ -37,13 +37,24 @@ function createDatabase(conn = null) {
  * @param {string} drink 
  * @param {int} time 
  */
-function insertUser(lastName, firstName, burger, fries, drink, time, price, connection = null) {
-    db = (connection) ? connection : pool
+async function insertUser(lastName, firstName, burger, fries, drink, time, price, connection = null) {
+    db = (connection) ? connection : await pool.promise().getConnection()
     db.execute('INSERT INTO spatulasUsers (lastName, firstName, burger, fries, drink, time, price) VALUES (?, ?, ?, ?, ?, ?, ?)', [lastName, firstName, burger, fries, drink, time, price], (err, rows, fields) => {
         if (err) {
             console.log(err);
         }
-    })
+
+        // Check if all time slots are full
+        getTimes((times) => {
+            if (!connection) { // releasing the connection if it was not passed as a parameter
+                pool.releaseConnection(db);
+            }
+            // If all time slots are full, close registration
+            if (times.length == 0) {
+                setRegistration(0);
+            }
+        }, true, db)
+    });
 }
 
 /**
