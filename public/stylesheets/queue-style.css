@@ -36,44 +36,81 @@ h1 {
 
 .commands-container {
     display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
+    flex-direction: column;
     align-items: center;
     justify-content: space-around;
 
     width: 100%;
     margin-top: 20px;
 }
-.command-wrapper {
-    margin: 10px 5px 10px 5px;
 
+.commands-container > p {
+    font-size: 1.4rem;
+    font-weight: bold;
+
+    width: 100%;
+    border-bottom: 1px solid var(--text-color);
+    margin-bottom: 20px;
+    margin-top: 40px;
+}
+
+.commands-wrapper {
+    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: space-around;
 }
 
-.command-name-container > p {
-    font-size: 1.1rem;
-    font-weight: bold;
-    text-align: center;
+.command {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+
+    border: 1px solid var(--text-color);
+    border-radius: 10px;
+    margin: 3px 0px 3px 0px;
 }
+
+.command-name-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+
+    width: 100%;
+    overflow: hidden;
+}
+
+.command-name-container > p {
+    font-size: 1rem;
+    font-weight: bold;
+    margin-left: 3px;
+}
+
+.infos-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+
+    width: 100%;
+}
+
 .command-container {
-    width: auto;
-    margin: -12px 20px -8px 20px;
+    width: 120px;
+    border-right: 1px solid var(--text-color);
 
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
+    gap: 3px;
     align-items: center;
-    justify-content: space-around;
+    justify-content: center;
 }
 
 .command-container > p {
-    font-size: 4rem;
+    font-size: 1.4rem;
     font-weight: bold;
-
-    width: 100%;
     text-align: center;
 }
 
@@ -81,7 +118,7 @@ h1 {
     content: url("/images/queue/ready.webp");
     float: left;
 
-    height: 50px;
+    height: 30px;
 }
 
 .ready > p {
@@ -93,60 +130,51 @@ h1 {
     content: url("/images/queue/preparation.webp");
     float: left;
 
-    height: 50px;
+    height: 30px;
 }
 
 .preparation > p {
     width: auto;
 }
 
-/* Page selector */
+.menu {
+    width: 100%;
+    margin-top: 5px;
+    padding: 1px;
+    border-top: 1px solid var(--text-color);
 
-.page-selector {
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-around;
+}
 
-    width: 200px;
-    margin-top: 30px;
+.menu-button {
     align-self: center;
+    margin-right: 5px;
+    padding: 5px;
+
+    display: flex;
+    align-items: center;
 }
 
-.page-selector > span {
-    font-size: 1.6rem;
-    font-weight: bold;
-}
-
-.right-arrow {
-    -webkit-clip-path: polygon(0 50%, 100% 100%, 100% 0); 
-    clip-path: polygon(0 50%, 100% 100%, 100% 0);
-    background: var(--text-color);
-
-    width: 40px;
-    height: 40px;
-}
-
-.left-arrow {
-    -webkit-clip-path: polygon(100% 50%, 0 100%, 0 0); 
-    clip-path: polygon(100% 50%, 0 100%, 0 0);
-    background: var(--text-color);
-
-    width: 40px;
-    height: 40px;
-}
-
-.right-arrow:hover, .left-arrow:hover {
+.menu-button:hover {
     cursor: pointer;
 }
 
-.arrow-placeholder {
-    background-color: var(--main-background-color);
+.menu-button > div {
+    -webkit-clip-path: polygon(50% 100%, 0% 0%, 100% 0%); 
+    clip-path: polygon(50% 100%, 0% 0%, 100% 0%);
+
+    height: 15px;
+    width: 20px;
+    background-color: var(--text-color);
 }
 
-.arrow-placeholder:hover {
-    cursor: auto;
+.food-holder {
+    overflow: hidden;
 }
+
 /* Some form tweaks for the popup */
 
 form {
@@ -190,34 +218,39 @@ h2 {
     }
 
     .command-container > p {
-        font-size: 8rem;
+        font-size: 1.4rem;
+    }
+
+    .command-name-container {
+        flex-direction: row;
+        align-items: center;
     }
 
     .ready > .image-holder {
-        height: 100px;
+        height: 20px;
     }
     
     .preparation > .image-holder {
-        height: 100px;
+        height: 20px;
     }
 
-    .page-selector {
-        width: 300px;
-        margin-top: 50px;
+    .food-holder {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
     }
 
-    .page-selector > span {
-        font-size: 2rem;
+    .food-holder > p:after {
+        content: ",";
+        display: inline-block;
+        margin-right: 5px;
     }
 
-    .right-arrow {
-        width: 50px;
-        height: 50px;
-    }
-    
-    .left-arrow {
-        width: 50px;
-        height: 50px;
+    .food-holder > p:last-of-type:after {
+        content: "";
+        display: inline-block;
+        margin-right: 5px;
     }
 
     form {

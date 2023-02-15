@@ -30,8 +30,8 @@ function inputsChecker() {
     }
 }
 inputsChecker();
-console.log(burgers.options[burgers.selectedIndex].value)
 
+// Adding event listeners to all inputs to check if they are filled
 firstNameInput.addEventListener('input', inputsChecker);
 lastNameInput.addEventListener('input', inputsChecker);
 checkbox.addEventListener('input', inputsChecker);

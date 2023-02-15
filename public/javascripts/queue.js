@@ -5,12 +5,8 @@ const searchForm = "\
 <form action=\"queue\">\
     <h2> Search a command's number </h2>\
     <div class=\"input-div\">\
-        <label for=\"last-name\"> Last Name </label>\
-        <input type=\"text\" id=\"last-name\" name=\"last-name\" placeholder=\"Doe\">\
-    </div>\
-    <div class=\"input-div\">\
-        <label for=\"first-name\"> First Name </label>\
-        <input type=\"text\" id=\"first-name\" name=\"first-name\" placeholder=\"John\">\
+        <label for=\"search-query\"> Last and/or first name </label>\
+        <input type=\"text\" id=\"search-query\" name=\"search-query\" placeholder=\"John Doe\">\
     </div>\
     <input type=\"submit\" value=\"Search\" id=\"submit-button\" disabled/>\
 </form>\
@@ -23,20 +19,18 @@ searchButton.addEventListener('click', () => {
     popup.innerHTML = searchForm;
 
     // Configuring user input checks
-    const firstNameInput = document.getElementById("first-name");
-    const lastNameInput = document.getElementById("last-name");
+    const searchInput = document.getElementById("search-query");
     const submitButton = document.getElementById("submit-button");
 
     function inputsChecker() {
-        if ((firstNameInput.value.length >= 1 || lastNameInput.value.length >= 1) && submitButton.disabled) {
+        if (searchInput.value.length >= 1 && submitButton.disabled) {
             submitButton.disabled = false;
-        } else if (firstNameInput.value.length < 1 && lastNameInput.value.length < 1) {
+        } else if (searchInput.value.length < 1) {
             submitButton.disabled = true;
         }
     }
 
-    firstNameInput.addEventListener('input', inputsChecker);
-    lastNameInput.addEventListener('input', inputsChecker);
+    searchInput.addEventListener('input', inputsChecker);
 
     // Showing the actual popup
     popupVeil.classList.toggle("invisible");
@@ -54,4 +48,39 @@ if (lastReloadTime) {
     reloadButton.addEventListener('click', () => {
         window.location.reload();
     })
+}
+
+// This part handle the dynamic appearance of the chosen menu for each user tile
+const buttons = document.getElementsByClassName('menu-button');
+let toggledMenuId = null;
+
+function displayCommand(evenement) {
+    // Get original target of event
+    command = evenement.target;
+
+    // Remove event listener to prevent multiple clicks, removing arrow
+    command.removeEventListener('click', displayCommand);
+    command.classList.toggle("invisible");
+
+    // In case a menu is already showing, we remove him again
+    if (toggledMenuId) {
+        menu = document.getElementById("menu-" + toggledMenuId);
+        menu.classList.toggle("invisible");
+        oldButton1 = document.getElementById("but-" + toggledMenuId);
+        oldButton2 = document.getElementById("but2-" + toggledMenuId);
+        if (oldButton1.classList.contains("invisible")) oldButton1.classList.toggle("invisible");
+        if (oldButton2.classList.contains("invisible")) oldButton2.classList.toggle("invisible");
+        oldButton1.addEventListener('click', displayCommand);
+    }
+
+    // Displaying the menu
+    commandId = command.dataset.userid
+    toggledMenuId = commandId;
+    menu = document.getElementById("menu-" + commandId);
+    menu.classList.toggle("invisible");
+}
+
+// Adding the event listener to each command tile
+for (let i = 0; i < buttons.length; i++) {
+    buttons[i].addEventListener('click', displayCommand);
 }

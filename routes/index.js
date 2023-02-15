@@ -2,7 +2,7 @@ var express = require('express');
 const { body, query } = require('express-validator');
 var router = express.Router();
 let pool = require('./databaseConnector');
-let { createDatabase, insertUser, getUsers, getPreparationUsers, getReadyUsers, getBurgers, getFries, getDrinks, checkBurger, checkDrink, checkFries, searchUser, calculatePrice } = require("./databaseUtilities.js");
+let { createDatabase, insertUser, getUsers, getPreparationUsers, getReadyUsers, getBurgers, getFries, getDrinks, checkBurger, checkDrink, checkFries, searchUser, calculatePrice, getUsersByStatus, getUsersByTime } = require("./databaseUtilities.js");
 let { getTimes, getRegistration, getRegistrationDay, checkTime, getTimeIndex, checkPassword } = require('./settingsUtilities');
 
 createDatabase();
@@ -32,23 +32,12 @@ router.get('/',
 });
 
 router.get('/queue', 
-  query('first-name').trim().escape(),
-  query('last-name').trim().escape(),
-  query('index').trim().escape().toInt(),
+  query('search-query').trim().escape(),
   (req, res, next) => {
     checkPassword(req.cookies.spatulasPower, (auth) => {
-      if (req.query['first-name'] || req.query['last-name']) {
-        searchUser(req.query['first-name'], req.query['last-name'], (users) => {
-          res.render('queue', { title: 'Queue', admin: auth, searching: true, users: users, notEmpty: (typeof users !== "undefined" && users.length > 0) ? true : false });
-        })
-      } else {
-        getTimes((times) => {
-          let index = (req.query.index && req.query.index < times.length && req.query.index >= 0) ? req.query.index : 0; // First we get our index and define it to 0 if the value is wrong
-            getUsers((users) => {
-              res.render('queue', { title: 'Queue', admin: auth, searching: false, users: users, notEmpty: (typeof users !== "undefined" && users.length > 0) ? true : false, timeStamp: times[index], previousTime: (index > 0) ? "/queue?index=" + (index - 1) : null, nextTime: (index < times.length - 1) ? "/queue?index=" + (index + 1) : null });
-            }, "lastUpdated")
-        }, false)
-      }
+      getUsersByTime((users) => {
+        res.render('queue', { title: 'Queue', admin: auth, searching: (req.query["search-query"]) ? true : false, users: users });
+      }, req.query["search-query"], "lastUpdated DESC")
     })
 })
 

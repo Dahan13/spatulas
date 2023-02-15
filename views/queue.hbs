@@ -9,45 +9,45 @@
         {{/if}}
     </div>
 </div>
-{{#if notEmpty}}
 <div class="commands-container">
     {{#each users}}
-        {{#unless this.delivered}}
-        <div class="command-wrapper">
-            <div class="command-name-container">
-                <p> {{this.firstName}} </p>
-                <p> {{this.lastName}} </p>
-            </div>
-            <div class="command-container {{#if this.ready}} ready {{else}} {{#if this.preparation}} preparation {{/if}} {{/if}} ">
-                <p> {{this.userId}} </p>
-                <div class="image-holder"></div>
-            </div>
-            {{#if ../searching}}
-                <p> {{this.time}} </p>
+        <p class="timestamp"> {{this.timestamp}} : </p>
+        <div class="commands-wrapper">
+            {{#if this.users}}
+                {{#each this.users}}
+                {{#unless this.delivered}}
+                    <div class="command">
+                        <div class="command-container {{#if this.ready}} ready {{else}} {{#if this.preparation}} preparation {{/if}} {{/if}} ">
+                            <p> {{this.userId}} </p>
+                            <div class="image-holder"></div>
+                        </div>
+                        <div class="infos-container">
+                            <div class="command-name-container">
+                                <p> {{this.firstName}} </p>
+                                <p> {{this.lastName}} </p>
+                            </div>
+                            <div class="menu invisible" id="menu-{{this.userId}}"> 
+                                <div class="food-holder">
+                                    <p> {{this.burger}} </p>
+                                    <p> {{this.fries}} </p>
+                                    <p> {{this.drink}} </p>
+                                </div>
+                                <div class="price-holder">
+                                    <p> {{this.price}}€ </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-button" data-userId={{this.userId}} id=but-{{this.userId}}> <div data-userId={{this.userId}} id=but2-{{this.userId}}> </div> </div>
+                    </div>
+                {{/unless}}
+                {{/each}}
+            {{else}}
+                <h2 style="text-align:center"> <em> Wow ! Such void ! </em> </h2>
             {{/if}}
         </div>
-            
-        {{/unless}}
     {{/each}}
 </div>
-{{else}}
-    <h2 style="margin-top: 50px; text-align:center"> <em> Wow ! Such void ! </em> </h2>
-{{/if}}
-{{#unless searching}}
-    <div class="page-selector">
-        {{#if previousTime}}
-            <a class="right-arrow" href={{previousTime}} aria-label="Previous time frame"></a>
-        {{else}}
-            <div class="right-arrow arrow-placeholder" aria-label="Previous time frame placeholder"></div>
-        {{/if}}
-        <span> {{timeStamp}} </span>
-        {{#if nextTime}}
-            <a class="left-arrow" href={{nextTime}} aria-label="Next time frame"></a>
-        {{else}}
-            <div class="left-arrow arrow-placeholder" aria-label="Next time frame placeholder"></div>
-        {{/if}}
-    </div>
-{{/unless}}
+
 <div class="reloader">
     <p> Last update : <span id="last-update-time"> </span> </p>
     <img src="/images/queue/reload.webp" alt="Reload" id="reload-button">

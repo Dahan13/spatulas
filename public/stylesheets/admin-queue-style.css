@@ -1,3 +1,35 @@
+h1 {
+    text-align: left;
+    margin: 0;
+}
+
+.queue-title {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+
+    border-bottom: 3px solid var(--text-color);
+    margin: 10px 0px 0px 0px;
+}
+
+.queue-title > div {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+.queue-title > div > img {
+    height: 42px;
+    margin: 3px;
+    margin-right: 5px;
+}
+
+.queue-title > div > img:hover {
+    cursor: pointer;
+}
+
 h2 {
     align-self: flex-start;
     margin-bottom: 0;
