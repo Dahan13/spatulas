@@ -38,7 +38,7 @@ function createDatabase(conn = null) {
  * @param {int} time 
  */
 async function insertUser(lastName, firstName, burger, fries, drink, time, price, connection = null) {
-    db = (connection) ? connection : await pool.promise().getConnection()
+    db = (connection) ? connection : pool
     db.execute('INSERT INTO spatulasUsers (lastName, firstName, burger, fries, drink, time, price) VALUES (?, ?, ?, ?, ?, ?, ?)', [lastName, firstName, burger, fries, drink, time, price], (err, rows, fields) => {
         if (err) {
             console.log(err);
