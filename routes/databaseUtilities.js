@@ -400,6 +400,7 @@ async function getAllItemsCount(callback, queriesCondition = "", conn = null) {
     let drinks = await db.query('SELECT count(*) AS count, name FROM (SELECT drink, identifier, name FROM spatulasUsers INNER JOIN spatulasDrinks ON spatulasUsers.drink = spatulasDrinks.identifier ' + queriesCondition + ') AS drinkClient GROUP BY name');
     items.push({name: "Drinks", count: drinks[0]});
 
+    if (!conn) db.release(); // If we created a new connection, we need to release it
     callback(items);
 }
 

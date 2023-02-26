@@ -53,7 +53,9 @@
             <select name="time" id="time">
                 <option disabled selected value="none"> -- Select an option -- </option>
                 {{#each times}}
-                    <option value={{this}}>{{this}}</option>
+                    {{#unless this.full}}
+                        <option value={{this.time}}>{{this.time}} ({{this.count}}/{{this.limit}})</option>
+                    {{/unless}}
                 {{/each}}
             </select>
         </div>

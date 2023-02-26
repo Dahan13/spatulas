@@ -37,6 +37,9 @@ function getLimit(callback) {
     })
 }
 
+/**
+ * ! This function is now deprecated, use getGlobalTimes instead !
+ */
 function getTimes(callback, onlyAvailable = false, connection = null) {
     conn = (connection) ? connection : pool;
     readIni((data) => {
@@ -54,6 +57,41 @@ function getTimes(callback, onlyAvailable = false, connection = null) {
         } else {
             callback(data.Time.array);
         } 
+    })
+}
+
+/**
+ * This function will return a list containing object, each object containing the time, the number of commands, if it's full and the limit
+ * @param {function} callback
+ * @param {*} connection
+ */
+function getGlobalTimes(callback, connection) {
+    conn = (connection) ? connection : pool;
+    getLimit((limit) => {
+        readIni((data) => {
+            conn.query("SELECT COUNT(*) as count, time FROM spatulasUsers GROUP BY time", (err, rows, fields) => {
+                let result = [];
+                for (let i = 0; i < data.Time.array.length; i++) {
+                    let time = data.Time.array[i];
+                    let count = 0;
+                    let full = false;
+                    for (let j = 0; j < rows.length; j++) {
+                        if (rows[j].time == time) {
+                            count = rows[j].count;
+                            full = (count >= limit);
+                            break;
+                        }
+                    }
+                    result.push({
+                        time: time,
+                        count: count,
+                        limit: limit,
+                        full: full
+                    })
+                }
+                callback(result);
+            })
+        })
     })
 }
 
@@ -156,6 +194,7 @@ module.exports = {
     getRegistrationDay,
     getLimit,
     getTimes,
+    getGlobalTimes,
     getTimeIndex,
     checkTime,
     setPassword,

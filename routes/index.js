@@ -3,7 +3,7 @@ const { body, query } = require('express-validator');
 var router = express.Router();
 let pool = require('./databaseConnector');
 let { createDatabase, insertUser, getUsers, getPreparationUsers, getReadyUsers, getBurgers, getFries, getDrinks, checkBurger, checkDrink, checkFries, searchUser, calculatePrice, getUsersByStatus, getUsersByTime } = require("./databaseUtilities.js");
-let { getTimes, getRegistration, getRegistrationDay, checkTime, getTimeIndex, checkPassword } = require('./settingsUtilities');
+let { getTimes, getRegistration, getRegistrationDay, checkTime, getTimeIndex, checkPassword, getGlobalTimes } = require('./settingsUtilities');
 
 createDatabase();
 
@@ -18,7 +18,7 @@ router.get('/',
             getBurgers((burgers, ) => {
               getFries((fries) => {
                 getDrinks((drinks) => {
-                  getTimes((times) => {
+                  getGlobalTimes((times) => {
                     res.render('home', { title: 'Home', admin: auth, registrationOpen: (registStatus || auth), userRegistrationOpen: registStatus, adminRegistrationOpen: auth, burgers: burgers, fries: fries, drinks: drinks, times: times, day: day, error: (req.query.error) ? req.query.error : null });
                   }, (auth) ? null : true, conn)
                 }, false, conn)
