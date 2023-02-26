@@ -75,6 +75,12 @@ tr:last-of-type {
     border: none;
 }
 
+th {
+    width: 25%;
+}
+
+
+
 .one-line-form {
     flex-direction: row;
 }

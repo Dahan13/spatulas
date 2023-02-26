@@ -7,6 +7,11 @@
 {{#unless notEmpty}}
     <h2 style="margin-top: 50px; text-align:center; border: none"> <em> Wow ! Such void ! </em> </h2>
 {{else}}
+
+<div class="global-kitchen">
+
+<div class="global-command">
+<h2> Commands </h2>
     <div class="commands-container">
         {{#each users}}
             <div class="command-wrapper">
@@ -29,5 +34,26 @@
         {{/each}}
     </div>
 {{/unless}}
+</div>
+
+<div class="global-count">
+<h2> Counts </h2>
+    {{#each count}}
+        <h3> {{this.name}} </h3>
+        <table>
+            {{#each this.count}}
+                <tr>
+                    <th> {{this.name}} </th>
+                    <td> &#215; {{this.count}} </td>
+                </tr>
+            {{/each}}
+        </table>
+    {{/each}}
+</div>
+
+</div>
+
+
+
 <script src="/javascripts/kitchen.js"> </script>
 

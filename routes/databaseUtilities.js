@@ -321,14 +321,14 @@ function getBurgers(callback, addURL = false, connection = null) {
 }
 
 /**
- * Count the number of each burger
+ * Count the number of each burger, it can optionally only count the burgers that are not ready yet
  * @param {function} callback 
  * @param {*} connection 
  */
 function countBurgers(callback, toPrepareOnly = false, connection = null) {
     db = (connection) ? connection : pool;
     if (toPrepareOnly) {
-        db.query('SELECT count(*) AS count, name FROM (SELECT burger, identifier, name FROM spatulasUsers INNER JOIN spatulasBurgers ON spatulasUsers.burger = spatulasBurgers.identifier WHERE spatulasUsers.preparation = 1 AND spatulasUsers.ready = 0) AS burgerClient GROUP BY name', (err, rows, fields) => {
+        db.query('SELECT count(*) AS count, name FROM (SELECT burger, identifier, name FROM spatulasUsers INNER JOIN spatulasBurgers ON spatulasUsers.burger = spatulasBurgers.identifier WHERE spatulasUsers.preparation = 1 AND spatulasUsers.ready = 0 AND spatulasUsers.delivered = 0) AS burgerClient GROUP BY name', (err, rows, fields) => {
             callback(rows);
         })
     } else {
@@ -346,7 +346,7 @@ function countBurgers(callback, toPrepareOnly = false, connection = null) {
 function countDrinks(callback, toPrepareOnly = false, connection = null) {
     db = (connection) ? connection : pool;
     if (toPrepareOnly) {
-        db.query('SELECT count(*) AS count, name FROM (SELECT drink, identifier, name FROM spatulasUsers INNER JOIN spatulasDrinks ON spatulasUsers.drink = spatulasDrinks.identifier WHERE spatulasUsers.preparation = 1 AND spatulasUsers.ready = 0) AS drinkClient GROUP BY name', (err, rows, fields) => {
+        db.query('SELECT count(*) AS count, name FROM (SELECT drink, identifier, name FROM spatulasUsers INNER JOIN spatulasDrinks ON spatulasUsers.drink = spatulasDrinks.identifier WHERE spatulasUsers.preparation = 1 AND spatulasUsers.ready = 0 AND spatulasUsers.delivered = 0) AS drinkClient GROUP BY name', (err, rows, fields) => {
             callback(rows)
         })
     } else {
@@ -366,7 +366,7 @@ function countDrinks(callback, toPrepareOnly = false, connection = null) {
 function countFries(callback, toPrepareOnly = false, connection = null) {
     db = (connection) ? connection : pool;
     if (toPrepareOnly) {
-        db.query('SELECT count(*) AS count, name FROM (SELECT fries, identifier, name FROM spatulasUsers INNER JOIN spatulasFries ON spatulasUsers.fries = spatulasFries.identifier WHERE spatulasUsers.preparation = 1 AND spatulasUsers.ready = 0) AS friesClient GROUP BY name', (err, rows, fields) => {
+        db.query('SELECT count(*) AS count, name FROM (SELECT fries, identifier, name FROM spatulasUsers INNER JOIN spatulasFries ON spatulasUsers.fries = spatulasFries.identifier WHERE spatulasUsers.preparation = 1 AND spatulasUsers.ready = 0 AND spatulasUsers.delivered = 0) AS friesClient GROUP BY name', (err, rows, fields) => {
             callback(rows)
         })
     } else {
@@ -376,6 +376,32 @@ function countFries(callback, toPrepareOnly = false, connection = null) {
     }
 }
 
+/**
+ * Count the number of each item (burger, fries, drink), in a list of lists
+ * @param {function} callback
+ * @param {*} connection
+ * @param {String} queriesCondition
+ * @returns {Array} => [ [itemName, [ {name, count} ] ], ...]
+ */
+async function getAllItemsCount(callback, queriesCondition = "", conn = null) {
+    let db = (conn) ? conn.promise() : await pool.promise().getConnection(); // If a connection is provided, use it, otherwise create a new one. Note that we are using promises in this function, so we need to use the promise() function to get a promise-based connection
+    if (queriesCondition != "") queriesCondition = "WHERE " + queriesCondition; // Add WHERE if there is a condition (to avoid having to add it in the queries)
+    let items = [];
+
+    // Get burgers
+    let burgers = await db.query('SELECT count(*) AS count, name FROM (SELECT burger, identifier, name FROM spatulasUsers INNER JOIN spatulasBurgers ON spatulasUsers.burger = spatulasBurgers.identifier ' + queriesCondition + ') AS burgerClient GROUP BY name');
+    items.push({name: "Burgers", count: burgers[0]});
+
+    // Get fries
+    let fries = await db.query('SELECT count(*) AS count, name FROM (SELECT fries, identifier, name FROM spatulasUsers INNER JOIN spatulasFries ON spatulasUsers.fries = spatulasFries.identifier ' + queriesCondition + ') AS friesClient GROUP BY name');
+    items.push({name: "Fries", count: fries[0]});
+
+    // Get drinks
+    let drinks = await db.query('SELECT count(*) AS count, name FROM (SELECT drink, identifier, name FROM spatulasUsers INNER JOIN spatulasDrinks ON spatulasUsers.drink = spatulasDrinks.identifier ' + queriesCondition + ') AS drinkClient GROUP BY name');
+    items.push({name: "Drinks", count: drinks[0]});
+
+    callback(items);
+}
 
 /**
  * Returns a list containing all fries
@@ -645,6 +671,7 @@ module.exports = {
     countFries,
     getDrinks,
     countDrinks,
+    getAllItemsCount,
     checkBurger,
     checkFries,
     checkDrink,

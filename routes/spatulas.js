@@ -4,7 +4,7 @@ var stringify = require('csv-stringify');
 const { body, query } = require('express-validator');
 var router = express.Router();
 let pool = require('./databaseConnector')
-let { getUntreatedUsers, getPreparationUsers, getReadyUsers, getDeliveredUsers, getBurgers, getFries, getDrinks, searchUser, countBurgers, countFries, countDrinks, insertBurger, deleteBurger, deleteFries, deleteDrink, insertFries, insertDrink, clearUsers, convertFoodIdToFoodName, purgeDatabase, getUsersByStatus } = require("./databaseUtilities.js");
+let { getUntreatedUsers, getPreparationUsers, getReadyUsers, getDeliveredUsers, getBurgers, getFries, getDrinks, searchUser, countBurgers, countFries, countDrinks, insertBurger, deleteBurger, deleteFries, deleteDrink, insertFries, insertDrink, clearUsers, convertFoodIdToFoodName, purgeDatabase, getUsersByStatus, getAllItemsCount } = require("./databaseUtilities.js");
 let { getTimes, getRegistration, getRegistrationDay, getLimit, setRegistration, setRegistrationDay, setLimit, addTime, removeTime, getPassword, checkPassword, authenticate, setPassword } = require('./settingsUtilities');
 
 /* GET users listing. */
@@ -99,8 +99,10 @@ router.get('/kitchen', (req, res, next) => {
     pool.getConnection((err, conn) => {
       getPreparationUsers((users) => {
         convertFoodIdToFoodName(users, (users) => {
-          res.render('kitchen', { title: 'Kitchen Tab', admin: true, users: users, notEmpty: (typeof users !== "undefined" && users.length > 0) ? true : false });
-          pool.releaseConnection(conn);
+          getAllItemsCount((count) => {
+            res.render('kitchen', { title: 'Kitchen Tab', admin: true, users: users, count: count, notEmpty: (typeof users !== "undefined" && users.length > 0) ? true : false });
+            pool.releaseConnection(conn);
+          }, "preparation = 1 AND ready = 0 AND delivered = 0" , conn)
         }, conn)
       }, 'lastUpdated', conn)
     })
