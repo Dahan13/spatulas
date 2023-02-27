@@ -65,8 +65,8 @@ function getTimes(callback, onlyAvailable = false, connection = null) {
  * @param {function} callback
  * @param {*} connection
  */
-function getGlobalTimes(callback, connection) {
-    conn = (connection) ? connection : pool;
+function getGlobalTimes(callback, connection = null) {
+    let conn = (connection) ? connection : pool;
     getLimit((limit) => {
         readIni((data) => {
             conn.query("SELECT COUNT(*) as count, time FROM spatulasUsers GROUP BY time", (err, rows, fields) => {

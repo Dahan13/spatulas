@@ -20,7 +20,7 @@ router.get('/',
                 getDrinks((drinks) => {
                   getGlobalTimes((times) => {
                     res.render('home', { title: 'Home', admin: auth, registrationOpen: (registStatus || auth), userRegistrationOpen: registStatus, adminRegistrationOpen: auth, burgers: burgers, fries: fries, drinks: drinks, times: times, day: day, error: (req.query.error) ? req.query.error : null });
-                  }, (auth) ? null : true, conn)
+                  }, conn)
                 }, false, conn)
               }, false, conn)
             }, false, conn)
