@@ -95,6 +95,25 @@ function getGlobalTimes(callback, connection = null) {
     })
 }
 
+/**
+ * This function will return the count of commands for a specific time
+ * @param {string} timeValue
+ * @param {function} callback
+ * @param {*} connection
+ */
+function getTimeCount(callback, timeValue, connection = null) {
+    let conn = (connection) ? connection : pool;
+    getGlobalTimes((times) => {
+        for (let i = 0; i < times.length; i++) {
+            if (times[i].time == timeValue) {
+                callback(times[i].count);
+                return;
+            }
+        }
+        callback(0);
+    }, conn)
+}
+
 function checkTime(value, callback, onlyAvailable = false, connection = null) {
     getTimes((times) => {
         for (let i = 0; i < times.length; i++) {
@@ -195,6 +214,7 @@ module.exports = {
     getLimit,
     getTimes,
     getGlobalTimes,
+    getTimeCount,
     getTimeIndex,
     checkTime,
     setPassword,

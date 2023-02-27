@@ -46,3 +46,19 @@ server.on('connection', function(socket) {
     sockets = sockets.filter(s => s !== socket);
   });
 });
+
+/**
+ * This function will send a message to all connected sockets, indicating that it's a timeCount refresh, the timestamp of the refresh, and the new timeCount.
+ * @param {String} time The timestamp of the refresh
+ * @param {Number} timeCount The new timeCount
+ */
+function sendTimeCount(time, timeCount) {
+  console.log(`SOCKET Sent : timeCountUpdate ${time} ${timeCount}`)
+  sockets.forEach(socket => {
+    socket.send(`timeCountUpdate ${time} ${timeCount}`);
+  });
+}
+
+module.exports = {
+  sendTimeCount
+}

@@ -3,7 +3,8 @@ const { body, query } = require('express-validator');
 var router = express.Router();
 let pool = require('./databaseConnector');
 let { createDatabase, insertUser, getUsers, getPreparationUsers, getReadyUsers, getBurgers, getFries, getDrinks, checkBurger, checkDrink, checkFries, searchUser, calculatePrice, getUsersByStatus, getUsersByTime } = require("./databaseUtilities.js");
-let { getTimes, getRegistration, getRegistrationDay, checkTime, getTimeIndex, checkPassword, getGlobalTimes } = require('./settingsUtilities');
+let { getTimes, getRegistration, getRegistrationDay, checkTime, getTimeIndex, checkPassword, getGlobalTimes, getTimeCount } = require('./settingsUtilities');
+let { sendTimeCount } = require('./webSocket');
 
 createDatabase();
 
@@ -61,10 +62,14 @@ router.post('/register',
                     if (req.body.lastName && req.body.lastName.length <= 32 && req.body.firstName && req.body.firstName.length <= 32 && req.body.burger && req.body.fries && req.body.drink && req.body.time && req.body.accept == 'on' && burgerBool && drinkBool && friesBool && timeBool) {
                       calculatePrice(req.body.burger, req.body.fries, req.body.drink, (price) => {
                         insertUser(req.body.lastName, req.body.firstName, req.body.burger, req.body.fries, req.body.drink, req.body.time, price, conn);
-                        getTimeIndex(req.body.time, (index) => {
+
+                        // Before sending user to queue, we send a message through websocket to inform of the change of remaining places on the time stamp
+                        getTimeCount((count) => {
+                          sendTimeCount(req.body.time, count);
                           pool.releaseConnection(conn);
-                          res.redirect('/queue?index=' + index);
-                        }, conn)
+                          res.redirect('/queue');
+                        }, req.body.time, conn)
+                        
                       }, conn);
                     } else {
                       pool.releaseConnection(conn);

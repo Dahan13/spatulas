@@ -55,10 +55,10 @@
                 {{#each times}}
                     {{#if this.full}}
                         {{#if ../adminRegistrationOpen}}
-                            <option value={{this.time}}>{{this.time}} ({{this.count}}/{{this.limit}})</option>
+                            <option value={{this.time}} id=count-{{this.time}}>{{this.time}} ({{this.count}}/{{this.limit}})</option>
                         {{/if}}
                     {{else}}
-                        <option value={{this.time}}>{{this.time}} ({{this.count}}/{{this.limit}})</option>
+                        <option value={{this.time}} id=count-{{this.time}}>{{this.time}} ({{this.count}}/{{this.limit}})</option>
                     {{/if}}
                 {{/each}}
             </select>

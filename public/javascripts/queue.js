@@ -84,3 +84,56 @@ function displayCommand(evenement) {
 for (let i = 0; i < buttons.length; i++) {
     buttons[i].addEventListener('click', displayCommand);
 }
+
+/**
+ * This function will update the count for a given time in the form
+ * @param {string} time : Time to update
+ * @param {int} count : Count to update
+ */
+function updateCount(time, count) {
+    const timeNode = document.getElementById("count-" + time);
+
+    // The string is in format "count/limit"
+    let limit = parseInt(timeNode.innerHTML.split("/")[1]);
+    if (count >= limit) {
+        timeNode.innerHTML = "FULL ";
+    } else {
+        timeNode.innerHTML = count + " / " + limit + " ";
+    }
+    return;
+}
+
+
+// WebSocket communication
+let error = document.querySelector('.error-message');
+let url = 'ws://' + window.location.hostname + ":8000";
+let socket = start(url);
+
+function start(webSocketURL) {
+    ws = new WebSocket(webSocketURL);
+    
+    ws.onopen = (evt) =>  {
+        if (!error.classList.contains('invisible')) { // Removing the error message if it was here
+            error.classList.toggle('invisible');
+        }
+
+        ws.addEventListener('message', (event) => {
+            let message = event.data.split(" ");
+            if (message[0] == "timeCountUpdate") {
+                updateCount(message[1], message[2]);
+            }
+        });
+    }
+    
+    ws.onclose = function() {
+        
+        setTimeout(() => {
+            if (error.classList.contains('invisible')) {
+                error.classList.toggle('invisible');
+            }
+            setTimeout(function(){socket = start(url)}, 10000)
+        }, 1000);
+    }
+
+    return ws
+}

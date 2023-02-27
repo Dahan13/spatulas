@@ -11,7 +11,7 @@
 </div>
 <div class="commands-container">
     {{#each users}}
-        <p class="timestamp"> {{this.timeSettings.time}} ( {{this.timeSettings.count}} / {{#if this.timeSettings.full}} {{this.timeSettings.count}} {{else}} {{this.timeSettings.limit}} {{/if}} ) :</p>
+        <p class="timestamp"> {{this.timeSettings.time}} ( <span id=count-{{this.timeSettings.time}}> {{this.timeSettings.count}}  / {{#if this.timeSettings.full}} {{this.timeSettings.count}} {{else}} {{this.timeSettings.limit}} {{/if}} </span>) :</p>
         <div class="commands-wrapper">
             {{#if this.users}}
                 {{#each this.users}}
