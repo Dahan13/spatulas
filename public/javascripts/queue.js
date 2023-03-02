@@ -119,7 +119,7 @@ function start(webSocketURL) {
 
         ws.addEventListener('message', (event) => {
             let message = event.data.split(" ");
-            if (message[0] == "timeCountUpdate") {
+            if (message[0] == "timeCountUpdate") { // If the message is a time count update
                 updateCount(message[1], message[2]);
             }
         });

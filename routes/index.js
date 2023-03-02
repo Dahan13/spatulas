@@ -3,10 +3,13 @@ const { body, query } = require('express-validator');
 var router = express.Router();
 let pool = require('./databaseConnector');
 let { createDatabase, insertUser, getUsers, getPreparationUsers, getReadyUsers, getBurgers, getFries, getDrinks, checkBurger, checkDrink, checkFries, searchUser, calculatePrice, getUsersByStatus, getUsersByTime } = require("./databaseUtilities.js");
-let { getTimes, getRegistration, getRegistrationDay, checkTime, getTimeIndex, checkPassword, getGlobalTimes, getTimeCount } = require('./settingsUtilities');
+let { getTimes, getRegistration, getRegistrationDay, checkTime, getTimeIndex, checkPassword, getGlobalTimes, getTimeCount, checkAndRepairTimes } = require('./settingsUtilities');
 let { sendTimeCount } = require('./webSocket');
 
 createDatabase();
+
+// ! This is a temporary fix for the unlikely case all time stamps were removed, we add a new one set at "19h00" to prevent the system from breaking
+checkAndRepairTimes();
 
 /* GET home page. */
 router.get('/',

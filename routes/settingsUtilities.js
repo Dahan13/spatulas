@@ -61,6 +61,18 @@ function getTimes(callback, onlyAvailable = false, connection = null) {
 }
 
 /**
+ * ! This is a temporary function that will automatically add the "19h00" time stamp in case there is no time stamps to be found in the file
+ */
+function checkAndRepairTimes() {
+    readIni((data) => {
+        if (!data.Time.array) { // If there is no time stamps at all
+            data.Time.array = ["19h00"];
+            fs.writeFileSync('./settings.ini', ini.stringify(data));
+        }
+    })
+}
+
+/**
  * This function will return a list containing object, each object containing the time, the number of commands, if it's full and the limit
  * @param {function} callback
  * @param {*} connection
@@ -190,9 +202,15 @@ function setLimit(newLimit) {
 function addTime(timeValue) {
     if (timeValue.length == 5 && timeValue.split('h').length == 2) {
         readIni((data) => {
-            if ((data.Time.array.filter(time => time == timeValue)).length == 0) {
-                data.Time.array.push(timeValue);
-                data.Time.array.sort();
+            // We first check if the array already exists
+            if (data.Time.array) {
+                if ((data.Time.array.filter(time => time == timeValue)).length == 0) {
+                    data.Time.array.push(timeValue);
+                    data.Time.array.sort();
+                    fs.writeFileSync('./settings.ini', ini.stringify(data));
+                }
+            } else {
+                data.Time.array = [timeValue];
                 fs.writeFileSync('./settings.ini', ini.stringify(data));
             }
         })
@@ -201,8 +219,10 @@ function addTime(timeValue) {
 
 function removeTime(timeValue) {
     readIni((data) => {
-        data.Time.array = data.Time.array.filter(time => time != timeValue);
-        fs.writeFileSync('./settings.ini', ini.stringify(data));
+        if (data.Time.array && data.Time.array.length > 1) { // ! We don't want to remove the last time because it will crash the server. This is temporary until the system is more robust
+            data.Time.array = data.Time.array.filter(time => time != timeValue);
+            fs.writeFileSync('./settings.ini', ini.stringify(data));
+        }
     })
 }
 
@@ -213,6 +233,7 @@ module.exports = {
     getRegistrationDay,
     getLimit,
     getTimes,
+    checkAndRepairTimes,
     getGlobalTimes,
     getTimeCount,
     getTimeIndex,
