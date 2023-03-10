@@ -92,15 +92,16 @@ for (let i = 0; i < buttons.length; i++) {
  */
 function updateCount(time, count) {
     const timeNode = document.getElementById("count-" + time);
-
-    // The string is in format "count/limit"
-    let limit = parseInt(timeNode.innerHTML.split("/")[1]);
-    if (count >= limit) {
-        timeNode.innerHTML = "FULL ";
-    } else {
-        timeNode.innerHTML = count + " / " + limit + " ";
+    if (!(timeNode.innerHTML == "FULL ")) { // If the time is not full, we update the count
+        // The string is in format "count/limit"
+        let limit = parseInt(timeNode.innerHTML.split("/")[1]);
+        if (count >= limit || limit === NaN) { // If the count is greater than the limit or if the limit is NaN, we set the count to "FULL"
+            timeNode.innerHTML = "FULL ";
+        } else {
+            timeNode.innerHTML = count + " / " + limit + " ";
+        }
+        return;
     }
-    return;
 }
 
 
