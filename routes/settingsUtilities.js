@@ -226,6 +226,23 @@ function removeTime(timeValue) {
     })
 }
 
+// Add a new getter and setter for the new setting "kitchenLimit" that is an integer (and also exports the functions as well please)
+function getKitchenLimit(callback) {
+    readIni((data) => {
+        callback(data.Time.kitchenLimit);
+    })
+}
+
+function setKitchenLimit(newLimit) {
+    readIni((data) => {
+        newLimit = parseInt(newLimit);
+        if (newLimit) {
+            data.Time.kitchenLimit = newLimit;
+            fs.writeFileSync('./settings.ini', ini.stringify(data));
+        }
+    })
+}
+
 module.exports = {
     readIni,
     getPassword,
@@ -245,5 +262,7 @@ module.exports = {
     setLimit,
     addTime,
     removeTime,
-    authenticate
+    authenticate,
+    getKitchenLimit,
+    setKitchenLimit
 }

@@ -146,17 +146,24 @@ function getUntreatedUsers(callback, orderCriteria = null, connection = null) {
  * @param {function} callback
  * @param {int} userLimit
  */
-function getPreparationUsers(callback, orderCriteria = null, connection = null) {
+function getPreparationUsers(callback, orderCriteria = null, limit = null, connection = null) {
+    // Initialize variables
     db = (connection) ? connection : pool
-    if (orderCriteria) {
-        db.query('SELECT * FROM spatulasUsers WHERE preparation=1 AND ready=0 AND delivered=0 ORDER BY ' + orderCriteria, (err, rows, fields) => {
-            callback(rows, fields);
-        })
-    } else {
-        db.query('SELECT * FROM spatulasUsers WHERE preparation=1 AND ready=0 AND delivered=0', (err, rows, fields) => {
-            callback(rows, fields);
-        })
+    SQLquery = 'SELECT * FROM spatulasUsers WHERE preparation=1 AND ready=0 AND delivered=0'
+
+    // Extend query depending on optional parameters
+    if (orderCriteria != null) {
+        SQLquery += ' ORDER BY ' + orderCriteria;
     }
+
+    if (limit != null && limit > 0) {
+        SQLquery += ' LIMIT ' + limit;
+    }
+
+    // Execute query
+    db.query(SQLquery, (err, rows, fields) => {
+        callback(rows, fields);
+    })
 }
 
 /** 
@@ -227,7 +234,7 @@ function getUsersByStatus(callback, convertFood = false, orderCriteria1 = null, 
                         }
                     }, orderCriteria4, db)
                 }, orderCriteria3, db)
-            }, orderCriteria2, db)
+            }, orderCriteria2, null, db)
         }, orderCriteria1, db)    
     })
 }
@@ -383,9 +390,10 @@ function countFries(callback, toPrepareOnly = false, connection = null) {
  * @param {String} queriesCondition
  * @returns {Array} => [ [itemName, [ {name, count} ] ], ...]
  */
-async function getAllItemsCount(callback, queriesCondition = "", conn = null) {
+async function getAllItemsCount(callback, queriesCondition = "", limit = null, conn = null) {
     let db = (conn) ? conn.promise() : await pool.promise().getConnection(); // If a connection is provided, use it, otherwise create a new one. Note that we are using promises in this function, so we need to use the promise() function to get a promise-based connection
     if (queriesCondition != "") queriesCondition = "WHERE " + queriesCondition; // Add WHERE if there is a condition (to avoid having to add it in the queries)
+    if (limit) queriesCondition += " LIMIT 0, " + limit; // Add limit if there is one
     let items = [];
 
     // Get burgers

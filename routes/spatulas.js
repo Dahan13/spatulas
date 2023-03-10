@@ -5,7 +5,7 @@ const { body, query } = require('express-validator');
 var router = express.Router();
 let pool = require('./databaseConnector')
 let { getUntreatedUsers, getPreparationUsers, getReadyUsers, getDeliveredUsers, getBurgers, getFries, getDrinks, searchUser, countBurgers, countFries, countDrinks, insertBurger, deleteBurger, deleteFries, deleteDrink, insertFries, insertDrink, clearUsers, convertFoodIdToFoodName, purgeDatabase, getUsersByStatus, getAllItemsCount } = require("./databaseUtilities.js");
-let { getTimes, getRegistration, getRegistrationDay, getLimit, setRegistration, setRegistrationDay, setLimit, addTime, removeTime, getPassword, checkPassword, authenticate, setPassword } = require('./settingsUtilities');
+let { getTimes, getRegistration, getRegistrationDay, getLimit, setRegistration, setRegistrationDay, setLimit, addTime, removeTime, getPassword, checkPassword, authenticate, setPassword, getKitchenLimit, setKitchenLimit } = require('./settingsUtilities');
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
@@ -40,7 +40,7 @@ query('last-name').trim().escape(),
 query('index').trim().escape().toInt(),
 (req, res, next) => {
   authenticate(req, res, () => {
-    if (req.query['first-name'] || req.query['last-name']) {
+    if (req.query['first-name'] || req.query['last-name']) { // ! This part is currently not working, will be fixed in v3.0.0 with the new database system
       pool.getConnection((err, conn) => {
         searchUser(req.query['first-name'], req.query['last-name'], (users) => {
           convertFoodIdToFoodName(users, (users) => {
@@ -70,8 +70,10 @@ router.get('/manage', (req, res, next) => {
                     getRegistration((regisBool) => {
                       getRegistrationDay((day) => {
                         getLimit((limit) => {
-                          res.render('admin', { title: 'Administration', admin: true, limit: limit, day: day, regisBool: regisBool, times: times, drinkCount: drinkCount, friesCount: friesCount, burgerCount: burgerCount, burgers: burgers, drinks: drinks, fries: fries });
-                          pool.releaseConnection(conn);
+                          getKitchenLimit((kitchenLimit) => {
+                            res.render('admin', { title: 'Administration', admin: true, limit: limit, day: day, regisBool: regisBool, times: times, drinkCount: drinkCount, friesCount: friesCount, burgerCount: burgerCount, burgers: burgers, drinks: drinks, fries: fries, kitchenLimit: kitchenLimit });
+                            pool.releaseConnection(conn);
+                          })
                         })
                       })
                     })
@@ -97,14 +99,16 @@ router.post('/changePassword', (req, res, next) => {
 router.get('/kitchen', (req, res, next) => {
   authenticate(req, res, () => {
     pool.getConnection((err, conn) => {
-      getPreparationUsers((users) => {
-        convertFoodIdToFoodName(users, (users) => {
-          getAllItemsCount((count) => {
-            res.render('kitchen', { title: 'Kitchen Tab', admin: true, users: users, count: count, notEmpty: (typeof users !== "undefined" && users.length > 0) ? true : false });
-            pool.releaseConnection(conn);
-          }, "preparation = 1 AND ready = 0 AND delivered = 0" , conn)
-        }, conn)
-      }, 'lastUpdated', conn)
+      getKitchenLimit((limit) => {
+        getPreparationUsers((users) => {
+          convertFoodIdToFoodName(users, (users) => {
+            getAllItemsCount((count) => {
+              res.render('kitchen', { title: 'Kitchen Tab', admin: true, users: users, count: count, limit: limit, notEmpty: (typeof users !== "undefined" && users.length > 0) ? true : false });
+              pool.releaseConnection(conn);
+            }, "preparation = 1 AND ready = 0 AND delivered = 0", limit, conn)
+          }, conn)
+        }, 'lastUpdated', limit, conn)
+      })
     })
   })
 })
@@ -147,6 +151,13 @@ router.post('/removeTimeStamp', (req, res, next) => {
 router.post('/updateLimit', (req, res, next) => {
   authenticate(req, res, () => {
     setLimit(req.body.limit);
+    res.redirect('/spadmin/manage#generalParameters');
+  })
+})
+
+router.post('/updateKitchenLimit', (req, res, next) => {
+  authenticate(req, res, () => {
+    setKitchenLimit(req.body.kitchenLimit);
     res.redirect('/spadmin/manage#generalParameters');
   })
 })
