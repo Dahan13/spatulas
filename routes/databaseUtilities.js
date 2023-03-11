@@ -6,7 +6,7 @@ let { getTimes, setRegistration, getGlobalTimes } = require('./settingsUtilities
  */
 function createDatabase(conn = null) {
     db = (conn) ? conn : pool
-    db.query("CREATE TABLE IF NOT EXISTS spatulasUsers (userId INT PRIMARY KEY NOT NULL AUTO_INCREMENT, lastName VARCHAR(255), firstName VARCHAR(255), burger VARCHAR(255), fries VARCHAR(255), drink VARCHAR(255), time VARCHAR(5), preparation INT(1) DEFAULT 0, ready INT(1) DEFAULT 0, delivered INT(1) DEFAULT 0, price FLOAT, lastUpdated TIMESTAMP DEFAULT NOW())", (err, rows, fields) => {
+    db.query("CREATE TABLE IF NOT EXISTS spatulasUsers (userId INT PRIMARY KEY NOT NULL AUTO_INCREMENT, lastName VARCHAR(255), firstName VARCHAR(255), burger VARCHAR(255), fries VARCHAR(255), drink VARCHAR(255), dessert VARCHAR(255), time VARCHAR(5), preparation INT(1) DEFAULT 0, ready INT(1) DEFAULT 0, delivered INT(1) DEFAULT 0, price FLOAT, lastUpdated TIMESTAMP DEFAULT NOW())", (err, rows, fields) => {
         if (err) {
             console.log(err);
         }
@@ -26,6 +26,13 @@ function createDatabase(conn = null) {
             console.log(err);
         }
     })
+
+    // Create an identical table for desserts
+    db.query("CREATE TABLE IF NOT EXISTS spatulasDesserts (identifier VARCHAR(255) PRIMARY KEY, name VARCHAR(255), description VARCHAR(255), price FLOAT DEFAULT 0.0)", (err, rows, fields) => {
+        if (err) {
+            console.log(err);
+        }
+    })
 }
 
 /**
@@ -37,9 +44,9 @@ function createDatabase(conn = null) {
  * @param {string} drink 
  * @param {int} time 
  */
-async function insertUser(lastName, firstName, burger, fries, drink, time, price, connection = null) {
+async function insertUser(lastName, firstName, burger, fries, drink, dessert, time, price, connection = null) {
     db = (connection) ? connection : pool
-    db.execute('INSERT INTO spatulasUsers (lastName, firstName, burger, fries, drink, time, price) VALUES (?, ?, ?, ?, ?, ?, ?)', [lastName, firstName, burger, fries, drink, time, price], (err, rows, fields) => {
+    db.execute('INSERT INTO spatulasUsers (lastName, firstName, burger, fries, drink, dessert, time, price) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [lastName, firstName, burger, fries, drink, dessert, time, price], (err, rows, fields) => {
         if (err) {
             console.log(err);
         }
@@ -408,6 +415,10 @@ async function getAllItemsCount(callback, queriesCondition = "", limit = null, c
     let drinks = await db.query('SELECT count(*) AS count, name FROM (SELECT drink, identifier, name FROM spatulasUsers INNER JOIN spatulasDrinks ON spatulasUsers.drink = spatulasDrinks.identifier ' + queriesCondition + ') AS drinkClient GROUP BY name');
     items.push({name: "Drinks", count: drinks[0]});
 
+    // Get desserts
+    let desserts = await db.query('SELECT count(*) AS count, name FROM (SELECT dessert, identifier, name FROM spatulasUsers INNER JOIN spatulasDesserts ON spatulasUsers.dessert = spatulasDesserts.identifier ' + queriesCondition + ') AS dessertClient GROUP BY name');
+    items.push({name: "Desserts", count: desserts[0]});
+
     if (!conn) db.release(); // If we created a new connection, we need to release it
     callback(items);
 }
@@ -529,14 +540,16 @@ function deleteDrink(drinkId, connection = null) {
     conn.execute('DELETE FROM spatulasDrinks WHERE identifier = ?', [drinkId]);
 }
 
-function calculatePrice(burgerId, friesId, drinkId, callback, connection = null) {
+function calculatePrice(burgerId, friesId, drinkId, dessertId, callback, connection = null) {
     if (connection == null) {
         pool.getConnection((err, conn) => {
             conn.execute('SELECT price FROM spatulasBurgers WHERE identifier = ?', [burgerId], (err, burger, fields) => {
                 conn.execute('SELECT price FROM spatulasFries WHERE identifier = ?', [friesId], (err, fries, fields) => {
-                    conn.execute('SELECt price FROM spatulasDrinks WHERE identifier = ?', [drinkId], (err, drink, fields) => {
-                        callback(burger[0].price + fries[0].price + drink[0].price);
-                        pool.releaseConnection(conn);
+                    conn.execute('SELECT price FROM spatulasDrinks WHERE identifier = ?', [drinkId], (err, drink, fields) => {
+                        conn.execute('SELECT price FROM spatulasDesserts WHERE identifier = ?', [dessertId], (err, dessert, fields) => {
+                            callback(burger[0].price + fries[0].price + drink[0].price + dessert[0].price);
+                            pool.releaseConnection(conn);
+                        })
                     })
                 })
             })
@@ -545,7 +558,9 @@ function calculatePrice(burgerId, friesId, drinkId, callback, connection = null)
         connection.execute('SELECT price FROM spatulasBurgers WHERE identifier = ?', [burgerId], (err, burger, fields) => {
             connection.execute('SELECT price FROM spatulasFries WHERE identifier = ?', [friesId], (err, fries, fields) => {
                 connection.execute('SELECT price FROM spatulasDrinks WHERE identifier = ?', [drinkId], (err, drink, fields) => {
-                    callback(burger[0].price + fries[0].price + drink[0].price);
+                    connection.execute('SELECT price FROM spatulasDesserts WHERE identifier = ?', [dessertId], (err, dessert, fields) => {
+                        callback(burger[0].price + fries[0].price + drink[0].price + dessert[0].price);
+                    })
                 })
             })
         })
@@ -563,26 +578,35 @@ function convertFoodIdToFoodName(users, callback, conn = null) {
     db.query('SELECT identifier, name FROM spatulasBurgers', (err, burgers, fields) => {
         db.query('SELECT identifier, name FROM spatulasDrinks', (err, drinks, fields) => {
             db.query('SELECT identifier, name FROM spatulasFries', (err, fries, fields) => {
-                let burgersFinder = {};
-                for (let i = 0; i < burgers.length; i++) {
-                    burgersFinder[burgers[i].identifier] = burgers[i].name;
-                }
+                db.query('SELECT identifier, name FROM spatulasDesserts', (err, desserts, fields) => {
+                    let burgersFinder = {};
+                    for (let i = 0; i < burgers.length; i++) {
+                        burgersFinder[burgers[i].identifier] = burgers[i].name;
+                    }
+    
+                    let drinksFinder = {};
+                    for (let i = 0; i < drinks.length; i++) {
+                        drinksFinder[drinks[i].identifier] = drinks[i].name;
+                    }
+    
+                    let friesFinder = {};
+                    for (let i = 0; i < fries.length; i++) {
+                        friesFinder[fries[i].identifier] = fries[i].name;
+                    }
 
-                let drinksFinder = {};
-                for (let i = 0; i < drinks.length; i++) {
-                    drinksFinder[drinks[i].identifier] = drinks[i].name;
-                }
+                    let dessertsFinder = {};
+                    for (let i = 0; i < desserts.length; i++) {
+                        dessertsFinder[desserts[i].identifier] = desserts[i].name;
+                    }
 
-                let friesFinder = {};
-                for (let i = 0; i < fries.length; i++) {
-                    friesFinder[fries[i].identifier] = fries[i].name;
-                }
-                for (let i = 0; i < users.length; i++) {
-                    users[i].burger = burgersFinder[users[i].burger];
-                    users[i].fries = friesFinder[users[i].fries];
-                    users[i].drink = drinksFinder[users[i].drink];
-                }
-                callback(users)
+                    for (let i = 0; i < users.length; i++) {
+                        users[i].burger = burgersFinder[users[i].burger];
+                        users[i].fries = friesFinder[users[i].fries];
+                        users[i].drink = drinksFinder[users[i].drink];
+                        users[i].dessert = dessertsFinder[users[i].dessert];
+                    }
+                    callback(users)
+                })
             })
         })
     })
@@ -643,8 +667,10 @@ function purgeDatabase() {
             conn.execute('DROP TABLE spatulasBurgers', () => {
                 conn.execute('DROP TABLE spatulasFries', () => {
                     conn.execute('DROP TABLE spatulasDrinks', () => {
-                        createDatabase(conn);
-                        pool.releaseConnection(conn);
+                        conn.execute('DROP TABLE spatulasDesserts', () => {
+                            createDatabase(conn);
+                            pool.releaseConnection(conn);
+                        })
                     })
                 });
             });
@@ -657,6 +683,75 @@ function refreshCommand(userId, callback, conn = null) {
     db.execute('UPDATE spatulasUsers SET lastUpdated = NOW() WHERE userId = ?', [userId], (err, rows) => {
         callback();
     }) 
+}
+
+// ! Temporary fix to implement the new dessert table, will be removed in the future
+
+/**
+ * This function will insert a new dessert into the database, identically to its burger counterpart
+ */
+function insertDessert(identifier, name, description = null, price = null, connection = null) {
+    db = (connection) ? connection : pool
+    db.execute('INSERT INTO spatulasDesserts VALUES (?, ?, ?, ?)', [identifier, name, description, price], (err, rows, fields) => {
+        if (err) {
+            console.log(err);
+        }
+    })
+}
+
+/**
+ * This function will return all desserts in the database
+ */
+function getDesserts(callback, addURL = false, connection = null) {
+    db = (connection) ? connection : pool
+    db.execute('SELECT * FROM spatulasDesserts', (err, rows, fields) => {
+        if (addURL) {
+            for (let i = 0; i < rows.length; i++) {
+                rows[i].url = '/spadmin/deleteDessert/' + rows[i].identifier;
+            }
+            callback(rows, fields);
+        } else {
+            callback(rows, fields);
+        }
+    })
+}
+
+/**
+ * This function will count the number of each dessert asked for by users, and associate it with the dessert's name
+ */
+function countDesserts(callback, connection = null) {
+    db = (connection) ? connection : pool
+    db.execute('SELECT count(*) AS count, name FROM (SELECT dessert, identifier, name FROM spatulasUsers INNER JOIN spatulasDesserts ON spatulasUsers.dessert = spatulasDesserts.identifier) AS dessertClient GROUP BY name', (err, rows, fields) => {
+        callback(rows);
+    })
+}
+
+/**
+ * This function will check whether a dessert exists in the database
+ */
+function checkDessert(dessertId, callback, connection = null) {
+    db = (connection) ? connection : pool
+    db.execute('SELECT COUNT(*) AS count FROM spatulasDesserts WHERE identifier=?', [dessertId], (err, rows, fields) => {
+        callback(rows[0].count);
+    })
+}
+
+/**
+ * This function will delete a dessert from the database
+ */
+function deleteDessert(dessertId, connection = null) {
+    db = (connection) ? connection : pool
+    db.execute('DELETE FROM spatulasDesserts WHERE identifier=?', [dessertId])
+}
+
+/**
+ * This function will return the price of a dessert
+ */
+function getDessertPrice(dessertId, callback, connection = null) {
+    db = (connection) ? connection : pool
+    db.execute('SELECT price FROM spatulasDesserts WHERE identifier=?', [dessertId], (err, rows, fields) => {
+        callback(rows[0].price);
+    })
 }
 
 module.exports = {
@@ -693,5 +788,11 @@ module.exports = {
     toggleReady,
     toggleDelivered,
     purgeDatabase,
-    refreshCommand
+    refreshCommand,
+    getDesserts,
+    insertDessert,
+    countDesserts,
+    checkDessert,
+    deleteDessert,
+    getDessertPrice
 }

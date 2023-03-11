@@ -1,8 +1,8 @@
 var express = require('express');
-const { body, query } = require('express-validator');
+const { body, query, check } = require('express-validator');
 var router = express.Router();
 let pool = require('./databaseConnector');
-let { createDatabase, insertUser, getUsers, getPreparationUsers, getReadyUsers, getBurgers, getFries, getDrinks, checkBurger, checkDrink, checkFries, searchUser, calculatePrice, getUsersByStatus, getUsersByTime } = require("./databaseUtilities.js");
+let { createDatabase, insertUser, getUsers, getPreparationUsers, getReadyUsers, getBurgers, getFries, getDrinks, checkBurger, checkDrink, checkFries, searchUser, calculatePrice, getUsersByStatus, getUsersByTime, getDesserts, checkDessert } = require("./databaseUtilities.js");
 let { getTimes, getRegistration, getRegistrationDay, checkTime, getTimeIndex, checkPassword, getGlobalTimes, getTimeCount, checkAndRepairTimes } = require('./settingsUtilities');
 let { sendTimeCount } = require('./webSocket');
 
@@ -22,9 +22,11 @@ router.get('/',
             getBurgers((burgers, ) => {
               getFries((fries) => {
                 getDrinks((drinks) => {
-                  getGlobalTimes((times) => {
-                    res.render('home', { title: 'Home', admin: auth, registrationOpen: (registStatus || auth), userRegistrationOpen: registStatus, adminRegistrationOpen: auth, burgers: burgers, fries: fries, drinks: drinks, times: times, day: day, error: (req.query.error) ? req.query.error : null });
-                  }, conn)
+                  getDesserts((desserts) => {
+                    getGlobalTimes((times) => {
+                      res.render('home', { title: 'Home', admin: auth, registrationOpen: (registStatus || auth), userRegistrationOpen: registStatus, adminRegistrationOpen: auth, burgers: burgers, fries: fries, drinks: drinks, times: times, desserts: desserts, day: day, error: (req.query.error) ? req.query.error : null });
+                    }, conn)
+                  }, false, conn)
                 }, false, conn)
               }, false, conn)
             }, false, conn)
@@ -51,6 +53,7 @@ router.post('/register',
   body('burger').trim().escape(),
   body('fries').trim().escape(),
   body('drink').trim().escape(),
+  body('dessert').trim().escape(),
   body("time").trim().escape(),
   body('accept').trim().escape(),
   (req, res, next) => {
@@ -61,24 +64,26 @@ router.post('/register',
             checkBurger(req.body.burger, (burgerBool) => {
               checkDrink(req.body.drink, (drinkBool) => {
                 checkFries(req.body.fries, (friesBool) => {
-                  checkTime(req.body.time, (timeBool) => { // Checking that all inputs are in database
-                    if (req.body.lastName && req.body.lastName.length <= 32 && req.body.firstName && req.body.firstName.length <= 32 && req.body.burger && req.body.fries && req.body.drink && req.body.time && req.body.accept == 'on' && burgerBool && drinkBool && friesBool && timeBool) {
-                      calculatePrice(req.body.burger, req.body.fries, req.body.drink, (price) => {
-                        insertUser(req.body.lastName, req.body.firstName, req.body.burger, req.body.fries, req.body.drink, req.body.time, price, conn);
+                  checkDessert(req.body.dessert, (dessertBool) => {
+                    checkTime(req.body.time, (timeBool) => { // Checking that all inputs are in database
+                      if (req.body.lastName && req.body.lastName.length <= 32 && req.body.firstName && req.body.firstName.length <= 32 && req.body.burger && req.body.fries && req.body.drink && req.body.time && req.body.accept == 'on' && burgerBool && drinkBool && friesBool && dessertBool && timeBool) {
+                        calculatePrice(req.body.burger, req.body.fries, req.body.drink, req.body.dessert, (price) => {
+                          insertUser(req.body.lastName, req.body.firstName, req.body.burger, req.body.fries, req.body.drink, req.body.dessert, req.body.time, price, conn);
 
-                        // Before sending user to queue, we send a message through websocket to inform of the change of remaining places on the time stamp
-                        getTimeCount((count) => {
-                          sendTimeCount(req.body.time, count);
-                          pool.releaseConnection(conn);
-                          res.redirect('/queue');
-                        }, req.body.time, conn)
+                          // Before sending user to queue, we send a message through websocket to inform of the change of remaining places on the time stamp
+                          getTimeCount((count) => {
+                            sendTimeCount(req.body.time, count);
+                            pool.releaseConnection(conn);
+                            res.redirect('/queue');
+                          }, req.body.time, conn)
                         
-                      }, conn);
-                    } else {
-                      pool.releaseConnection(conn);
-                      res.redirect('/?error=true');
-                    }
-                  }, (adminRegistStatus) ? null : true, conn)
+                        }, conn);
+                      } else {
+                        pool.releaseConnection(conn);
+                        res.redirect('/?error=true');
+                      }
+                    }, (adminRegistStatus) ? null : true, conn)
+                  }, conn)
                 }, conn)
               }, conn)
             }, conn)

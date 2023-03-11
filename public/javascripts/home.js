@@ -6,6 +6,7 @@ const submitButton = document.getElementById("submit-button");
 const burgers = document.getElementById("burger");
 const fries = document.getElementById("fries");
 const drinks = document.getElementById("drink");
+const desserts = document.getElementById("dessert");
 const times = document.getElementById("time");
 const displayedPrice = document.getElementById("price-range");
 
@@ -17,15 +18,16 @@ submitButton.disabled = true;
 burgers.selectedIndex = 0;
 fries.selectedIndex = 0;
 drinks.selectedIndex = 0;
+desserts.selectedIndex = 0;
 times.selectedIndex = 0;
 
 /**
  * This function will checks if all inputs were filled, thus allowing the submit button to be used 
  */
 function inputsChecker() {
-    if (firstNameInput.value.length >= 1 && lastNameInput.value.length >= 1 && checkbox.checked && submitButton.disabled && burgers.options[burgers.selectedIndex].value != "none" && fries.options[fries.selectedIndex].value != "none" && drinks.options[drinks.selectedIndex].value != "none" && times.options[times.selectedIndex].value != "none") {
+    if (firstNameInput.value.length >= 1 && lastNameInput.value.length >= 1 && checkbox.checked && submitButton.disabled && burgers.options[burgers.selectedIndex].value != "none" && fries.options[fries.selectedIndex].value != "none" && drinks.options[drinks.selectedIndex].value != "none" && desserts.options[desserts.selectedIndex].value != "none" &&times.options[times.selectedIndex].value != "none") {
         submitButton.disabled = false;
-    } else if (firstNameInput.value.length < 1 || lastNameInput.value.length < 1 || !checkbox.checked || burgers.options[burgers.selectedIndex].value == "none" || fries.options[fries.selectedIndex].value == "none" || drinks.options[drinks.selectedIndex].value == "none" || times.options[times.selectedIndex].value == "none") {
+    } else if (firstNameInput.value.length < 1 || lastNameInput.value.length < 1 || !checkbox.checked || burgers.options[burgers.selectedIndex].value == "none" || fries.options[fries.selectedIndex].value == "none" || drinks.options[drinks.selectedIndex].value == "none" || times.options[times.selectedIndex].value == "none" || desserts.options[desserts.selectedIndex].value == "none") {
         submitButton.disabled = true;
     }
 }
@@ -38,6 +40,7 @@ checkbox.addEventListener('input', inputsChecker);
 burgers.addEventListener('input', inputsChecker);
 fries.addEventListener('input', inputsChecker);
 drinks.addEventListener('input', inputsChecker);
+desserts.addEventListener('input', inputsChecker);
 times.addEventListener('input', inputsChecker);
 
 // Price calculation
@@ -71,7 +74,15 @@ function calculatePrice() {
         drinkPrice = 0.0;
     }
 
-    return burgerPrice + friesPrice + drinkPrice
+    var dessertPrice;
+    choice = desserts.options[desserts.selectedIndex].dataset.price
+    if (choice) {
+        dessertPrice = parseFloat(choice);
+    } else {
+        dessertPrice = 0.0;
+    }
+
+    return burgerPrice + friesPrice + drinkPrice + dessertPrice;
 }
 
 /**
@@ -97,6 +108,7 @@ updatePrice();
 burgers.addEventListener('input', updatePrice);
 fries.addEventListener('input', updatePrice);
 drinks.addEventListener('input', updatePrice);
+desserts.addEventListener('input', updatePrice);
 
 /**
  * This function will update the count for a given time in the form

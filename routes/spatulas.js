@@ -4,7 +4,7 @@ var stringify = require('csv-stringify');
 const { body, query } = require('express-validator');
 var router = express.Router();
 let pool = require('./databaseConnector')
-let { getUntreatedUsers, getPreparationUsers, getReadyUsers, getDeliveredUsers, getBurgers, getFries, getDrinks, searchUser, countBurgers, countFries, countDrinks, insertBurger, deleteBurger, deleteFries, deleteDrink, insertFries, insertDrink, clearUsers, convertFoodIdToFoodName, purgeDatabase, getUsersByStatus, getAllItemsCount } = require("./databaseUtilities.js");
+let { getUntreatedUsers, getPreparationUsers, getReadyUsers, getDeliveredUsers, getBurgers, getFries, getDrinks, searchUser, countBurgers, countFries, countDrinks, insertBurger, deleteBurger, deleteFries, deleteDrink, insertFries, insertDrink, clearUsers, convertFoodIdToFoodName, purgeDatabase, getUsersByStatus, getAllItemsCount, getDesserts, countDesserts, insertDessert, deleteDessert } = require("./databaseUtilities.js");
 let { getTimes, getRegistration, getRegistrationDay, getLimit, setRegistration, setRegistrationDay, setLimit, addTime, removeTime, getPassword, checkPassword, authenticate, setPassword, getKitchenLimit, setKitchenLimit } = require('./settingsUtilities');
 
 /* GET users listing. */
@@ -71,8 +71,12 @@ router.get('/manage', (req, res, next) => {
                       getRegistrationDay((day) => {
                         getLimit((limit) => {
                           getKitchenLimit((kitchenLimit) => {
-                            res.render('admin', { title: 'Administration', admin: true, limit: limit, day: day, regisBool: regisBool, times: times, drinkCount: drinkCount, friesCount: friesCount, burgerCount: burgerCount, burgers: burgers, drinks: drinks, fries: fries, kitchenLimit: kitchenLimit });
-                            pool.releaseConnection(conn);
+                            getDesserts((desserts) => {
+                              countDesserts((dessertCount) => {
+                                res.render('admin', { title: 'Administration', admin: true, limit: limit, day: day, regisBool: regisBool, times: times, drinkCount: drinkCount, friesCount: friesCount, burgerCount: burgerCount, burgers: burgers, drinks: drinks, fries: fries, kitchenLimit: kitchenLimit, desserts: desserts, dessertCount: dessertCount });
+                                pool.releaseConnection(conn);
+                              }, conn)
+                            }, true , conn)
                           })
                         })
                       })
@@ -220,6 +224,21 @@ router.get('/deleteDrink/:drinkId', (req, res, next) => {
   authenticate(req, res, () => {
     deleteDrink(req.params.drinkId);
     res.redirect('/spadmin/manage#drinkMenu');
+  })
+})
+
+router.post('/AddDessert', (req, res, next) => {
+  authenticate(req, res, () => {
+    req.body.dePrice = req.body.dePrice.replace(',', '.');
+    insertDessert(req.body.deIdentifier, req.body.deName, (req.body.deDesc) ? req.body.deDesc : null, parseFloat(req.body.dePrice) ? parseFloat(req.body.dePrice) : null);
+    res.redirect('/spadmin/manage#dessertMenu');
+  })
+})
+
+router.get('/deleteDessert/:dessertId', (req, res, next) => {
+  authenticate(req, res, () => {
+    deleteDessert(req.params.dessertId);
+    res.redirect('/spadmin/manage#dessertMenu');
   })
 })
 

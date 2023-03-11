@@ -49,6 +49,15 @@
             </select>
         </div>
         <div class="input-div">
+            <label for="dessert"> Dessert </label>
+            <select name="dessert" id="dessert">
+                <option disabled selected value="none"> -- Select an option -- </option>
+                {{#each desserts}}
+                    <option value={{this.identifier}} id={{this.identifier}} {{#if this.price }} data-price={{this.price}} {{/if}}> {{this.name}} ({{#if this.price}}{{this.price}}{{else}}0.00{{/if}}€) {{#if this.description}}: {{this.description}} {{/if}} </option>
+                {{/each}}
+            </select>
+        </div>
+        <div class="input-div">
             <label for="time"> Pick up time </label>
             <select name="time" id="time">
                 <option disabled selected value="none"> -- Select an option -- </option>
