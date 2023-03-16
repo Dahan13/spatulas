@@ -19,6 +19,7 @@ nav {
 
 nav > a {
     width: 200px;
+    min-height: 170px;
     padding: 5px;
 
     display: flex;
@@ -97,6 +98,7 @@ th {
 
     nav {
         flex-direction: row;
+        flex-wrap: wrap;
         margin-top: 80px;
     }
 

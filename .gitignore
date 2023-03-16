@@ -1,4 +1,4 @@
 .vscode
 node_modules
-./logs/*
-!./logs/.gitkeep
+logs/*
+!logs/.gitkeep

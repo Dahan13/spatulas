@@ -3,9 +3,12 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var fs = require('fs');
+var rfs = require('rotating-file-stream') // version 2.x
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/spatulas');
+let logsRouter = require('./routes/logs');
 let webSocket = require('./routes/webSocket');
 
 var app = express();
@@ -14,7 +17,25 @@ var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
 
-app.use(logger('dev'));
+// Creating a log system
+
+app.use(logger('dev')); // This is the default CLI logger
+
+// Manage the log files
+var accessLogStream = rfs.createStream('./logs/' + (new Date()).getDate() + "-" + ((new Date()).getMonth() + 1) + "-" + (new Date()).getFullYear() + '.log', { // create a rotating write stream
+  interval: '1d', // rotate daily
+  path: path.join(__dirname, '')
+})
+// Creating the file if it doesn't exist
+let logPath = './logs/' + (new Date()).getDate() + "-" + ((new Date()).getMonth() + 1) + "-" + (new Date()).getFullYear() + '.log';
+if (!fs.existsSync(logPath)) {
+  fs.open(logPath, 'w', (err, fd) => {});
+}
+
+// setup the logger
+app.use(logger('combined', { stream: accessLogStream }))
+
+// app setup
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -22,6 +43,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/spadmin', usersRouter);
+app.use('/logs', logsRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

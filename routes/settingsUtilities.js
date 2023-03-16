@@ -243,6 +243,22 @@ function setKitchenLimit(newLimit) {
     })
 }
 
+function getLogSizeLimit(callback) {
+    readIni((data) => {
+        callback(data.Logs.logMaxSize);
+    })
+}
+
+function setLogSizeLimit(newLimit) {
+    readIni((data) => {
+        newLimit = parseInt(newLimit);
+        if (newLimit) {
+            data.Logs.logMaxSize = newLimit;
+            fs.writeFileSync('./settings.ini', ini.stringify(data));
+        }
+    })
+}
+
 module.exports = {
     readIni,
     getPassword,
@@ -264,5 +280,7 @@ module.exports = {
     removeTime,
     authenticate,
     getKitchenLimit,
-    setKitchenLimit
+    setKitchenLimit,
+    getLogSizeLimit,
+    setLogSizeLimit
 }

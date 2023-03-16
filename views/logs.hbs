@@ -1,0 +1,33 @@
+<link rel="stylesheet" href="/stylesheets/home-style.css"/>
+<link rel="stylesheet" href="/stylesheets/queue-style.css"/>
+<link rel="stylesheet" href="/stylesheets/spadmin-style.css"/>
+
+<a class="button" href="/spadmin/" style="margin-bottom:15px"> <button> Back </button> </a>
+<h1> Logs : </h1>
+
+<form action="/logs/updateSizeLimit" method="POST" class="one-line-form">
+        <div class="input-div">
+            <label for="SizeLimit"> Current size limit for logs : {{limit}}Mb </label>
+            <input type="number" id="SizeLimit" name="SizeLimit" placeholder="10" required>
+        </div>
+        <input type="submit" value="Update size limit" id="size-limit-button"/>
+    </form>
+
+<table>
+    <thead>
+        <tr>
+            <th> Name </th>
+            <th> Download </th>
+            <th> Delete </th>
+        </tr>
+    </thead>
+    <tbody>
+        {{#each logs}}
+        <tr>
+            <td> {{this.name}} </td>
+            <td> <a href=/logs/downloadLog/{{this.name}}> <img style="height: 50px; padding: 2px" src="/images/spadmin/download.webp" alt="Download"> </a> </td>
+            <td> {{#unless this.current}} <a href=/logs/deleteLog/{{this.name}}> <img style="height: 50px; padding: 2px" src="/images/spadmin/delete.webp" alt="Delete"> </a> {{/unless}} </td>
+        </tr>
+        {{/each}}
+    </tbody>
+</table>
