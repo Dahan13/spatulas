@@ -109,7 +109,7 @@ router.get('/kitchen', (req, res, next) => {
             getAllItemsCount((count) => {
               res.render('kitchen', { title: 'Kitchen Tab', admin: true, users: users, count: count, limit: limit, notEmpty: (typeof users !== "undefined" && users.length > 0) ? true : false });
               pool.releaseConnection(conn);
-            }, "preparation = 1 AND ready = 0 AND delivered = 0", limit, conn)
+            }, "preparation = 1 AND ready = 0 AND delivered = 0 ORDER BY lastUpdated", limit, conn)
           }, conn)
         }, 'lastUpdated', limit, conn)
       })

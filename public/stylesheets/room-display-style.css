@@ -61,7 +61,7 @@ td:last-of-type {
     justify-content: flex-start;
     flex-wrap: wrap;
 
-    font-size: 11rem;
+    font-size: 9rem;
     height: 100%;
     width: 50%;
     font-weight: bolder;
@@ -86,8 +86,6 @@ td:last-of-type {
 }
 
 .preparation-container {
-    border-left: 5px solid var(--text-color);
-    margin-left: -3px;
     font-size: 7rem;
 }
 

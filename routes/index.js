@@ -37,6 +37,10 @@ router.get('/',
     })
 });
 
+router.get('/register', (req, res, next) => {
+  res.render('error', { title: 'Error', message: "Wait ! You can't go there !", error: {status: 'You are probably using an incompatible browser, please try switching.', stack: 'If the error persists, please contact an administrator.'} });
+})
+
 router.get('/queue', 
   query('search-query').trim().escape(),
   (req, res, next) => {
