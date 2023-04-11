@@ -2,11 +2,18 @@ var express = require('express');
 const { body, query, check } = require('express-validator');
 var router = express.Router();
 let pool = require('./databaseConnector');
-let { createDatabase, insertUser, getUsers, getPreparationUsers, getReadyUsers, getBurgers, getFries, getDrinks, checkBurger, checkDrink, checkFries, searchUser, calculatePrice, getUsersByStatus, getUsersByTime, getDesserts, checkDessert } = require("./databaseUtilities.js");
+let { createDatabase, insertUser, getUsers, getPreparationUsers, getReadyUsers, checkBurger, searchUser, calculatePrice, getUsersByStatus, getUsersByTime, getTables, insertTable, insertRow } = require("./databaseUtilities.js");
 let { getTimes, getRegistration, getRegistrationDay, checkTime, getTimeIndex, checkPassword, getGlobalTimes, getTimeCount, checkAndRepairTimes } = require('./settingsUtilities');
 let { sendTimeCount } = require('./webSocket');
 
-createDatabase();
+async function init() {
+  await createDatabase();
+  await insertTable("Burgers", "Cheeseburger", "This is a cheeseburger", 5);
+  await insertTable("Fries", "Frites paprika", "Miam !", 1);
+  await insertRow("Fries", "Sans frites", "Pas faim !", 0);
+}
+init();
+
 
 // ! This is a temporary fix for the unlikely case all time stamps were removed, we add a new one set at "19h00" to prevent the system from breaking
 checkAndRepairTimes();
@@ -18,19 +25,12 @@ router.get('/',
     checkPassword(req.cookies.spatulasPower, (auth) => {
       getRegistration((registStatus) => {
         getRegistrationDay((day) => {
-          pool.getConnection((err, conn) => {
-            getBurgers((burgers, ) => {
-              getFries((fries) => {
-                getDrinks((drinks) => {
-                  getDesserts((desserts) => {
-                    getGlobalTimes((times) => {
-                      res.render('home', { title: 'Home', admin: auth, registrationOpen: (registStatus || auth), userRegistrationOpen: registStatus, adminRegistrationOpen: auth, burgers: burgers, fries: fries, drinks: drinks, times: times, desserts: desserts, day: day, error: (req.query.error) ? req.query.error : null });
-                    }, conn)
-                  }, false, conn)
-                }, false, conn)
-              }, false, conn)
-            }, false, conn)
-            pool.releaseConnection(conn);
+          pool.getConnection(async (err, conn) => {
+            let tables = await getTables(conn);
+            getGlobalTimes((times) => {
+              pool.releaseConnection(conn);
+              res.render('home', { title: 'Home', admin: auth, registrationOpen: (registStatus || auth), userRegistrationOpen: registStatus, adminRegistrationOpen: auth, tables: tables, times: times, day: day, error: (req.query.error) ? req.query.error : null });
+            }, conn)
           })
         })
       })

@@ -6,33 +6,171 @@ let { getTimes, setRegistration, getGlobalTimes } = require('./settingsUtilities
  */
 function createDatabase(conn = null) {
     db = (conn) ? conn : pool
-    db.query("CREATE TABLE IF NOT EXISTS spatulasUsers (userId INT PRIMARY KEY NOT NULL AUTO_INCREMENT, lastName VARCHAR(255), firstName VARCHAR(255), burger VARCHAR(255), fries VARCHAR(255), drink VARCHAR(255), dessert VARCHAR(255), time VARCHAR(5), preparation INT(1) DEFAULT 0, ready INT(1) DEFAULT 0, delivered INT(1) DEFAULT 0, price FLOAT, lastUpdated TIMESTAMP DEFAULT NOW())", (err, rows, fields) => {
-        if (err) {
-            console.log(err);
-        }
-    })
-    db.query("CREATE TABLE IF NOT EXISTS spatulasBurgers (identifier VARCHAR(255) PRIMARY KEY, name VARCHAR(255), description VARCHAR(255), price FLOAT DEFAULT 0.0)", (err, rows, fields) => {
-        if (err) {
-            console.log(err);
-        }
-    })
-    db.query("CREATE TABLE IF NOT EXISTS spatulasFries (identifier VARCHAR(255) PRIMARY KEY, name VARCHAR(255), description VARCHAR(255), price FLOAT DEFAULT 0.0)", (err, rows, fields) => {
-        if (err) {
-            console.log(err);
-        }
-    })
-    db.query("CREATE TABLE IF NOT EXISTS spatulasDrinks (identifier VARCHAR(255) PRIMARY KEY, name VARCHAR(255), description VARCHAR(255), price FLOAT DEFAULT 0.0)", (err, rows, fields) => {
+    // Creating the table that will contains all commands
+    db.query("CREATE TABLE IF NOT EXISTS spatulasCommands (commandId INT PRIMARY KEY NOT NULL AUTO_INCREMENT, lastName VARCHAR(255) NOT NULL, firstName VARCHAR(255) NOT NULL, time VARCHAR(5) DEFAULT \'00h01\', preparation INT(1) DEFAULT 0, ready INT(1) DEFAULT 0, delivered INT(1) DEFAULT 0, price FLOAT DEFAULT 0.0, lastUpdated TIMESTAMP DEFAULT NOW())", (err, rows, fields) => {
         if (err) {
             console.log(err);
         }
     })
 
-    // Create an identical table for desserts
-    db.query("CREATE TABLE IF NOT EXISTS spatulasDesserts (identifier VARCHAR(255) PRIMARY KEY, name VARCHAR(255), description VARCHAR(255), price FLOAT DEFAULT 0.0)", (err, rows, fields) => {
+    // Creating the table that will contains all the names of each food table
+    db.query("CREATE TABLE IF NOT EXISTS spatulasTables (tableId INT PRIMARY KEY NOT NULL AUTO_INCREMENT, foodName VARCHAR(255) NOT NULL)", (err, rows, fields) => {
+        if (err) {
+            console.log(err);
+        }
+    }) 
+
+    // Creating the table that will contains all the checkboxes for the forms
+    // A tick is caracterized by it's message, if it's mandatory, the money value it adds to the total price, and if it needs to be displayed in the admin command list
+    db.query("CREATE TABLE IF NOT EXISTS spatulasCheckboxes (checkboxId INT PRIMARY KEY NOT NULL AUTO_INCREMENT, message VARCHAR(255) NOT NULL, mandatory INT(1) DEFAULT 0, price FLOAT DEFAULT 0.0, display INT(1) DEFAULT 1)", (err, rows, fields) => {
         if (err) {
             console.log(err);
         }
     })
+}
+
+/**
+ * Returns a list containing all rows of the given table. It returns null if the table is empty or does not exist
+ * @param {string} tableName
+ * @param {Any} connection An optional connection to the database, if none is provided, it will use the pool automatically. The connection must be able to handle promises
+ */
+async function getTable(tableName, connection = null) {
+    let db = (connection) ? connection : await pool.promise().getConnection();
+
+    // Getting the table
+    let queryResult = await db.query('SELECT * FROM ' + tableName);
+    let rows = queryResult[0];
+
+    // Releasing the connection if it was not passed as a parameter
+    if (!connection) {
+        pool.releaseConnection(db);
+    }
+
+    // Returning the table
+    if (rows.length > 0) {
+        return rows;
+    } else {
+        return null;
+    }
+}
+
+/**
+ * Returns a list containing all the names of the tables stored in the spatulasTables table.
+ * @param {Any} connection An optional connection to the database, if none is provided, it will use the pool automatically. The connection must be able to handle promises
+ * @returns {Array} A list containing all the names of the tables stored in the spatulasTables table
+ */
+async function getTableNames(connection = null) {
+    let db = (connection) ? connection : await pool.promise().getConnection();
+
+    // Getting the table names
+    let queryResult = await db.query('SELECT * FROM spatulasTables');
+    let rows = queryResult[0];
+
+    // Releasing the connection if it was not passed as a parameter
+    if (!connection) {
+        pool.releaseConnection(db);
+    }
+
+    // Returning the table names
+    return rows;
+}
+
+/**
+ * Returns a list containing objects, containing names of each table with a list of all rows of the table stored in the spatulasTables table.
+ * @param {Any} connection An optional connection to the database, if none is provided, it will use the pool automatically
+ */
+async function getTables(connection = null) {
+    let db = (connection) ? connection.promise() : await pool.promise().getConnection();
+
+    // Getting all the table names
+    let tableName = await getTableNames(db);
+    let tables = tableName;
+
+    // Now getting all data
+    let tablesContent = [];
+        for (let i = 0; i < tables.length; i++) {
+        let tableContent = {};
+        tableContent.name = tables[i].foodName;
+        tableContent.content = await getTable(tables[i].foodName, db);
+        tablesContent.push(tableContent);
+    }
+
+    // Releasing the connection if it was not passed as a parameter
+    if (!connection) {
+        pool.releaseConnection(db);
+    }
+
+    // Returning the tables
+    return tablesContent
+}
+
+/**
+ * Inserts a row in spatulasTables with the given name, it will then create the table with the given name in the database, and add 3 columns : name (the primary key), description and price.
+ * It will also add a first row to the table with the given name, description and price.
+ * If a new table is created, it will also add to spatulasCommands a column with the name of the table.
+ * @param {string} tableName
+ * @param {string} name
+ * @param {string} description
+ * @param {float} price
+ * @param {Any} connection An optional connection to the database, if none is provided, it will use the pool automatically
+ */
+async function insertTable(tableName, name, description = null, price = null, connection = null) {
+    let db = (connection) ? connection.promise() : await pool.promise().getConnection();
+
+    // if the table already exists, return
+    let tables = await db.query("SELECT * FROM spatulasTables WHERE foodName = ?", [tableName]);
+    if (tables[0].length > 0) {
+        return;
+    } else {
+        await db.query("DROP TABLE IF EXISTS " + tableName);
+    }
+
+    // Inserting the table name in the spatulasTables table
+    await db.query('INSERT INTO spatulasTables (foodName) VALUES (?)', [tableName]);
+
+    // Creating the table
+    await db.query('CREATE TABLE ' + tableName + ' (name VARCHAR(255) PRIMARY KEY, description VARCHAR(255), price FLOAT DEFAULT 0.0)');
+    
+    // Adding the column to the spatulasCommands table
+    await db.query('ALTER TABLE spatulasCommands ADD ' + tableName + ' VARCHAR(255) NOT NULL REFERENCES ' + tableName + '(name)');
+
+    // Inserting the first row
+    insertRow(tableName, name, description, price, db);
+
+    // Releasing the connection if it was not passed as a parameter
+    if (!connection) {
+        pool.releaseConnection(db);
+    }
+
+    return;
+}
+
+/**
+ * Inserts a row in the given table with the given name, description and price (both are optional)
+ * @param {string} tableName
+ * @param {string} name
+ * @param {string} description
+ * @param {float} price
+ * @param {Any} connection An optional connection to the database, if none is provided, it will use the pool automatically
+ */
+async function insertRow(tableName, name, description = null, price = null, connection = null) {
+    let db = (connection) ? connection : await pool.promise().getConnection();
+
+    // We check if the table already exists
+    let tables = await db.query("SELECT * FROM spatulasTables WHERE foodName = ?", [tableName]);
+    if (tables[0].length == 0) {
+        return;
+    }
+    
+    // We check if the primary key is already taken
+    let row = await db.query('SELECT * FROM ' + tableName + ' WHERE name = ?', [name]);
+    if (row[0].length > 0) {
+        return;
+    }
+
+    // Inserting the row
+    await db.query('INSERT INTO ' + tableName + ' (name, description, price) VALUES (?, ?, ?)', [name, description, price]);
+    return;
 }
 
 /**
@@ -74,38 +212,6 @@ async function insertUser(lastName, firstName, burger, fries, drink, dessert, ti
 function insertBurger(identifier, name, description = null, price = null, connection = null) {
     db = (connection) ? connection : pool
     db.execute('INSERT INTO spatulasBurgers VALUES (?, ?, ?, ?)', [identifier, name, description, price], (err, rows, fields) => {
-        if (err) {
-            console.log(err);
-        }
-    })
-}
-
-/**
- * Insert a fries into the database
- * @param {string} identifier 
- * @param {string} name 
- * @param {string} description 
- * @param {float} price 
- */
-function insertFries(identifier, name, description = null, price = null, connection = null) {
-    db = (connection) ? connection : pool
-    db.execute('INSERT INTO spatulasFries VALUES (?, ?, ?, ?)', [identifier, name, description, price], (err, rows, fields) => {
-        if (err) {
-            console.log(err);
-        }
-    })
-}
-
-/**
- * Insert a drink into the database
- * @param {string} identifier 
- * @param {string} name 
- * @param {string} description 
- * @param {float} price 
- */
-function insertDrink(identifier, name, description = null, price = null, connection = null) {
-    db = (connection) ? connection : pool
-    db.execute('INSERT INTO spatulasDrinks VALUES (?, ?, ?, ?)', [identifier, name, description, price], (err, rows, fields) => {
         if (err) {
             console.log(err);
         }
@@ -353,44 +459,6 @@ function countBurgers(callback, toPrepareOnly = false, connection = null) {
 }
 
 /**
- * Count the number of each drink
- * @param {function} callback 
- * @param {*} connection 
- */
-function countDrinks(callback, toPrepareOnly = false, connection = null) {
-    db = (connection) ? connection : pool;
-    if (toPrepareOnly) {
-        db.query('SELECT count(*) AS count, name FROM (SELECT drink, identifier, name FROM spatulasUsers INNER JOIN spatulasDrinks ON spatulasUsers.drink = spatulasDrinks.identifier WHERE spatulasUsers.preparation = 1 AND spatulasUsers.ready = 0 AND spatulasUsers.delivered = 0) AS drinkClient GROUP BY name', (err, rows, fields) => {
-            callback(rows)
-        })
-    } else {
-        db.query('SELECT count(*) AS count, name FROM (SELECT drink, identifier, name FROM spatulasUsers INNER JOIN spatulasDrinks ON spatulasUsers.drink = spatulasDrinks.identifier) AS drinkClient GROUP BY name', (err, rows, fields) => {
-            callback(rows);
-        })
-    }
-    
-}
-
-
-/**
- * Count the number of each fries
- * @param {function} callback 
- * @param {*} connection 
- */
-function countFries(callback, toPrepareOnly = false, connection = null) {
-    db = (connection) ? connection : pool;
-    if (toPrepareOnly) {
-        db.query('SELECT count(*) AS count, name FROM (SELECT fries, identifier, name FROM spatulasUsers INNER JOIN spatulasFries ON spatulasUsers.fries = spatulasFries.identifier WHERE spatulasUsers.preparation = 1 AND spatulasUsers.ready = 0 AND spatulasUsers.delivered = 0) AS friesClient GROUP BY name', (err, rows, fields) => {
-            callback(rows)
-        })
-    } else {
-        db.query('SELECT count(*) AS count, name FROM (SELECT fries, identifier, name FROM spatulasUsers INNER JOIN spatulasFries ON spatulasUsers.fries = spatulasFries.identifier) AS friesClient GROUP BY name', (err, rows, fields) => {
-            callback(rows);
-        })
-    }
-}
-
-/**
  * Count the number of each item (burger, fries, drink), in a list of lists
  * @param {function} callback
  * @param {*} connection
@@ -424,82 +492,12 @@ async function getAllItemsCount(callback, queriesCondition = "", limit = null, c
 }
 
 /**
- * Returns a list containing all fries
- * @param {function} callback 
- */
-function getFries(callback, addURL = false, connection = null) {
-    db = (connection) ? connection : pool
-    db.query('SELECT * FROM spatulasFries', (err, rows, fields) => {
-        if (addURL) {
-            for (let i = 0; i < rows.length; i++) {
-                rows[i].url = '/spadmin/deleteFries/' + rows[i].identifier;
-            }
-            callback(rows, fields);
-        } else {
-            callback(rows, fields);
-        }
-    })
-}
-
-/**
- * Returns a list containing all drinks
- * @param {function} callback 
- */
-function getDrinks(callback, addURL = false, connection = null) {
-    db = (connection) ? connection : pool
-    db.query('SELECT * FROM spatulasDrinks', (err, rows, fields) => {
-        if (addURL) {
-            for (let i = 0; i < rows.length; i++) {
-                rows[i].url = '/spadmin/deleteDrink/' + rows[i].identifier;
-            }
-            callback(rows, fields);
-        } else {
-            callback(rows, fields);
-        }
-    })
-}
-
-/**
  * Give to callback function a boolean indicating whether the identifier is in the database or not.
  * @param {*} value
  */
 function checkBurger(value, callback, connection = null) {
     conn = (connection) ? connection : pool;
     getBurgers((rows) => {
-        for (let i = 0; i < rows.length; i++) {
-            if (value == rows[i].identifier) {
-                callback(true);
-                return;
-            }
-        }
-        callback(false);
-    }, false, conn)
-}
-
-/**
- * Give to callback function a boolean indicating whether the identifier is in the database or not.
- * @param {*} value
- */
-function checkFries(value, callback, connection = null) {
-    conn = (connection) ? connection : pool;
-    getFries((rows) => {
-        for (let i = 0; i < rows.length; i++) {
-            if (value == rows[i].identifier) {
-                callback(true);
-                return;
-            }
-        }
-        callback(false);
-    }, false, conn)
-}
-
-/**
- * Give to callback function a boolean indicating whether the identifier is in the database or not.
- * @param {*} value
- */
-function checkDrink(value, callback, connection = null) {
-    conn = (connection) ? connection : pool;
-    getDrinks((rows) => {
         for (let i = 0; i < rows.length; i++) {
             if (value == rows[i].identifier) {
                 callback(true);
@@ -518,26 +516,6 @@ function checkDrink(value, callback, connection = null) {
 function deleteBurger(burgerId, connection = null) {
     conn = (connection) ? connection : pool;
     conn.execute('DELETE FROM spatulasBurgers WHERE identifier = ?', [burgerId]);
-}
-
-/**
- * Delete the fries in the database with the specified Id
- * @param {String} friesId 
- * @param {*} connection 
- */
-function deleteFries(friesId, connection = null) {
-    conn = (connection) ? connection : pool;
-    conn.execute('DELETE FROM spatulasFries WHERE identifier = ?', [friesId]);
-}
-
-/**
- * Delete the drink in the database with the specified Id
- * @param {String} drinkId 
- * @param {*} connection 
- */
-function deleteDrink(drinkId, connection = null) {
-    conn = (connection) ? connection : pool;
-    conn.execute('DELETE FROM spatulasDrinks WHERE identifier = ?', [drinkId]);
 }
 
 function calculatePrice(burgerId, friesId, drinkId, dessertId, callback, connection = null) {
@@ -685,81 +663,11 @@ function refreshCommand(userId, callback, conn = null) {
     }) 
 }
 
-// ! Temporary fix to implement the new dessert table, will be removed in the future
-
-/**
- * This function will insert a new dessert into the database, identically to its burger counterpart
- */
-function insertDessert(identifier, name, description = null, price = null, connection = null) {
-    db = (connection) ? connection : pool
-    db.execute('INSERT INTO spatulasDesserts VALUES (?, ?, ?, ?)', [identifier, name, description, price], (err, rows, fields) => {
-        if (err) {
-            console.log(err);
-        }
-    })
-}
-
-/**
- * This function will return all desserts in the database
- */
-function getDesserts(callback, addURL = false, connection = null) {
-    db = (connection) ? connection : pool
-    db.execute('SELECT * FROM spatulasDesserts', (err, rows, fields) => {
-        if (addURL) {
-            for (let i = 0; i < rows.length; i++) {
-                rows[i].url = '/spadmin/deleteDessert/' + rows[i].identifier;
-            }
-            callback(rows, fields);
-        } else {
-            callback(rows, fields);
-        }
-    })
-}
-
-/**
- * This function will count the number of each dessert asked for by users, and associate it with the dessert's name
- */
-function countDesserts(callback, connection = null) {
-    db = (connection) ? connection : pool
-    db.execute('SELECT count(*) AS count, name FROM (SELECT dessert, identifier, name FROM spatulasUsers INNER JOIN spatulasDesserts ON spatulasUsers.dessert = spatulasDesserts.identifier) AS dessertClient GROUP BY name', (err, rows, fields) => {
-        callback(rows);
-    })
-}
-
-/**
- * This function will check whether a dessert exists in the database
- */
-function checkDessert(dessertId, callback, connection = null) {
-    db = (connection) ? connection : pool
-    db.execute('SELECT COUNT(*) AS count FROM spatulasDesserts WHERE identifier=?', [dessertId], (err, rows, fields) => {
-        callback(rows[0].count);
-    })
-}
-
-/**
- * This function will delete a dessert from the database
- */
-function deleteDessert(dessertId, connection = null) {
-    db = (connection) ? connection : pool
-    db.execute('DELETE FROM spatulasDesserts WHERE identifier=?', [dessertId])
-}
-
-/**
- * This function will return the price of a dessert
- */
-function getDessertPrice(dessertId, callback, connection = null) {
-    db = (connection) ? connection : pool
-    db.execute('SELECT price FROM spatulasDesserts WHERE identifier=?', [dessertId], (err, rows, fields) => {
-        callback(rows[0].price);
-    })
-}
-
 module.exports = {
     createDatabase,
     insertUser,
-    insertBurger,
-    insertFries,
-    insertDrink,
+    insertTable,
+    insertRow,
     getUsers,
     getUntreatedUsers,
     getPreparationUsers,
@@ -769,19 +677,12 @@ module.exports = {
     getUsersByTime,
     searchUser,
     clearUsers,
-    getBurgers,
+    getTable,
+    getTables,
     countBurgers,
-    getFries,
-    countFries,
-    getDrinks,
-    countDrinks,
     getAllItemsCount,
     checkBurger,
-    checkFries,
-    checkDrink,
     deleteBurger,
-    deleteFries,
-    deleteDrink,
     calculatePrice,
     convertFoodIdToFoodName,
     togglePrepare,
@@ -789,10 +690,4 @@ module.exports = {
     toggleDelivered,
     purgeDatabase,
     refreshCommand,
-    getDesserts,
-    insertDessert,
-    countDesserts,
-    checkDessert,
-    deleteDessert,
-    getDessertPrice
 }

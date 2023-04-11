@@ -21,42 +21,19 @@
                 <input type="text" id="firstName" name="firstName" placeholder="John" maxlength="32">
             </div>
         </div>
-        <div class="input-div">
-            <label for="burger"> Burger </label>
-            <select name="burger" id="burger">
+
+        {{#each tables}}
+            <div class="input-div">
+                <label for="table-{{this.name}}"> {{this.name}} </label>
+                <select name="table-{{this.name}}" id="table-{{this.name}}">
                     <option disabled selected value="none"> -- Select an option -- </option>
-                {{#each burgers}}
-                    <option value={{this.identifier}} id={{this.identifier}} {{#if this.price }} data-price={{this.price}} {{/if}}> {{this.name}} ({{#if this.price}}{{this.price}}{{else}}0.00{{/if}}€) {{#if this.description}}: {{this.description}} {{/if}} </option>
-                {{/each}}
-            </select>
-        </div>
-        <div class="input-div">
-            <label for="fries"> Fries </label>
-            <select name="fries" id="fries">
-                <option disabled selected value="none"> -- Select an option -- </option>
-                {{#each fries}}
-                    <option value={{this.identifier}} id={{this.identifier}} {{#if this.price }} data-price={{this.price}} {{/if}}> {{this.name}} ({{#if this.price}}{{this.price}}{{else}}0.00{{/if}}€) {{#if this.description}}: {{this.description}} {{/if}} </option>
-                {{/each}}
-            </select>
-        </div>
-        <div class="input-div">
-            <label for="drink"> Drink </label>
-            <select name="drink" id="drink">
-                <option disabled selected value="none"> -- Select an option -- </option>
-                {{#each drinks}}
-                    <option value={{this.identifier}} id={{this.identifier}} {{#if this.price }} data-price={{this.price}} {{/if}}> {{this.name}} ({{#if this.price}}{{this.price}}{{else}}0.00{{/if}}€) {{#if this.description}}: {{this.description}} {{/if}} </option>
-                {{/each}}
-            </select>
-        </div>
-        <div class="input-div">
-            <label for="dessert"> Dessert </label>
-            <select name="dessert" id="dessert">
-                <option disabled selected value="none"> -- Select an option -- </option>
-                {{#each desserts}}
-                    <option value={{this.identifier}} id={{this.identifier}} {{#if this.price }} data-price={{this.price}} {{/if}}> {{this.name}} ({{#if this.price}}{{this.price}}{{else}}0.00{{/if}}€) {{#if this.description}}: {{this.description}} {{/if}} </option>
-                {{/each}}
-            </select>
-        </div>
+                    {{#each this.content}}
+                        <option value={{this.name}} id={{../this.name}}-{{this.name}} {{#if this.price }} data-price={{this.price}} {{/if}}> {{this.name}} ({{#if this.price}}{{this.price}}{{else}}0.00{{/if}}€) {{#if this.description}}: {{this.description}} {{/if}} </option>
+                    {{/each}}
+                </select>
+            </div>
+        {{/each}}
+
         <div class="input-div">
             <label for="time"> Pick up time </label>
             <select name="time" id="time">
@@ -78,7 +55,9 @@
         </div>
         <input type="submit" value="Submit" id="submit-button" disabled/>
     </form>
-    <script src='/javascripts/home.js'> </script>
+    <script src='/javascripts/homeInputs.js'> </script>
+    <script src='/javascripts/homePrice.js'> </script>
+    <script src='/javascripts/homeWS.js'> </script>
 {{else}}
     <img class="huge-logo" src="/images/home/huge_logo.webp" alt="Logo Spatul'As X Corentin">
     <div class="message-container">
