@@ -2,15 +2,23 @@ var express = require('express');
 const { body, query, check } = require('express-validator');
 var router = express.Router();
 let pool = require('./databaseConnector');
-let { createDatabase, insertUser, getUsers, getPreparationUsers, getReadyUsers, checkBurger, searchUser, calculatePrice, getUsersByStatus, getUsersByTime, getTables, insertTable, insertRow } = require("./databaseUtilities.js");
+let { createDatabase, insertUser, getUsers, getPreparationUsers, getReadyUsers, searchUser, calculatePrice, getUsersByStatus, getUsersByTime, getTables, insertTable, insertRow, checkTables, getValuesFromRequest } = require("./databaseUtilities.js");
 let { getTimes, getRegistration, getRegistrationDay, checkTime, getTimeIndex, checkPassword, getGlobalTimes, getTimeCount, checkAndRepairTimes } = require('./settingsUtilities');
 let { sendTimeCount } = require('./webSocket');
 
 async function init() {
-  await createDatabase();
-  await insertTable("Burgers", "Cheeseburger", "This is a cheeseburger", 5);
-  await insertTable("Fries", "Frites paprika", "Miam !", 1);
-  await insertRow("Fries", "Sans frites", "Pas faim !", 0);
+  let conn = await pool.promise().getConnection();
+
+  await createDatabase(conn);
+  await insertTable("Burgers", "Cheeseburger", "This is a cheeseburger", 5, conn);
+  await insertRow("Burgers", "Baconburger", "This is a baconBurger", 5, conn);
+  await insertRow("Burgers", "Gourmet", "This is some serious gourmet shit !", 6, conn);
+  await insertTable("Fries", "Frites paprika", "Miam !", 1, conn);
+  await insertRow("Fries", "Sans frites", "Pas faim !", 0, conn);
+  await insertTable("Drinks", "Canette", null, 1, conn);
+  await insertRow("Drinks", "Pas soif", null, 0, conn);
+
+  conn.release();
 }
 init();
 
@@ -24,14 +32,15 @@ router.get('/',
   function(req, res, next) {
     checkPassword(req.cookies.spatulasPower, (auth) => {
       getRegistration((registStatus) => {
-        getRegistrationDay((day) => {
-          pool.getConnection(async (err, conn) => {
-            let tables = await getTables(conn);
-            getGlobalTimes((times) => {
-              pool.releaseConnection(conn);
-              res.render('home', { title: 'Home', admin: auth, registrationOpen: (registStatus || auth), userRegistrationOpen: registStatus, adminRegistrationOpen: auth, tables: tables, times: times, day: day, error: (req.query.error) ? req.query.error : null });
-            }, conn)
-          })
+        getRegistrationDay(async (day) => {
+          // We will now access the MySQL database for all needed informations
+          let conn = await pool.promise().getConnection()
+          let tables = await getTables(conn);
+          let times = await getGlobalTimes(conn);
+
+          await conn.release(); // Releasing connection
+          // Rendering home page
+          res.render('home', { title: 'Home', admin: auth, registrationOpen: (registStatus || auth), userRegistrationOpen: registStatus, adminRegistrationOpen: auth, tables: tables, times: times, day: day, error: (req.query.error) ? req.query.error : null });
         })
       })
     })
@@ -54,44 +63,32 @@ router.get('/queue',
 router.post('/register', 
   body('lastName').trim().escape(), // Sanitizing user inputs
   body('firstName').trim().escape(),
-  body('burger').trim().escape(),
-  body('fries').trim().escape(),
-  body('drink').trim().escape(),
-  body('dessert').trim().escape(),
   body("time").trim().escape(),
   body('accept').trim().escape(),
   (req, res, next) => {
     getRegistration((registStatus) => {
-      checkPassword(req.cookies.spatulasPower, (adminRegistStatus) => {
+      checkPassword(req.cookies.spatulasPower, async (adminRegistStatus) => {
         if (registStatus || adminRegistStatus) { // Only allowing to post new commands if registrations are open or if it's an admin
-          pool.getConnection((err, conn) => {
-            checkBurger(req.body.burger, (burgerBool) => {
-              checkDrink(req.body.drink, (drinkBool) => {
-                checkFries(req.body.fries, (friesBool) => {
-                  checkDessert(req.body.dessert, (dessertBool) => {
-                    checkTime(req.body.time, (timeBool) => { // Checking that all inputs are in database
-                      if (req.body.lastName && req.body.lastName.length <= 32 && req.body.firstName && req.body.firstName.length <= 32 && req.body.burger && req.body.fries && req.body.drink && req.body.time && req.body.accept == 'on' && burgerBool && drinkBool && friesBool && dessertBool && timeBool) {
-                        calculatePrice(req.body.burger, req.body.fries, req.body.drink, req.body.dessert, (price) => {
-                          insertUser(req.body.lastName, req.body.firstName, req.body.burger, req.body.fries, req.body.drink, req.body.dessert, req.body.time, price, conn);
+          let conn = await pool.promise().getConnection()
+          let foods = await getValuesFromRequest(req.body, conn);
+          let foodBoolean = await checkTables(foods, conn);
+          let timeBool = await checkTime(req.body.time, conn);
 
-                          // Before sending user to queue, we send a message through websocket to inform of the change of remaining places on the time stamp
-                          getTimeCount((count) => {
-                            sendTimeCount(req.body.time, count);
-                            pool.releaseConnection(conn);
-                            res.redirect('/queue');
-                          }, req.body.time, conn)
-                        
-                        }, conn);
-                      } else {
-                        pool.releaseConnection(conn);
-                        res.redirect('/?error=true');
-                      }
-                    }, (adminRegistStatus) ? null : true, conn)
-                  }, conn)
-                }, conn)
-              }, conn)
-            }, conn)
-          })
+          if (req.body.lastName && req.body.lastName.length <= 32 && req.body.firstName && req.body.firstName.length <= 32 && req.body.time && req.body.accept == 'on' && timeBool && foodBoolean) {
+            let price = await calculatePrice(foods, conn);
+            await insertUser(req.body.lastName, req.body.firstName, req.body.time, price, foods, conn);
+
+            // Before sending user to queue, we send a message through websocket to inform of the change of remaining places on the time stamp
+            getTimeCount((count) => {
+              sendTimeCount(req.body.time, count);
+              pool.releaseConnection(conn);
+              res.redirect('/queue');
+            }, req.body.time, conn)
+                      
+          } else {
+            pool.releaseConnection(conn);
+            res.redirect('/?error=true');
+          }
         } else {
           res.redirect('/');
         }

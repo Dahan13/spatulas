@@ -25,10 +25,10 @@
         {{#each tables}}
             <div class="input-div">
                 <label for="table-{{this.name}}"> {{this.name}} </label>
-                <select name="table-{{this.name}}" id="table-{{this.name}}">
+                <select name="{{this.name}}" id="table-{{this.name}}">
                     <option disabled selected value="none"> -- Select an option -- </option>
                     {{#each this.content}}
-                        <option value={{this.name}} id={{../this.name}}-{{this.name}} {{#if this.price }} data-price={{this.price}} {{/if}}> {{this.name}} ({{#if this.price}}{{this.price}}{{else}}0.00{{/if}}€) {{#if this.description}}: {{this.description}} {{/if}} </option>
+                        <option value="{{this.name}}" id={{../this.name}}-{{this.name}} {{#if this.price }} data-price={{this.price}} {{/if}}> {{this.name}} ({{#if this.price}}{{this.price}}{{else}}0.00{{/if}}€) {{#if this.description}}: {{this.description}} {{/if}} </option>
                     {{/each}}
                 </select>
             </div>

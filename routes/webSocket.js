@@ -14,7 +14,7 @@ server.on('connection', function(socket) {
   sockets.push(socket);
 
   socket.on('message', function(msg) {
-    let message = validator.escape(msg.toString('utf-8'));
+    let message = validator.escape(msg.toString('utf-8')); // Sanitizing user inputs
     console.log('SOCKET Received : ', message);
     result = message.split('  ');
     checkPassword(result[0], (auth) => {
