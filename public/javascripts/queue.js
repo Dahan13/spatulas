@@ -74,7 +74,7 @@ function displayCommand(evenement) {
     }
 
     // Displaying the menu
-    commandId = command.dataset.userid
+    commandId = command.dataset.commandid
     toggledMenuId = commandId;
     menu = document.getElementById("menu-" + commandId);
     menu.classList.toggle("invisible");

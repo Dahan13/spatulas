@@ -18,27 +18,25 @@
                 {{#unless this.delivered}}
                     <div class="command">
                         <div class="command-container {{#if this.ready}} ready {{else}} {{#if this.preparation}} preparation {{/if}} {{/if}} ">
-                            <p> {{this.userId}} </p>
+                            <p> {{this.commandId}} </p>
                             <div class="image-holder"></div>
                         </div>
                         <div class="infos-container">
                             <div class="command-name-container">
-                                <p> {{this.firstName}} </p>
-                                <p> {{this.lastName}} </p>
+                                <div>
+                                    <p> {{this.firstName}} </p>
+                                    <p> {{this.lastName}} </p>
+                                </div>
                             </div>
-                            <div class="menu invisible" id="menu-{{this.userId}}"> 
+                            <div class="menu invisible" id="menu-{{this.commandId}}"> 
                                 <div class="food-holder">
-                                    <p> {{this.burger}} </p>
-                                    <p> {{this.fries}} </p>
-                                    <p> {{this.drink}} </p>
-                                    <p> {{this.dessert}} </p>
                                 </div>
                                 <div class="price-holder">
                                     <p> {{this.price}}€ </p>
                                 </div>
                             </div>
                         </div>
-                        <div class="menu-button" data-userId={{this.userId}} id=but-{{this.userId}}> <div data-userId={{this.userId}} id=but2-{{this.userId}}> </div> </div>
+                        <div class="menu-button" data-commandId={{this.commandId}} id=but-{{this.commandId}}> <div data-commandId={{this.commandId}} id=but2-{{this.commandId}}> </div> </div>
                     </div>
                 {{/unless}}
                 {{/each}}
@@ -53,7 +51,13 @@
     <p> Last update : <span id="last-update-time"> </span> </p>
     <img src="/images/queue/reload.webp" alt="Reload" id="reload-button">
 </div>
+<script>
+    // Retrieving data from server for the front-end scripts
+    const tables = JSON.parse(decodeURIComponent("{{{jsTables}}}"));
+    const commands = JSON.parse(decodeURIComponent("{{{jsUsers}}}"));
+</script>
 <script src="javascripts/queue.js"></script>
+
 
 
 

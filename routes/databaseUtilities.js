@@ -219,7 +219,7 @@ async function insertUser(lastName, firstName, time, price, foods, connection = 
 
     for (let i = 0; i < times.length; i++) {
         if (!times[i].full) { // If at least one time slot is not full, we return
-            return;
+            return true;
         }
     }
 
@@ -391,36 +391,37 @@ function getUsersByStatus(callback, convertFood = false, orderCriteria1 = null, 
  * @param {string} searchString
  * @returns {Array} => [[time, [users]], [time, [users]], ...]
  */
-async function getUsersByTime(callback, searchString = "", orderCriteria = "userId", conn) {
-    let db = (conn) ? conn.promise() : await pool.promise().getConnection(); // If a connection is provided, use it, otherwise create a new one. Note that we are using promises in this function, so we need to use the promise() function to get a promise-based connection
-    let sortedUsers = []
-    getGlobalTimes(async (times) => {
-        namesToSearch = searchString.split(" "); // Split the search string into an array of names, we will test all of them
+async function getUsersByTime(searchString = "", orderCriteria = "userId", conn) {
+    let db = (conn) ? conn : await pool.promise().getConnection(); // If a connection is provided, use it, otherwise create a new one. Note that we are using promises in this function, so we need to use the promise() function to get a promise-based connection
+    let sortedUsers = [];
+    let times = await getGlobalTimes(db);
 
-        for (let i = 0; i < times.length; i++) {
-            sortedUsers[i] = {}; // Create a new object for this time stamp
-            sortedUsers[i]["timeSettings"] = times[i]; // Add the time stamp to the list
-            
-            // Search for users that have been added at this time stamp
-            let usersFound = await db.query('SELECT * FROM spatulasUsers WHERE time=? AND (firstName LIKE ? OR lastName LIKE ?) ORDER BY ' + orderCriteria, [times[i].time, namesToSearch[0] + "%", namesToSearch[0] + "%"]);
-            usersFound = usersFound[0]; // The query returns an array of arrays, we only want the first one
+    let namesToSearch = searchString.split(" "); // Split the search string into an array of names, we will test all of them
 
-            // If there are more than one name to search, we will intersect the results of each search to get the users that match all names
-            for (let j = 1; j < namesToSearch.length; j++) {
-                let newUsers = await db.query('SELECT * FROM spatulasUsers WHERE time=? AND (firstName LIKE ? OR lastName LIKE ?) ORDER BY ' + orderCriteria, [times[i].time, namesToSearch[j] + "%", namesToSearch[j] + "%"])
-                newUsers = newUsers[0];
+    for (let i = 0; i < times.length; i++) {
+        sortedUsers[i] = {}; // Create a new object for this time stamp
+        sortedUsers[i]["timeSettings"] = times[i]; // Add the time stamp to the list
+        
+        // Search for users that have been added at this time stamp
+        let usersFound = await db.query('SELECT * FROM spatulasCommands WHERE time=? AND (firstName LIKE ? OR lastName LIKE ?) ORDER BY ' + orderCriteria, [times[i].time, namesToSearch[0] + "%", namesToSearch[0] + "%"]);
+        usersFound = usersFound[0]; // The query returns an array of arrays, we only want the first one
 
-                // Intersect the two arrays
-                usersFound = usersFound.filter(n => newUsers.some(n2 => n.userId == n2.userId));
-            }
-            // Add the users to the list
-            sortedUsers[i]["users"] = (usersFound.length > 0) ? usersFound : null; // If there are no users, we set the value to null
+        // If there are more than one name to search, we will intersect the results of each search to get the users that match all names
+        for (let j = 1; j < namesToSearch.length; j++) {
+            let newUsers = await db.query('SELECT * FROM spatulasCommands WHERE time=? AND (firstName LIKE ? OR lastName LIKE ?) ORDER BY ' + orderCriteria, [times[i].time, namesToSearch[j] + "%", namesToSearch[j] + "%"])
+            newUsers = newUsers[0];
+
+            // Intersect the two arrays
+            usersFound = usersFound.filter(n => newUsers.some(n2 => n.userId == n2.userId));
         }
-        if (!conn) db.release(); // If we created a new connection, we need to release it
+        // Add the users to the list
+        sortedUsers[i]["users"] = (usersFound.length > 0) ? usersFound : null; // If there are no users, we set the value to null
+    }
 
-        // Return the list
-        callback(sortedUsers);
-    }, false, db)
+    if (!conn) db.release(); // If we created a new connection, we need to release it
+
+    // Return the list
+    return sortedUsers;
 }
     
 
@@ -430,6 +431,7 @@ async function getUsersByTime(callback, searchString = "", orderCriteria = "user
 /**
  * This function search for users according to last and first name.
  * MAKE SURE THAT FIRST AND LAST NAME ARE SANITIZED, THIS FUNCTION DO NOT USE PRE-COMPILED STATEMENTS
+ * ! This function is deprecated, will be removed soon
  * @param {String} firstName 
  * @param {String} lastName 
  * @param {function} callback 
@@ -750,6 +752,7 @@ module.exports = {
     clearUsers,
     getTable,
     getTables,
+    getTableNames,
     checkTables,
     getValuesFromRequest,
     countBurgers,

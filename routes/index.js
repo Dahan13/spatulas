@@ -2,7 +2,7 @@ var express = require('express');
 const { body, query, check } = require('express-validator');
 var router = express.Router();
 let pool = require('./databaseConnector');
-let { createDatabase, insertUser, getUsers, getPreparationUsers, getReadyUsers, searchUser, calculatePrice, getUsersByStatus, getUsersByTime, getTables, insertTable, insertRow, checkTables, getValuesFromRequest } = require("./databaseUtilities.js");
+let { createDatabase, insertUser, getUsers, getPreparationUsers, getReadyUsers, searchUser, calculatePrice, getUsersByStatus, getUsersByTime, getTables, insertTable, insertRow, checkTables, getValuesFromRequest, getTableNames } = require("./databaseUtilities.js");
 let { getTimes, getRegistration, getRegistrationDay, checkTime, getTimeIndex, checkPassword, getGlobalTimes, getTimeCount, checkAndRepairTimes } = require('./settingsUtilities');
 let { sendTimeCount } = require('./webSocket');
 
@@ -53,10 +53,11 @@ router.get('/register', (req, res, next) => {
 router.get('/queue', 
   query('search-query').trim().escape(),
   (req, res, next) => {
-    checkPassword(req.cookies.spatulasPower, (auth) => {
-      getUsersByTime((users) => {
-        res.render('queue', { title: 'Queue', admin: auth, searching: (req.query["search-query"]) ? true : false, users: users });
-      }, req.query["search-query"], "lastUpdated DESC")
+    checkPassword(req.cookies.spatulasPower, async (auth) => {
+      let users = await getUsersByTime(req.query["search-query"], "lastUpdated DESC");
+      let tables = await getTableNames()
+
+      res.render('queue', { title: 'Queue', admin: auth, searching: (req.query["search-query"]) ? true : false, users: users, tables: tables, jsTables: encodeURIComponent(JSON.stringify(tables)), jsUsers: encodeURIComponent(JSON.stringify(users)) });
     })
 })
 
@@ -69,27 +70,36 @@ router.post('/register',
     getRegistration((registStatus) => {
       checkPassword(req.cookies.spatulasPower, async (adminRegistStatus) => {
         if (registStatus || adminRegistStatus) { // Only allowing to post new commands if registrations are open or if it's an admin
+
+          // We will now access the MySQL database for all needed informations
           let conn = await pool.promise().getConnection()
           let foods = await getValuesFromRequest(req.body, conn);
           let foodBoolean = await checkTables(foods, conn);
           let timeBool = await checkTime(req.body.time, conn);
 
+          // Checking if the user filled all the fields and if the time stamp is valid
           if (req.body.lastName && req.body.lastName.length <= 32 && req.body.firstName && req.body.firstName.length <= 32 && req.body.time && req.body.accept == 'on' && timeBool && foodBoolean) {
-            let price = await calculatePrice(foods, conn);
-            await insertUser(req.body.lastName, req.body.firstName, req.body.time, price, foods, conn);
 
-            // Before sending user to queue, we send a message through websocket to inform of the change of remaining places on the time stamp
-            getTimeCount((count) => {
-              sendTimeCount(req.body.time, count);
-              pool.releaseConnection(conn);
-              res.redirect('/queue');
-            }, req.body.time, conn)
-                      
-          } else {
-            pool.releaseConnection(conn);
+            // Calculating the price of the order and inserting the user in the database
+            let price = await calculatePrice(foods, conn);
+            let insertResult = await insertUser(req.body.lastName, req.body.firstName, req.body.time, price, foods, conn);
+
+            if (insertResult) { // If the user was successfully inserted in the database
+              // Before sending user to queue, we send a message through websocket to inform of the change of remaining places on the time stamp
+              getTimeCount((count) => {
+                sendTimeCount(req.body.time, count);
+                conn.release();
+                res.redirect('/queue');
+              }, req.body.time, conn)
+            } else { // If the user was not successfully inserted in the database
+              conn.release();
+              res.redirect('/?error=true');
+            }      
+          } else { // If the user did not fill all the fields
+            conn.release();
             res.redirect('/?error=true');
           }
-        } else {
+        } else { // If the user tried to post a command while registrations were closed
           res.redirect('/');
         }
       })

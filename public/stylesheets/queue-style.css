@@ -81,7 +81,16 @@ h1 {
     overflow: hidden;
 }
 
-.command-name-container > p {
+.command-name-container > div {
+    display: flex;
+    flex-direction:  column;
+    justify-content: space-around;
+
+    padding: 5px;
+    margin: 5px;
+}
+
+.command-name-container > div > p{
     font-size: 1rem;
     font-weight: bold;
     margin-left: 3px;
@@ -224,6 +233,10 @@ h2 {
     .command-name-container {
         flex-direction: row;
         align-items: center;
+    }
+
+    .command-name-container > div {
+        flex-direction: row;
     }
 
     .ready > .image-holder {
