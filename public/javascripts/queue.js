@@ -12,9 +12,6 @@ const searchForm = "\
 </form>\
 "
 
-
-
-
 searchButton.addEventListener('click', () => {
     popup.innerHTML = searchForm;
 
@@ -73,10 +70,22 @@ function displayCommand(evenement) {
         oldButton1.addEventListener('click', displayCommand);
     }
 
-    // Displaying the menu
+    // Building the menu of the selected person
     commandId = command.dataset.commandid
-    toggledMenuId = commandId;
     menu = document.getElementById("menu-" + commandId);
+    menuToFill = menu.querySelector(".food-holder");
+    menuToFill.innerHTML = "";
+    for (let i = 0; i < commands.length; i++) {
+        if (commandId == commands[i].commandId) {
+            for (let j = 0; j < tables.length; j++) {
+                let element = "<p>" + commands[i][tables[j].foodName] + "</p>";
+                menuToFill.innerHTML += element;
+            }
+        }
+    }
+
+    // Displaying the menu
+    toggledMenuId = commandId;
     menu.classList.toggle("invisible");
 }
 

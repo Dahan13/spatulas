@@ -54,10 +54,15 @@ router.get('/queue',
   query('search-query').trim().escape(),
   (req, res, next) => {
     checkPassword(req.cookies.spatulasPower, async (auth) => {
-      let users = await getUsersByTime(req.query["search-query"], "lastUpdated DESC");
-      let tables = await getTableNames()
+      let connection = await pool.promise().getConnection();
 
-      res.render('queue', { title: 'Queue', admin: auth, searching: (req.query["search-query"]) ? true : false, users: users, tables: tables, jsTables: encodeURIComponent(JSON.stringify(tables)), jsUsers: encodeURIComponent(JSON.stringify(users)) });
+      let users = await getUsersByTime(req.query["search-query"], "lastUpdated DESC", connection);
+      let tables = await getTableNames(connection);
+      let toEncodeUsers = await getUsers(null, connection);
+
+      connection.release();
+
+      res.render('queue', { title: 'Queue', admin: auth, searching: (req.query["search-query"]) ? true : false, users: users, tables: tables, jsTables: encodeURIComponent(JSON.stringify(tables)), jsUsers: encodeURIComponent(JSON.stringify(toEncodeUsers)) });
     })
 })
 

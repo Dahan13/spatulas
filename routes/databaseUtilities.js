@@ -255,17 +255,25 @@ function insertBurger(identifier, name, description = null, price = null, connec
  * @param {function} callback 
  * @param {string} orderCriteria
  */
-function getUsers(callback, orderCriteria = null, connection = null) {
-    let db = (connection) ? connection : pool
+async function getUsers(orderCriteria = null, connection = null) {
+    let db = (connection) ? connection : await pool.promise().getConnection();
+    let queryString = "";
+
+    // We check if we need to order the results
     if (orderCriteria) {
-        db.query('SELECT * FROM spatulasUsers ORDER BY ' + orderCriteria, (err, rows, fields) => {
-            callback(rows, fields);
-        })
-    } else {
-        db.query('SELECT * FROM spatulasUsers', (err, rows, fields) => {
-            callback(rows, fields);
-        })
+        queryString = 'ORDER BY ' + orderCriteria;
+    } else { // If not, we set the query string to an empty string
+        queryString = '';
     }
+
+    // Releasing the connection if it was not passed as a parameter
+    if (!connection) {
+        db.release();
+    } 
+
+    // We execute the query
+    let value = await db.query('SELECT * FROM spatulasCommands ' + queryString);
+    return value[0]
 }
 
 /**
