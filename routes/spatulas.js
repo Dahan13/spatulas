@@ -4,7 +4,7 @@ var stringify = require('csv-stringify');
 const { body, query } = require('express-validator');
 var router = express.Router();
 let pool = require('./databaseConnector')
-let { getUntreatedUsers, getPreparationUsers, getReadyUsers, getDeliveredUsers, getBurgers, getFries, getDrinks, searchUser, countBurgers, countFries, countDrinks, insertBurger, deleteBurger, deleteFries, deleteDrink, insertFries, insertDrink, clearUsers, convertFoodIdToFoodName, purgeDatabase, getUsersByStatus, getAllItemsCount, getDesserts, countDesserts, insertDessert, deleteDessert } = require("./databaseUtilities.js");
+let { getUntreatedUsers, getPreparationUsers, getReadyUsers, getDeliveredUsers, getBurgers, getFries, getDrinks, searchUser, countBurgers, countFries, countDrinks, insertBurger, deleteBurger, deleteFries, deleteDrink, insertFries, insertDrink, clearUsers, purgeDatabase, getUsersByStatus, getAllItemsCount, getDesserts, countDesserts, insertDessert, deleteDessert } = require("./databaseUtilities.js");
 let { getTimes, getRegistration, getRegistrationDay, getLimit, setRegistration, setRegistrationDay, setLimit, addTime, removeTime, getPassword, checkPassword, authenticate, setPassword, getKitchenLimit, setKitchenLimit } = require('./settingsUtilities');
 
 /* GET users listing. */
@@ -40,20 +40,9 @@ query('last-name').trim().escape(),
 query('index').trim().escape().toInt(),
 (req, res, next) => {
   authenticate(req, res, () => {
-    if (req.query['first-name'] || req.query['last-name']) { // ! This part is currently not working, will be fixed in v3.0.0 with the new database system
-      pool.getConnection((err, conn) => {
-        searchUser(req.query['first-name'], req.query['last-name'], (users) => {
-          convertFoodIdToFoodName(users, (users) => {
-            res.render('admin-queue', { title: 'Queue Manager', admin: true, searching: true, users: users, notEmpty: (typeof users !== "undefined" && users.length > 0) ? true : false });
-            pool.releaseConnection(conn);
-          }, conn)
-        }, null, 999, conn)
-      })
-    } else {
-      getUsersByStatus((users) => {  
-        res.render('admin-queue', { title: 'Queue Manager', admin: true, searching: false, users: users, notEmpty: (typeof users !== "undefined" && users.length > 0) ? true : false });
-      }, true, 'userId', 'lastUpdated', 'lastUpdated', 'lastUpdated');     
-    }
+    getUsersByStatus((users) => {  
+      res.render('admin-queue', { title: 'Queue Manager', admin: true, searching: false, users: users, notEmpty: (typeof users !== "undefined" && users.length > 0) ? true : false });
+    }, true, 'userId', 'lastUpdated', 'lastUpdated', 'lastUpdated');   
   })
 })
 
@@ -105,12 +94,10 @@ router.get('/kitchen', (req, res, next) => {
     pool.getConnection((err, conn) => {
       getKitchenLimit((limit) => {
         getPreparationUsers((users) => {
-          convertFoodIdToFoodName(users, (users) => {
-            getAllItemsCount((count) => {
-              res.render('kitchen', { title: 'Kitchen Tab', admin: true, users: users, count: count, limit: limit, notEmpty: (typeof users !== "undefined" && users.length > 0) ? true : false });
-              pool.releaseConnection(conn);
-            }, "preparation = 1 AND ready = 0 AND delivered = 0 ORDER BY lastUpdated", limit, conn)
-          }, conn)
+          getAllItemsCount((count) => {
+            res.render('kitchen', { title: 'Kitchen Tab', admin: true, users: users, count: count, limit: limit, notEmpty: (typeof users !== "undefined" && users.length > 0) ? true : false });
+            pool.releaseConnection(conn);
+          }, "preparation = 1 AND ready = 0 AND delivered = 0 ORDER BY lastUpdated", limit, conn)
         }, 'lastUpdated', limit, conn)
       })
     })

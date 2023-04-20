@@ -58,7 +58,8 @@ router.get('/queue',
 
       let users = await getUsersByTime(req.query["search-query"], "lastUpdated DESC", connection);
       let tables = await getTableNames(connection);
-      let toEncodeUsers = await getUsers(null, connection);
+      let toEncodeUsers = await getUsers('time LIKE \'19h00\'', "Corentin Caugant", "price", connection);
+      console.log(toEncodeUsers);
 
       connection.release();
 

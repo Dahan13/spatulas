@@ -235,44 +235,69 @@ async function insertUser(lastName, firstName, time, price, foods, connection = 
 }
 
 /**
- * Insert a burger into the database
- * @param {string} identifier 
- * @param {string} name 
- * @param {string} description 
- * @param {float} price 
+ * Returns a string adapted to be used in a query after the WHERE clause.
+ * It takes in input a search string, words separated by spaces.
+ * @param {string} searchString
+ * @returns {string} A string that can be used in a query to find all the users that have each of their words in their first name or last name.
  */
-function insertBurger(identifier, name, description = null, price = null, connection = null) {
-    db = (connection) ? connection : pool
-    db.execute('INSERT INTO spatulasBurgers VALUES (?, ?, ?, ?)', [identifier, name, description, price], (err, rows, fields) => {
-        if (err) {
-            console.log(err);
+function buildSearchStringForQuery(searchString = null) {
+    if (!searchString) {
+        return null;
+    }
+
+    let words = searchString.split(' ');
+    let query = '(';
+    for (let i = 0; i < words.length; i++) {
+        let word = words[i].trim();
+        query += '(firstName LIKE \'%' + word + '%\' OR lastName LIKE \'%' + word + '%\')';
+        if (i != words.length - 1) {
+            query += ' AND ';
         }
-    })
+    }
+    query += ')';
+    return query;
 }
 
+
 /**
- * Returns a list containing all users
- * @param {function} callback 
+ * Returns a list containing all users, it also can optionally order the results, add some conditions for the query
+ * It can also return only the users that match a search string (i.e each element of the search string is either in the first name or last name of the user).
+ * @param {string} conditions
  * @param {string} orderCriteria
+ * @param {string} searchString
+ * @param {Any} connection An optional connection to the database, if none is provided, it will use the pool automatically
+ * @returns {Array} An array containing all the users matching the parameters
  */
-async function getUsers(orderCriteria = null, connection = null) {
+async function getUsers(conditions = null, searchString = null, orderCriteria = null, connection = null) {
     let db = (connection) ? connection : await pool.promise().getConnection();
     let queryString = "";
 
+    searchString = buildSearchStringForQuery(searchString);
+    console.log(searchString);
+    // We check if we need to add conditions to the query as well as the search string
+    if (conditions && searchString) {
+        queryString += ' WHERE (' + conditions + ') AND ' + searchString;
+    } else {
+        if (conditions) {
+            queryString += ' WHERE ' + conditions;
+        } else if (searchString) {
+            queryString += ' WHERE ' + searchString;
+        }
+    }
+
     // We check if we need to order the results
     if (orderCriteria) {
-        queryString = 'ORDER BY ' + orderCriteria;
-    } else { // If not, we set the query string to an empty string
-        queryString = '';
+        queryString += ' ORDER BY ' + orderCriteria; // We add the order criteria to the query
     }
+
+    // We execute the query
+    let value = await db.query('SELECT * FROM spatulasCommands' + queryString);
 
     // Releasing the connection if it was not passed as a parameter
     if (!connection) {
         db.release();
     } 
 
-    // We execute the query
-    let value = await db.query('SELECT * FROM spatulasCommands ' + queryString);
     return value[0]
 }
 
@@ -364,27 +389,14 @@ function getDeliveredUsers(callback, orderCriteria = null, connection = null) {
  * @param {string} orderCriteria3
  * @param {string} orderCriteria4
  */
-function getUsersByStatus(callback, convertFood = false, orderCriteria1 = null, orderCriteria2 = null, orderCriteria3 = null, orderCriteria4 = null) {
+function getUsersByStatus(callback, orderCriteria1 = null, orderCriteria2 = null, orderCriteria3 = null, orderCriteria4 = null) {
     pool.getConnection((err, db) => {
         getUntreatedUsers((untreatedUsers, fields) => {
             getPreparationUsers((preparationUsers, fields) => {
                 getReadyUsers((readyUsers, fields) => {
                     getDeliveredUsers((deliveredUsers, fields) => {
-                        if (convertFood) {
-                            convertFoodIdToFoodName(untreatedUsers, (untreatedUsers) => {
-                                convertFoodIdToFoodName(preparationUsers, (preparationUsers) => {
-                                    convertFoodIdToFoodName(readyUsers, (readyUsers) => {
-                                        convertFoodIdToFoodName(deliveredUsers, (deliveredUsers) => {
-                                            db.release();
-                                            callback(untreatedUsers.concat(preparationUsers).concat(readyUsers).concat(deliveredUsers))
-                                        }, db)
-                                    }, db)
-                                }, db)
-                            }, db)
-                        } else {
-                            db.release();
-                            callback(untreatedUsers.concat(preparationUsers).concat(readyUsers).concat(deliveredUsers))
-                        }
+                        db.release();
+                        callback(untreatedUsers.concat(preparationUsers).concat(readyUsers).concat(deliveredUsers))
                     }, orderCriteria4, db)
                 }, orderCriteria3, db)
             }, orderCriteria2, null, db)
@@ -626,52 +638,6 @@ async function calculatePrice(values, connection = null) {
     } 
 }
 
-/**
- * Given an array of Objects, convert all mention of food Id to corresponding food name
- * @param {[Object]} users 
- * @param {*} callback 
- * @param {*} conn 
- */
-function convertFoodIdToFoodName(users, callback, conn = null) {
-    db = (conn) ? conn : pool;
-    db.query('SELECT identifier, name FROM spatulasBurgers', (err, burgers, fields) => {
-        db.query('SELECT identifier, name FROM spatulasDrinks', (err, drinks, fields) => {
-            db.query('SELECT identifier, name FROM spatulasFries', (err, fries, fields) => {
-                db.query('SELECT identifier, name FROM spatulasDesserts', (err, desserts, fields) => {
-                    let burgersFinder = {};
-                    for (let i = 0; i < burgers.length; i++) {
-                        burgersFinder[burgers[i].identifier] = burgers[i].name;
-                    }
-    
-                    let drinksFinder = {};
-                    for (let i = 0; i < drinks.length; i++) {
-                        drinksFinder[drinks[i].identifier] = drinks[i].name;
-                    }
-    
-                    let friesFinder = {};
-                    for (let i = 0; i < fries.length; i++) {
-                        friesFinder[fries[i].identifier] = fries[i].name;
-                    }
-
-                    let dessertsFinder = {};
-                    for (let i = 0; i < desserts.length; i++) {
-                        dessertsFinder[desserts[i].identifier] = desserts[i].name;
-                    }
-
-                    for (let i = 0; i < users.length; i++) {
-                        users[i].burger = burgersFinder[users[i].burger];
-                        users[i].fries = friesFinder[users[i].fries];
-                        users[i].drink = drinksFinder[users[i].drink];
-                        users[i].dessert = dessertsFinder[users[i].dessert];
-                    }
-                    callback(users)
-                })
-            })
-        })
-    })
-    
-}
-
 function togglePrepare(userId, conn = null) {
     if (conn) {
         conn.execute('SELECT preparation FROM spatulasUsers WHERE userId=?', [userId], (err, rows, fields) => {
@@ -767,7 +733,6 @@ module.exports = {
     getAllItemsCount,
     deleteBurger,
     calculatePrice,
-    convertFoodIdToFoodName,
     togglePrepare,
     toggleReady,
     toggleDelivered,
