@@ -260,15 +260,17 @@ function buildSearchStringForQuery(searchString = null) {
 
 
 /**
- * Returns a list containing all users, it also can optionally order the results, add some conditions for the query
- * It can also return only the users that match a search string (i.e each element of the search string is either in the first name or last name of the user).
+ * Returns a list containing all commands, it also can optionally order the results, add some conditions for the query
+ * It can also return only the commands that match a search string (i.e each element of the search string is either in the first name or last name of the user).
+ * It can also limit the number of results returned.
  * @param {string} conditions
  * @param {string} orderCriteria
  * @param {string} searchString
+ * @param {int} limit
  * @param {Any} connection An optional connection to the database, if none is provided, it will use the pool automatically
- * @returns {Array} An array containing all the users matching the parameters
+ * @returns {Array} An array containing all the commands matching the parameters
  */
-async function getUsers(conditions = null, searchString = null, orderCriteria = null, connection = null) {
+async function getCommands(conditions = null, searchString = null, orderCriteria = null, limit = null, connection = null) {
     let db = (connection) ? connection : await pool.promise().getConnection();
     let queryString = "";
 
@@ -290,6 +292,10 @@ async function getUsers(conditions = null, searchString = null, orderCriteria = 
         queryString += ' ORDER BY ' + orderCriteria; // We add the order criteria to the query
     }
 
+    if (limit) {
+        queryString += ' LIMIT ' + limit;
+    }
+
     // We execute the query
     let value = await db.query('SELECT * FROM spatulasCommands' + queryString);
 
@@ -299,85 +305,6 @@ async function getUsers(conditions = null, searchString = null, orderCriteria = 
     } 
 
     return value[0]
-}
-
-/**
- * Returns a list containing all untreated users
- * @param {function} callback
- * @param {int} userLimit
- */
-function getUntreatedUsers(callback, orderCriteria = null, connection = null) {
-    let db = (connection) ? connection : pool
-    if (orderCriteria) {
-        db.query('SELECT * FROM spatulasUsers WHERE preparation=0 AND ready=0 AND delivered=0 ORDER BY ' + orderCriteria, (err, rows, fields) => {
-            callback(rows, fields);
-        })
-    } else {
-        db.query('SELECT * FROM spatulasUsers WHERE preparation=0 AND ready=0 AND delivered=0', (err, rows, fields) => {
-            callback(rows, fields);
-        })
-    }
-}
-
-/** 
- * Returns a list containing all users in preparation
- * @param {function} callback
- * @param {int} userLimit
- */
-function getPreparationUsers(callback, orderCriteria = null, limit = null, connection = null) {
-    // Initialize variables
-    db = (connection) ? connection : pool
-    SQLquery = 'SELECT * FROM spatulasUsers WHERE preparation=1 AND ready=0 AND delivered=0'
-
-    // Extend query depending on optional parameters
-    if (orderCriteria != null) {
-        SQLquery += ' ORDER BY ' + orderCriteria;
-    }
-
-    if (limit != null && limit > 0) {
-        SQLquery += ' LIMIT ' + limit;
-    }
-
-    // Execute query
-    db.query(SQLquery, (err, rows, fields) => {
-        callback(rows, fields);
-    })
-}
-
-/** 
- * Returns a list containing all users ready
- * @param {function} callback
- * @param {int} userLimit
- */
-function getReadyUsers(callback, orderCriteria = null, connection = null) {
-    db = (connection) ? connection : pool
-    if (orderCriteria) {
-        db.query('SELECT * FROM spatulasUsers WHERE ready=1 AND delivered=0 ORDER BY ' + orderCriteria, (err, rows, fields) => {
-            callback(rows, fields);
-        })
-    } else {
-        db.query('SELECT * FROM spatulasUsers WHERE ready=1 AND delivered=0', (err, rows, fields) => {
-            callback(rows, fields);
-        })
-    }
-}
-
-/**
- * Returns a list containing all users delivered
- * @param {function} callback
- * @param {int} userLimit
- */
-function getDeliveredUsers(callback, orderCriteria = null, connection = null) {
-    db = (connection) ? connection : pool
-    if (orderCriteria) {
-        db.query('SELECT * FROM spatulasUsers WHERE delivered=1 ORDER BY ' + orderCriteria, (err, rows, fields) => {
-            callback(rows, fields);
-        })
-    } else {
-        db.query('SELECT * FROM spatulasUsers WHERE delivered=1', (err, rows, fields) => {
-            callback(rows, fields);
-        })
-    }
 }
 
 /**
@@ -715,11 +642,7 @@ module.exports = {
     insertUser,
     insertTable,
     insertRow,
-    getUsers,
-    getUntreatedUsers,
-    getPreparationUsers,
-    getReadyUsers,
-    getDeliveredUsers,
+    getCommands,
     getUsersByStatus,
     getUsersByTime,
     searchUser,
