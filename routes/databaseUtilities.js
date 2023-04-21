@@ -170,7 +170,7 @@ async function insertRow(tableName, name, description = null, price = null, conn
 }
 
 /**
- * Insert a user into the database, it will also close registration if all time stamps are full
+ * Insert a command into the database, it will also close registration if all time stamps are full
  * Given good array must be in the same order as in spatulasTables
  * @param {string} lastName 
  * @param {string} firstName 
@@ -178,9 +178,9 @@ async function insertRow(tableName, name, description = null, price = null, conn
  * @param {float} price
  * @param {Array} foods
  * @param {Any} connection An optional connection to the database, if none is provided, it will use the pool automatically
- * @returns {boolean} True if the user was inserted, false if the user was not inserted
+ * @returns {boolean} True if the command was inserted, false if the command was not inserted
  */
-async function insertUser(lastName, firstName, time, price, foods, connection = null) {
+async function insertCommand(lastName, firstName, time, price, foods, connection = null) {
     db = (connection) ? connection : await pool.promise().getConnection();
 
     // First we need to get the number of columns in spatulasCommands
@@ -219,6 +219,12 @@ async function insertUser(lastName, firstName, time, price, foods, connection = 
 
     for (let i = 0; i < times.length; i++) {
         if (!times[i].full) { // If at least one time slot is not full, we return
+
+            // Releasing the connection if it was not passed as a parameter
+            if (!connection) {
+                db.release();
+            }
+
             return true;
         }
     }
@@ -275,7 +281,6 @@ async function getCommands(conditions = null, searchString = null, orderCriteria
     let queryString = "";
 
     searchString = buildSearchStringForQuery(searchString);
-    console.log(searchString);
     // We check if we need to add conditions to the query as well as the search string
     if (conditions && searchString) {
         queryString += ' WHERE (' + conditions + ') AND ' + searchString;
@@ -308,94 +313,55 @@ async function getCommands(conditions = null, searchString = null, orderCriteria
 }
 
 /**
- * This function returns a list of users according to their status, it can optionally order each category of users according to a criteria, and convert food identifiers to food names
- * @param {function} callback
- * @param {boolean} convertFood
+ * This function returns a list of users according to their status, it can optionally order each category of users according to a criteria
  * @param {string} orderCriteria1
  * @param {string} orderCriteria2
  * @param {string} orderCriteria3
  * @param {string} orderCriteria4
+ * @param {Any} connection An optional connection to the database, if none is provided, it will use the pool automatically
+ * @returns {Array} An array containing all the users, non-treated, in preparation, ready and delivered, ordered with the given criteria
  */
-function getUsersByStatus(callback, orderCriteria1 = null, orderCriteria2 = null, orderCriteria3 = null, orderCriteria4 = null) {
-    pool.getConnection((err, db) => {
-        getUntreatedUsers((untreatedUsers, fields) => {
-            getPreparationUsers((preparationUsers, fields) => {
-                getReadyUsers((readyUsers, fields) => {
-                    getDeliveredUsers((deliveredUsers, fields) => {
-                        db.release();
-                        callback(untreatedUsers.concat(preparationUsers).concat(readyUsers).concat(deliveredUsers))
-                    }, orderCriteria4, db)
-                }, orderCriteria3, db)
-            }, orderCriteria2, null, db)
-        }, orderCriteria1, db)    
-    })
+async function getUsersByStatus(orderCriteria1 = null, orderCriteria2 = null, orderCriteria3 = null, orderCriteria4 = null, connection = null) {
+    let db = (connection) ? connection : await pool.promise().getConnection();
+
+    let untreatedUsers = await getCommands('preparation = 0 AND ready = 0 AND delivered = 0', null, orderCriteria1, null, db);
+    let preparationUsers = await getCommands('preparation = 1 AND ready = 0 AND delivered = 0', null, orderCriteria2, null, db);
+    let readyUsers = await getCommands('ready = 1 AND delivered = 0', null, orderCriteria3, null, db);
+    let deliveredUsers = await getCommands('delivered = 1', null, orderCriteria4, null, db);
+
+
+    // Releasing the connection if it was not passed as a parameter
+    if (!connection) {
+        db.release();
+    }
+
+    return untreatedUsers.concat(preparationUsers).concat(readyUsers).concat(deliveredUsers);
 }
 
 /**
- * This function returns a list of doublets, first containing the time stamp, then all users that have been added at this time stamp.
- * This function may also optionally search for users, given a string of names.
+ * This function returns a list of doublets, first containing the time stamp, then all commands that have been added at this time stamp.
+ * This function may also optionally search for commands, given a string of names.
  * @param {function} callback
  * @param {string} searchString
- * @returns {Array} => [[time, [users]], [time, [users]], ...]
+ * @returns {Array} => [[time, [commands]], [time, [commands]], ...]
  */
-async function getUsersByTime(searchString = "", orderCriteria = "userId", conn) {
+async function getCommandsByTime(searchString = "", orderCriteria = "userId", conn) {
     let db = (conn) ? conn : await pool.promise().getConnection(); // If a connection is provided, use it, otherwise create a new one. Note that we are using promises in this function, so we need to use the promise() function to get a promise-based connection
-    let sortedUsers = [];
+    let sortedcommands = [];
     let times = await getGlobalTimes(db);
 
-    let namesToSearch = searchString.split(" "); // Split the search string into an array of names, we will test all of them
-
     for (let i = 0; i < times.length; i++) {
-        sortedUsers[i] = {}; // Create a new object for this time stamp
-        sortedUsers[i]["timeSettings"] = times[i]; // Add the time stamp to the list
+        sortedcommands[i] = {}; // Create a new object for this time stamp
+        sortedcommands[i]["timeSettings"] = times[i]; // Add the time stamp to the list
         
-        // Search for users that have been added at this time stamp
-        let usersFound = await db.query('SELECT * FROM spatulasCommands WHERE time=? AND (firstName LIKE ? OR lastName LIKE ?) ORDER BY ' + orderCriteria, [times[i].time, namesToSearch[0] + "%", namesToSearch[0] + "%"]);
-        usersFound = usersFound[0]; // The query returns an array of arrays, we only want the first one
-
-        // If there are more than one name to search, we will intersect the results of each search to get the users that match all names
-        for (let j = 1; j < namesToSearch.length; j++) {
-            let newUsers = await db.query('SELECT * FROM spatulasCommands WHERE time=? AND (firstName LIKE ? OR lastName LIKE ?) ORDER BY ' + orderCriteria, [times[i].time, namesToSearch[j] + "%", namesToSearch[j] + "%"])
-            newUsers = newUsers[0];
-
-            // Intersect the two arrays
-            usersFound = usersFound.filter(n => newUsers.some(n2 => n.userId == n2.userId));
-        }
-        // Add the users to the list
-        sortedUsers[i]["users"] = (usersFound.length > 0) ? usersFound : null; // If there are no users, we set the value to null
+        let commandsFound = await getCommands("time LIKE \'" + times[i].time + "\'", searchString, orderCriteria, null, db); // Get all commands that have been added at this time stamp (we use the getCommands function to do so)
+        sortedcommands[i]["users"] = (commandsFound.length > 0) ? commandsFound : null; // If there are no commands, we set the value to null
     }
 
     if (!conn) db.release(); // If we created a new connection, we need to release it
 
     // Return the list
-    return sortedUsers;
-}
-    
-
-
-
-
-/**
- * This function search for users according to last and first name.
- * MAKE SURE THAT FIRST AND LAST NAME ARE SANITIZED, THIS FUNCTION DO NOT USE PRE-COMPILED STATEMENTS
- * ! This function is deprecated, will be removed soon
- * @param {String} firstName 
- * @param {String} lastName 
- * @param {function} callback 
- * @param {int} limit 
- * @param {*} connection 
- */
-function searchUser(firstName, lastName, callback, deliveryStatus = null, limit = 20, connection = null) {
-    db = (connection) ? connection : pool
-    if (deliveryStatus) {
-        db.query('SELECT * FROM spatulasUsers WHERE firstName LIKE \'' + firstName + '%\' AND lastName LIKE \'' + lastName + '%\' AND delivered=? ORDER BY time LIMIT 0, ?', [deliveryStatus, limit], (err, rows, fields) => {
-            callback(rows, fields);
-        })
-    } else {
-        db.query('SELECT * FROM spatulasUsers WHERE firstName LIKE \'' + firstName + '%\' AND lastName LIKE \'' + lastName + '%\' ORDER BY time LIMIT 0, ?', [limit], (err, rows, fields) => {
-            callback(rows, fields);
-        })
-    }
+    return sortedcommands;
 }
 
 function clearUsers(connection = null) {
@@ -639,13 +605,12 @@ function refreshCommand(userId, callback, conn = null) {
 
 module.exports = {
     createDatabase,
-    insertUser,
+    insertCommand,
     insertTable,
     insertRow,
     getCommands,
     getUsersByStatus,
-    getUsersByTime,
-    searchUser,
+    getCommandsByTime,
     clearUsers,
     getTable,
     getTables,

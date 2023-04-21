@@ -2,7 +2,7 @@ var express = require('express');
 const { body, query, check } = require('express-validator');
 var router = express.Router();
 let pool = require('./databaseConnector');
-let { createDatabase, insertUser, getUsers, getPreparationUsers, getReadyUsers, searchUser, calculatePrice, getUsersByStatus, getUsersByTime, getTables, insertTable, insertRow, checkTables, getValuesFromRequest, getTableNames } = require("./databaseUtilities.js");
+let { createDatabase, insertCommand, getCommands, calculatePrice, getUsersByStatus, getCommandsByTime, getTables, insertTable, insertRow, checkTables, getValuesFromRequest, getTableNames } = require("./databaseUtilities.js");
 let { getTimes, getRegistration, getRegistrationDay, checkTime, getTimeIndex, checkPassword, getGlobalTimes, getTimeCount, checkAndRepairTimes } = require('./settingsUtilities');
 let { sendTimeCount } = require('./webSocket');
 
@@ -56,10 +56,9 @@ router.get('/queue',
     checkPassword(req.cookies.spatulasPower, async (auth) => {
       let connection = await pool.promise().getConnection();
 
-      let users = await getUsersByTime(req.query["search-query"], "lastUpdated DESC", connection);
+      let users = await getCommandsByTime(req.query["search-query"], "lastUpdated DESC", connection);
       let tables = await getTableNames(connection);
-      let toEncodeUsers = await getUsers('time LIKE \'19h00\'', "Corentin Caugant", "price", connection);
-      console.log(toEncodeUsers);
+      let toEncodeUsers = await getCommands(null, null, null, null, connection);
 
       connection.release();
 
@@ -88,7 +87,7 @@ router.post('/register',
 
             // Calculating the price of the order and inserting the user in the database
             let price = await calculatePrice(foods, conn);
-            let insertResult = await insertUser(req.body.lastName, req.body.firstName, req.body.time, price, foods, conn);
+            let insertResult = await insertCommand(req.body.lastName, req.body.firstName, req.body.time, price, foods, conn);
 
             if (insertResult) { // If the user was successfully inserted in the database
               // Before sending user to queue, we send a message through websocket to inform of the change of remaining places on the time stamp
@@ -130,15 +129,15 @@ router.get('/credits', (req, res, next) => {
   })
 })
 
-router.get('/display', (req, res, next) => {
-  pool.getConnection((err, conn) => {
-    getPreparationUsers((userPrep) => {
-      getReadyUsers((userReady) => {
-        pool.releaseConnection(conn);
-        res.render('room-display', { title: "Room display", userReady: userReady, userPreparation: userPrep })
-      }, "lastUpdated", conn)
-    }, "lastUpdated", conn)
-  })
+router.get('/display', async (req, res, next) => {
+  let db = await pool.promise().getConnection();
+
+  let userPrep = await getCommands('preparation = 1 AND ready = 0 AND delivered = 0', null, "lastUpdated", null, db);
+  let userReady = await getCommands('ready = 1 AND delivered = 0', null, "lastUpdated", null, db);
+
+  db.release();
+
+  res.render('room-display', { title: "Room display", userReady: userReady, userPreparation: userPrep })
 })
 
 module.exports = router;
