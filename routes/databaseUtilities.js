@@ -574,10 +574,9 @@ async function calculatePrice(values, connection = null) {
  */
 async function toggleCommandBoolean(userId, statusToUpdate, connection = null) {
     let db = (connection) ? connection : pool.promise().getConnection();
-
-    let result = await db.query('SELECT ' + statusToUpdate + ' FROM spatulasUsers WHERE userId = ?', [userId]);
+    let result = await db.query('SELECT ' + statusToUpdate + ' FROM spatulasCommands WHERE commandId = ?', [userId]);
     let status = result[0][0][statusToUpdate];
-    await db.query('UPDATE spatulasCommands SET ' + statusToUpdate + ' = ? WHERE userId = ?', [(status) ? 0 : 1, userId]);
+    await db.query('UPDATE spatulasCommands SET ' + statusToUpdate + ' = ? WHERE commandId = ?', [(status) ? 0 : 1, userId]);
 
     // We update the lastUpdated field of the user
     await refreshCommand(userId, db);

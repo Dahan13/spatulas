@@ -1,5 +1,5 @@
 // This part manage the popup search form
-const searchButton = document.getElementById("search-button");
+
 
 const searchForm = "\
 <form action=\"queue\">\

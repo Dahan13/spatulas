@@ -20,11 +20,11 @@
 {{#each users}}
     {{#if this.ready}}
     {{#unless this.delivered}}
-<div class="command-wrapper" id={{this.userId}}>
+<div class="command-wrapper" id={{this.commandId}}>
     <div class="command-container">
         <div class="com-id">
             <div>
-                {{this.userId}}
+                {{this.commandId}}
             </div>
         </div>
         <div class="command-info-container">
@@ -44,9 +44,9 @@
             </div>
         </div>
         <div class="command-widgets">
-            <div class="wprepare {{#if this.preparation}} activated {{/if}}" data-id={{this.userId}}> </div>
-            <div class="send activated" data-id={{this.userId}}> </div>
-            <div class="validate" data-id={{this.userId}}> </div>
+            <div class="wprepare {{#if this.preparation}} activated {{/if}}" data-id={{this.commandId}}> </div>
+            <div class="send activated" data-id={{this.commandId}}> </div>
+            <div class="validate" data-id={{this.commandId}}> </div>
         </div>
     </div>
 </div>
@@ -60,11 +60,11 @@
     {{#if this.preparation}}
     {{#unless this.ready}}
     {{#unless this.delivered}}
-<div class="command-wrapper" id={{this.userId}}>
+<div class="command-wrapper" id={{this.commandId}}>
     <div class="command-container">
         <div class="com-id">
             <div>
-                {{this.userId}}
+                {{this.commandId}}
             </div>
         </div>
         <div class="command-info-container">
@@ -84,9 +84,9 @@
             </div>
         </div>
         <div class="command-widgets">
-            <div class="wprepare activated" data-id={{this.userId}}> </div>
-            <div class="send" data-id={{this.userId}}> </div>
-            <div class="validate" data-id={{this.userId}}> </div>
+            <div class="wprepare activated" data-id={{this.commandId}}> </div>
+            <div class="send" data-id={{this.commandId}}> </div>
+            <div class="validate" data-id={{this.commandId}}> </div>
         </div>
     </div>
 </div>
@@ -101,11 +101,11 @@
     {{#unless this.delivered}}
     {{#unless this.ready}}
     {{#unless this.preparation}}
-<div class="command-wrapper" id={{this.userId}}>
+<div class="command-wrapper" id={{this.commandId}}>
     <div class="command-container">
         <div class="com-id">
             <div>
-                {{this.userId}}
+                {{this.commandId}}
             </div>
         </div>
         <div class="command-info-container">
@@ -125,9 +125,9 @@
             </div>
         </div>
         <div class="command-widgets">
-            <div class="wprepare" data-id={{this.userId}}> </div>
-            <div class="send" data-id={{this.userId}}> </div>
-            <div class="validate" data-id={{this.userId}}> </div>
+            <div class="wprepare" data-id={{this.commandId}}> </div>
+            <div class="send" data-id={{this.commandId}}> </div>
+            <div class="validate" data-id={{this.commandId}}> </div>
         </div>
     </div>
 </div>
@@ -140,11 +140,11 @@
 <div class="commands-container delivered" id="delivered-container">
 {{#each users}}
     {{#if this.delivered}}
-<div class="command-wrapper" id={{this.userId}}>
+<div class="command-wrapper" id={{this.commandId}}>
     <div class="command-container">
         <div class="com-id">
             <div>
-                {{this.userId}}
+                {{this.commandId}}
             </div>
         </div>
         <div class="command-info-container">
@@ -164,9 +164,9 @@
             </div>
         </div>
         <div class="command-widgets">
-            <div class="wprepare {{#if this.preparation}} activated {{/if}}" data-id={{this.userId}}> </div>
-            <div class="send {{#if this.ready}} activated {{/if}}" data-id={{this.userId}}> </div>
-            <div class="validate activated" data-id={{this.userId}}> </div>
+            <div class="wprepare {{#if this.preparation}} activated {{/if}}" data-id={{this.commandId}}> </div>
+            <div class="send {{#if this.ready}} activated {{/if}}" data-id={{this.commandId}}> </div>
+            <div class="validate activated" data-id={{this.commandId}}> </div>
         </div>
     </div>
 </div>
@@ -176,6 +176,6 @@
 <h2 style="margin-top: 50px; text-align:center; align-self:center"> <em> Wow ! Such void ! </em> </h2>
 {{/if}}
 </div>
+<script src="/javascripts/queueAdminWS.js"></script>
 <script src="/javascripts/queueAdminSearch.js"></script>
 <script src="/javascripts/queueAdminWidgets.js"></script>
-<script src="/javascripts/queueAdminWS.js"></script>
