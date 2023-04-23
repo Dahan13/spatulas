@@ -26,7 +26,7 @@
             <select name="burger" id="burger">
                     <option disabled selected value="none"> -- Select an option -- </option>
                 {{#each burgers}}
-                    <option value={{this.identifier}} id={{this.identifier}} {{#if this.price }} data-price={{this.price}} {{/if}}> {{this.name}} ({{#if this.price}}{{this.price}}{{else}}0.00{{/if}}€) {{#if this.description}}: {{this.description}} {{/if}} </option>
+                    <option value="{{this.identifier}}" id="{{this.identifier}}" {{#if this.price }} data-price={{this.price}} {{/if}}> {{this.name}} ({{#if this.price}}{{this.price}}{{else}}0.00{{/if}}€) {{#if this.description}}: {{this.description}} {{/if}} </option>
                 {{/each}}
             </select>
         </div>
@@ -35,7 +35,7 @@
             <select name="fries" id="fries">
                 <option disabled selected value="none"> -- Select an option -- </option>
                 {{#each fries}}
-                    <option value={{this.identifier}} id={{this.identifier}} {{#if this.price }} data-price={{this.price}} {{/if}}> {{this.name}} ({{#if this.price}}{{this.price}}{{else}}0.00{{/if}}€) {{#if this.description}}: {{this.description}} {{/if}} </option>
+                    <option value="{{this.identifier}}" id="{{this.identifier}}" {{#if this.price }} data-price={{this.price}} {{/if}}> {{this.name}} ({{#if this.price}}{{this.price}}{{else}}0.00{{/if}}€) {{#if this.description}}: {{this.description}} {{/if}} </option>
                 {{/each}}
             </select>
         </div>
@@ -44,7 +44,7 @@
             <select name="drink" id="drink">
                 <option disabled selected value="none"> -- Select an option -- </option>
                 {{#each drinks}}
-                    <option value={{this.identifier}} id={{this.identifier}} {{#if this.price }} data-price={{this.price}} {{/if}}> {{this.name}} ({{#if this.price}}{{this.price}}{{else}}0.00{{/if}}€) {{#if this.description}}: {{this.description}} {{/if}} </option>
+                    <option value="{{this.identifier}}" id="{{this.identifier}}" {{#if this.price }} data-price={{this.price}} {{/if}}> {{this.name}} ({{#if this.price}}{{this.price}}{{else}}0.00{{/if}}€) {{#if this.description}}: {{this.description}} {{/if}} </option>
                 {{/each}}
             </select>
         </div>
@@ -53,7 +53,7 @@
             <select name="dessert" id="dessert">
                 <option disabled selected value="none"> -- Select an option -- </option>
                 {{#each desserts}}
-                    <option value={{this.identifier}} id={{this.identifier}} {{#if this.price }} data-price={{this.price}} {{/if}}> {{this.name}} ({{#if this.price}}{{this.price}}{{else}}0.00{{/if}}€) {{#if this.description}}: {{this.description}} {{/if}} </option>
+                    <option value="{{this.identifier}}" id="{{this.identifier}}" {{#if this.price }} data-price={{this.price}} {{/if}}> {{this.name}} ({{#if this.price}}{{this.price}}{{else}}0.00{{/if}}€) {{#if this.description}}: {{this.description}} {{/if}} </option>
                 {{/each}}
             </select>
         </div>
