@@ -321,13 +321,13 @@ async function getCommands(conditions = null, searchString = null, orderCriteria
  * @param {Any} connection An optional connection to the database, if none is provided, it will use the pool automatically
  * @returns {Array} An array containing all the users, non-treated, in preparation, ready and delivered, ordered with the given criteria
  */
-async function getUsersByStatus(orderCriteria1 = null, orderCriteria2 = null, orderCriteria3 = null, orderCriteria4 = null, connection = null) {
+async function getUsersByStatus(orderCriteria1 = null, searchString1 = null, orderCriteria2 = null, searchString2 = null, orderCriteria3 = null, searchString3 = null, orderCriteria4 = null, searchString4 = null, connection = null) {
     let db = (connection) ? connection : await pool.promise().getConnection();
 
-    let untreatedUsers = await getCommands('preparation = 0 AND ready = 0 AND delivered = 0', null, orderCriteria1, null, db);
-    let preparationUsers = await getCommands('preparation = 1 AND ready = 0 AND delivered = 0', null, orderCriteria2, null, db);
-    let readyUsers = await getCommands('ready = 1 AND delivered = 0', null, orderCriteria3, null, db);
-    let deliveredUsers = await getCommands('delivered = 1', null, orderCriteria4, null, db);
+    let untreatedUsers = await getCommands('preparation = 0 AND ready = 0 AND delivered = 0', searchString1, orderCriteria1, null, db);
+    let preparationUsers = await getCommands('preparation = 1 AND ready = 0 AND delivered = 0', searchString2, orderCriteria2, null, db);
+    let readyUsers = await getCommands('ready = 1 AND delivered = 0', searchString3, orderCriteria3, null, db);
+    let deliveredUsers = await getCommands('delivered = 1', searchString4, orderCriteria4, null, db);
 
 
     // Releasing the connection if it was not passed as a parameter
@@ -336,6 +336,41 @@ async function getUsersByStatus(orderCriteria1 = null, orderCriteria2 = null, or
     }
 
     return untreatedUsers.concat(preparationUsers).concat(readyUsers).concat(deliveredUsers);
+}
+
+/**
+ * This function will, given a list of commands, add to each command a String containing all commands' food, separated by a given separator
+ * @param {Array} commands
+ * @param {String} separator
+ * @param {*} connection
+ * @return {void}
+ */
+async function createCommandFoodString(commands, separator = " ", connection = null) {
+    let db = (connection) ? connection : await pool.promise().getConnection();
+    let tables = await getTableNames(db);
+
+    for (let i = 0; i < commands.length; i++) {
+        let commandString = "";
+        let command = commands[i];
+
+        let food = await db.query('SELECT * FROM spatulasCommands WHERE commandId = ?', [command.commandId]);
+        food = food[0];
+        for (let j = 0; j < tables.length; j++) {
+            if (food[0][tables[j].foodName]) {
+                commandString += food[0][tables[j].foodName];
+                if (j != tables.length - 1) {
+                    commandString += separator;
+                }
+            }
+        }
+
+        command.foodString = commandString;
+    }
+
+    // Releasing the connection if it was not passed as a parameter
+    if (!connection) {
+        db.release();
+    }
 }
 
 /**
@@ -531,52 +566,25 @@ async function calculatePrice(values, connection = null) {
     } 
 }
 
-function togglePrepare(userId, conn = null) {
-    if (conn) {
-        conn.execute('SELECT preparation FROM spatulasUsers WHERE userId=?', [userId], (err, rows, fields) => {
-            conn.query('UPDATE spatulasUsers SET preparation = ? WHERE userId = ?', [(rows[0].preparation) ? 0 : 1, userId]); 
-        })
-    } else {
-        pool.getConnection((err, conn) => {
-            conn.execute('SELECT preparation FROM spatulasUsers WHERE userId=?', [userId], (err, rows, fields) => {
-                conn.query('UPDATE spatulasUsers SET preparation = ? WHERE userId = ?', [(rows[0].preparation) ? 0 : 1, userId], () => {
-                    conn.release();
-                }); 
-            })            
-        })
-    }
-}
+/**
+ * This function will toggle one of the status of a command. It will also update the lastUpdated field of the user
+ * @param {String} userId
+ * @param {String} statusToUpdate
+ * @param {*} connection
+ */
+async function toggleCommandBoolean(userId, statusToUpdate, connection = null) {
+    let db = (connection) ? connection : pool.promise().getConnection();
 
-function toggleReady(userId, conn = null) {
-    if (conn) {
-        conn.execute('SELECT ready FROM spatulasUsers WHERE userId=?', [userId], (err, rows, fields) => {
-            conn.query('UPDATE spatulasUsers SET ready = ? WHERE userId = ?', [(rows[0].ready) ? 0 : 1, userId]); 
-        })
-    } else {
-        pool.getConnection((err, conn) => {
-            conn.execute('SELECT ready FROM spatulasUsers WHERE userId=?', [userId], (err, rows, fields) => {
-                conn.query('UPDATE spatulasUsers SET ready = ? WHERE userId = ?', [(rows[0].ready) ? 0 : 1, userId], () => {
-                    conn.release();
-                }); 
-            })            
-        })
-    }
-}
+    let result = await db.query('SELECT ' + statusToUpdate + ' FROM spatulasUsers WHERE userId = ?', [userId]);
+    let status = result[0][0][statusToUpdate];
+    await db.query('UPDATE spatulasCommands SET ' + statusToUpdate + ' = ? WHERE userId = ?', [(status) ? 0 : 1, userId]);
 
-function toggleDelivered(userId, conn = null) {
-    if (conn) {
-        conn.execute('SELECT delivered FROM spatulasUsers WHERE userId=?', [userId], (err, rows, fields) => {
-            conn.query('UPDATE spatulasUsers SET delivered = ? WHERE userId = ?', [(rows[0].delivered) ? 0 : 1, userId]); 
-        })
-    } else {
-        pool.getConnection((err, conn) => {
-            conn.execute('SELECT delivered FROM spatulasUsers WHERE userId=?', [userId], (err, rows, fields) => {
-                conn.query('UPDATE spatulasUsers SET delivered = ? WHERE userId = ?', [(rows[0].delivered) ? 0 : 1, userId], () => {
-                    conn.release();
-                }); 
-            })            
-        })
-    }
+    // We update the lastUpdated field of the user
+    await refreshCommand(userId, db);
+
+    if (!connection) db.release();
+
+    return;
 }
 
 function purgeDatabase() {
@@ -596,11 +604,13 @@ function purgeDatabase() {
     })
 }
 
-function refreshCommand(userId, callback, conn = null) {
-    let db = (conn) ? conn : pool
-    db.execute('UPDATE spatulasUsers SET lastUpdated = NOW() WHERE userId = ?', [userId], (err, rows) => {
-        callback();
-    }) 
+async function refreshCommand(userId, conn = null) {
+    let db = (conn) ? conn : pool.promise.getConnection();
+    await db.execute('UPDATE spatulasUsers SET lastUpdated = NOW() WHERE userId = ?', [userId]);
+
+    if (!conn) db.release();
+
+    return;
 }
 
 module.exports = {
@@ -611,6 +621,7 @@ module.exports = {
     getCommands,
     getUsersByStatus,
     getCommandsByTime,
+    createCommandFoodString,
     clearUsers,
     getTable,
     getTables,
@@ -621,9 +632,7 @@ module.exports = {
     getAllItemsCount,
     deleteBurger,
     calculatePrice,
-    togglePrepare,
-    toggleReady,
-    toggleDelivered,
+    toggleCommandBoolean,
     purgeDatabase,
     refreshCommand,
 }

@@ -4,7 +4,7 @@ var stringify = require('csv-stringify');
 const { body, query } = require('express-validator');
 var router = express.Router();
 let pool = require('./databaseConnector')
-let { getUntreatedUsers, getPreparationUsers, getReadyUsers, getDeliveredUsers, getBurgers, getFries, getDrinks, searchUser, countBurgers, countFries, countDrinks, insertBurger, deleteBurger, deleteFries, deleteDrink, insertFries, insertDrink, clearUsers, purgeDatabase, getUsersByStatus, getAllItemsCount, getDesserts, countDesserts, insertDessert, deleteDessert } = require("./databaseUtilities.js");
+let { getUntreatedUsers, getPreparationUsers, getReadyUsers, getDeliveredUsers, getBurgers, getFries, getDrinks, searchUser, countBurgers, countFries, countDrinks, insertBurger, deleteBurger, deleteFries, deleteDrink, insertFries, insertDrink, clearUsers, purgeDatabase, getUsersByStatus, getAllItemsCount, getDesserts, countDesserts, insertDessert, deleteDessert, createCommandFoodString } = require("./databaseUtilities.js");
 let { getTimes, getRegistration, getRegistrationDay, getLimit, setRegistration, setRegistrationDay, setLimit, addTime, removeTime, getPassword, checkPassword, authenticate, setPassword, getKitchenLimit, setKitchenLimit } = require('./settingsUtilities');
 
 /* GET users listing. */
@@ -35,14 +35,13 @@ router.get('/disconnect', (req, res, next) => {
 })
 
 router.get('/queue',
-query('first-name').trim().escape(),
-query('last-name').trim().escape(),
-query('index').trim().escape().toInt(),
+query('search-query').trim().escape(),
 (req, res, next) => {
-  authenticate(req, res, () => {
-    getUsersByStatus((users) => {  
-      res.render('admin-queue', { title: 'Queue Manager', admin: true, searching: false, users: users, notEmpty: (typeof users !== "undefined" && users.length > 0) ? true : false });
-    }, true, 'userId', 'lastUpdated', 'lastUpdated', 'lastUpdated');   
+  authenticate(req, res, async () => {
+    let users = await getUsersByStatus('commandId', req.query["search-query"], 'lastUpdated', req.query["search-query"], 'lastUpdated', req.query["search-query"], 'lastUpdated', req.query["search-query"])
+    await createCommandFoodString(users, ", ")
+
+    res.render('admin-queue', { title: 'Queue Manager', admin: true, searching: (req.query["search-query"]) ? true : false, users: users, notEmpty: (typeof users !== "undefined" && users.length > 0) ? true : false });
   })
 })
 
