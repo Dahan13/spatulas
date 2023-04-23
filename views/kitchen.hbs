@@ -13,20 +13,17 @@
 <div class="global-command">
 <h2> Commands </h2>
     <div class="commands-container">
-        {{#each users}}
+        {{#each commands}}
             <div class="command-wrapper">
                 <div class="command-container">
                     <div class="com-id">
                         <div>
-                            {{this.userId}}
+                            {{this.commandId}}
                         </div>
                     </div>
                     <div class="command-infos-container">
                         <div class="command-infos">
-                            <p> {{this.burger}} </p>
-                            <p> {{this.fries}} </p>
-                            <p> {{this.drink}} </p>
-                            <p> {{this.dessert}} </p>
+                            <p> {{this.foodString}} </p>
                         </div>
                     </div>
                     
@@ -34,7 +31,6 @@
             </div>
         {{/each}}
     </div>
-{{/unless}}
 </div>
 
 <div class="global-count">
@@ -51,7 +47,7 @@
         </table>
     {{/each}}
 </div>
-
+{{/unless}}
 </div>
 
 

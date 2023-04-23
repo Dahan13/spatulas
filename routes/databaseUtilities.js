@@ -447,30 +447,25 @@ function countBurgers(callback, toPrepareOnly = false, connection = null) {
  * @param {String} queriesCondition
  * @returns {Array} => [ [itemName, [ {name, count} ] ], ...]
  */
-async function getAllItemsCount(callback, queriesCondition = "", limit = null, conn = null) {
-    let db = (conn) ? conn.promise() : await pool.promise().getConnection(); // If a connection is provided, use it, otherwise create a new one. Note that we are using promises in this function, so we need to use the promise() function to get a promise-based connection
+async function getTablesCount(queriesCondition = "", limit = null, conn = null) {
+    let db = (conn) ? conn : await pool.promise().getConnection(); // If a connection is provided, use it, otherwise create a new one. Note that we are using promises in this function, so we need to use the promise() function to get a promise-based connection
+
     if (queriesCondition != "") queriesCondition = "WHERE " + queriesCondition; // Add WHERE if there is a condition (to avoid having to add it in the queries)
     if (limit) queriesCondition += " LIMIT 0, " + limit; // Add limit if there is one
     let items = [];
 
-    // Get burgers
-    let burgers = await db.query('SELECT count(*) AS count, name FROM (SELECT burger, identifier, name FROM spatulasUsers INNER JOIN spatulasBurgers ON spatulasUsers.burger = spatulasBurgers.identifier ' + queriesCondition + ') AS burgerClient GROUP BY name');
-    items.push({name: "Burgers", count: burgers[0]});
+    // Getting table names
+    let tables = await getTableNames(db);
 
-    // Get fries
-    let fries = await db.query('SELECT count(*) AS count, name FROM (SELECT fries, identifier, name FROM spatulasUsers INNER JOIN spatulasFries ON spatulasUsers.fries = spatulasFries.identifier ' + queriesCondition + ') AS friesClient GROUP BY name');
-    items.push({name: "Fries", count: fries[0]});
-
-    // Get drinks
-    let drinks = await db.query('SELECT count(*) AS count, name FROM (SELECT drink, identifier, name FROM spatulasUsers INNER JOIN spatulasDrinks ON spatulasUsers.drink = spatulasDrinks.identifier ' + queriesCondition + ') AS drinkClient GROUP BY name');
-    items.push({name: "Drinks", count: drinks[0]});
-
-    // Get desserts
-    let desserts = await db.query('SELECT count(*) AS count, name FROM (SELECT dessert, identifier, name FROM spatulasUsers INNER JOIN spatulasDesserts ON spatulasUsers.dessert = spatulasDesserts.identifier ' + queriesCondition + ') AS dessertClient GROUP BY name');
-    items.push({name: "Desserts", count: desserts[0]});
+    // Iterating over each table
+    for (let i = 0; i < tables.length; i++) {
+        let table = tables[i].foodName;
+        let itemsFound = await db.query('SELECT count(*) AS count, name FROM (SELECT ' + table + ', name FROM spatulasCommands INNER JOIN ' + table + ' ON spatulasCommands.' + table + ' = ' + table + '.name ' + queriesCondition + ') AS tempClient GROUP BY name');
+        items.push({name: table, count: itemsFound[0]});
+    }
 
     if (!conn) db.release(); // If we created a new connection, we need to release it
-    callback(items);
+    return items;
 }
 
 /**
@@ -605,7 +600,7 @@ function purgeDatabase() {
 
 async function refreshCommand(userId, conn = null) {
     let db = (conn) ? conn : pool.promise.getConnection();
-    await db.execute('UPDATE spatulasUsers SET lastUpdated = NOW() WHERE userId = ?', [userId]);
+    await db.execute('UPDATE spatulasCommands SET lastUpdated = NOW() WHERE commandId = ?', [userId]);
 
     if (!conn) db.release();
 
@@ -628,7 +623,7 @@ module.exports = {
     checkTables,
     getValuesFromRequest,
     countBurgers,
-    getAllItemsCount,
+    getTablesCount,
     deleteBurger,
     calculatePrice,
     toggleCommandBoolean,

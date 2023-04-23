@@ -4,7 +4,7 @@ var stringify = require('csv-stringify');
 const { body, query } = require('express-validator');
 var router = express.Router();
 let pool = require('./databaseConnector')
-let { getUntreatedUsers, getPreparationUsers, getReadyUsers, getDeliveredUsers, getBurgers, getFries, getDrinks, searchUser, countBurgers, countFries, countDrinks, insertBurger, deleteBurger, deleteFries, deleteDrink, insertFries, insertDrink, clearUsers, purgeDatabase, getUsersByStatus, getAllItemsCount, getDesserts, countDesserts, insertDessert, deleteDessert, createCommandFoodString } = require("./databaseUtilities.js");
+let { countBurgers, deleteBurger, clearUsers, purgeDatabase, getUsersByStatus, getTablesCount, createCommandFoodString, getCommands } = require("./databaseUtilities.js");
 let { getTimes, getRegistration, getRegistrationDay, getLimit, setRegistration, setRegistrationDay, setLimit, addTime, removeTime, getPassword, checkPassword, authenticate, setPassword, getKitchenLimit, setKitchenLimit } = require('./settingsUtilities');
 
 /* GET users listing. */
@@ -89,16 +89,14 @@ router.post('/changePassword', (req, res, next) => {
 })
 
 router.get('/kitchen', (req, res, next) => {
-  authenticate(req, res, () => {
-    pool.getConnection((err, conn) => {
-      getKitchenLimit((limit) => {
-        getPreparationUsers((users) => {
-          getAllItemsCount((count) => {
-            res.render('kitchen', { title: 'Kitchen Tab', admin: true, users: users, count: count, limit: limit, notEmpty: (typeof users !== "undefined" && users.length > 0) ? true : false });
-            pool.releaseConnection(conn);
-          }, "preparation = 1 AND ready = 0 AND delivered = 0 ORDER BY lastUpdated", limit, conn)
-        }, 'lastUpdated', limit, conn)
-      })
+  authenticate(req, res, async () => {
+    let conn = await pool.promise().getConnection();
+    getKitchenLimit(async (limit) => {
+      let commands = await getCommands("preparation = 1 AND ready = 0 and delivered = 0", null, "lastUpdated", limit, conn);
+      createCommandFoodString(commands, ", ", conn)
+      let count = await getTablesCount("preparation = 1 AND ready = 0 AND delivered = 0 ORDER BY lastUpdated", limit, conn)
+      conn.release();
+      res.render('kitchen', { title: 'Kitchen Tab', admin: true, commands: commands, count: count, limit: limit, notEmpty: (typeof commands !== "undefined" && commands.length > 0) ? true : false });
     })
   })
 })
