@@ -5,7 +5,7 @@ const { body, query } = require('express-validator');
 var router = express.Router();
 let pool = require('./databaseConnector')
 let { countBurgers, deleteBurger, clearUsers, purgeDatabase, getUsersByStatus, getTablesCount, createCommandFoodString, getCommands } = require("./databaseUtilities.js");
-let { getTimes, getRegistration, getRegistrationDay, getLimit, setRegistration, setRegistrationDay, setLimit, addTime, removeTime, getPassword, checkPassword, authenticate, setPassword, getKitchenLimit, setKitchenLimit } = require('./settingsUtilities');
+let { getTimes, getRegistration, getRegistrationDay, getLimit, setRegistration, setRegistrationDay, setLimit, addTime, removeTime, getPassword, checkPassword, authenticate, setPassword, getKitchenLimit, setKitchenLimit, getGlobalTimes } = require('./settingsUtilities');
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
@@ -46,37 +46,25 @@ query('search-query').trim().escape(),
 })
 
 router.get('/manage', (req, res, next) => {
-  authenticate(req, res, () => {
-    pool.getConnection((err, conn) => {
-      getBurgers((burgers) => {
-        getFries((fries) => {
-          getDrinks((drinks) => {
-            countBurgers((burgerCount) => {
-              countFries((friesCount) => {
-                countDrinks((drinkCount) => {
-                  getTimes((times) => {
-                    getRegistration((regisBool) => {
-                      getRegistrationDay((day) => {
-                        getLimit((limit) => {
-                          getKitchenLimit((kitchenLimit) => {
-                            getDesserts((desserts) => {
-                              countDesserts((dessertCount) => {
-                                res.render('admin', { title: 'Administration', admin: true, limit: limit, day: day, regisBool: regisBool, times: times, drinkCount: drinkCount, friesCount: friesCount, burgerCount: burgerCount, burgers: burgers, drinks: drinks, fries: fries, kitchenLimit: kitchenLimit, desserts: desserts, dessertCount: dessertCount });
-                                pool.releaseConnection(conn);
-                              }, conn)
-                            }, true , conn)
-                          })
-                        })
-                      })
-                    })
-                  }, false, conn)
-                }, false, conn)
-              }, false, conn)
-            }, false, conn)
-          }, true, conn)
-        }, true, conn)
-      }, true, conn)
+  authenticate(req, res, async () => {
+
+    // Getting all database related informations
+    let conn = await pool.promise().getConnection();
+    let times = await getGlobalTimes(conn);
+    let count = await getTablesCount("delivered = 0", null, conn);
+
+    // Getting all settings related informations
+    getRegistration((regisBool) => {
+      getRegistrationDay((day) => {
+        getLimit((limit) => {
+          getKitchenLimit((kitchenLimit) => {
+            conn.release();
+            res.render('admin', { title: 'Administration', admin: true, limit: limit, day: day, regisBool: regisBool, times: times, kitchenLimit: kitchenLimit,  count: count});
+          })
+        })
+      })
     })
+
   })
 })
 

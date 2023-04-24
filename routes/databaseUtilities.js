@@ -339,7 +339,8 @@ async function getUsersByStatus(orderCriteria1 = null, searchString1 = null, ord
 }
 
 /**
- * This function will, given a list of commands, add to each command a String containing all commands' food, separated by a given separator
+ * This function will, given a list of commands, add to each command a String containing all commands' food, separated by a given separator.
+ * It adds to eah object in commands a new property called "foodString" containing the string.
  * @param {Array} commands
  * @param {String} separator
  * @param {*} connection
@@ -445,7 +446,7 @@ function countBurgers(callback, toPrepareOnly = false, connection = null) {
  * @param {function} callback
  * @param {*} connection
  * @param {String} queriesCondition
- * @returns {Array} => [ [itemName, [ {name, count} ] ], ...]
+ * @returns {Array} => [ {name: itemType, count: [ {name, count} ] }, ...]
  */
 async function getTablesCount(queriesCondition = "", limit = null, conn = null) {
     let db = (conn) ? conn : await pool.promise().getConnection(); // If a connection is provided, use it, otherwise create a new one. Note that we are using promises in this function, so we need to use the promise() function to get a promise-based connection

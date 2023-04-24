@@ -11,7 +11,7 @@
                 <div class="ready-container"> 
                     {{#if userReady}}
                         {{#each userReady}}
-                            <span> {{this.userId}} </span>
+                            <span> {{this.commandId}} </span>
                         {{/each}}
                     {{else}}
                         <p> Nothing is ready yet ! </p>
@@ -20,7 +20,7 @@
                 <div class="preparation-container">
                     {{#if userPreparation}}
                         {{#each userPreparation}}
-                            <span> {{this.userId}} </span>
+                            <span> {{this.commandId}} </span>
                         {{/each}}
                     {{else}}
                         <p> Nothing is in preparation yet ! </p>

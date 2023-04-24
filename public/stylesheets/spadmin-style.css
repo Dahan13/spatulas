@@ -53,6 +53,7 @@ table {
     border-collapse: collapse;
     width: 95%;
     align-self: center;
+    max-width: 95vw;
 }
 
 h2 {
@@ -88,6 +89,15 @@ th {
 
 .one-line-form > input[type='submit'] {
     margin-left: 10px;
+}
+
+.actions-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+    width: 100%;
+    flex-wrap: wrap;
 }
 
 @media only screen and (min-width: 1020px) {

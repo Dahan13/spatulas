@@ -20,8 +20,8 @@
 
     <table>
         <tr>
-            <th> Registration Open : </th>
-            <td> {{regisBool}} </td>
+            <th> Registration Status : </th>
+            <td> {{#if regisBool}} OPENED {{else}} CLOSED {{/if}} </td>
         </tr>
         <tr>
             <th> Registration Day : </th>
@@ -29,7 +29,11 @@
         </tr>
         <tr>
             <th> Time Spans : </th>
-            <td> {{times}} </td>
+            <td> 
+                {{#each times}}
+                    {{this.time}}
+                {{/each}} 
+            </td>
         </tr>
         <tr>
             <th> Limit per time : </th>
@@ -81,214 +85,23 @@
         <input type="submit" value="Update kitchen limit" id="general-parameters-kitchen-limit-submit-button"/>
     </form>
 
-    <a href="/spadmin/downloadUsers" class="button" style="align-self: center;"> <button> Download user database </button> </a>
-    <a href="/spadmin/clearUsers" class="button" style="align-self: center;" onclick="return confirm('Are you sure ? There is no going back. You will lose all user data.')"> <button> Delete ALL users </button> </a>
-
 <h2> Food count : </h2>
 
-    <h3> Burgers : </h3>
-
+{{#each count}}
+    <h3> {{this.name}} : </h3>
     <table>
-        {{#each burgerCount}}
+        {{#each this.count}}
             <tr>
                 <th> {{this.name}} </th>
                 <td> x{{this.count}} </td>
             </tr>
         {{/each}}
     </table>
+{{/each}}
 
-    <h3> Fries : </h3>
-
-    <table>
-        {{#each friesCount}}
-            <tr>
-                <th> {{this.name}} </th>
-                <td> x{{this.count}} </td>
-            </tr>
-        {{/each}}
-    </table>
-
-    <h3> Drinks : </h3>
-
-    <table>
-        {{#each drinkCount}}
-            <tr>
-                <th> {{this.name}} </th>
-                <td> x{{this.count}} </td>
-            </tr>
-        {{/each}}
-    </table>
-
-    <h3> Desserts : </h3>
-
-    <table>
-        {{#each dessertCount}}
-            <tr>
-                <th> {{this.name}} </th>
-                <td> x{{this.count}} </td>
-            </tr>
-        {{/each}}
-    </table>
-
-<h2 id="burgerMenu"> Burgers Menu </h2>
-
-    <table>
-        <tr>
-            <th> Identifier </th>
-            <th> Name </th>
-            <th> Description </th>
-            <th> price </th>
-        </tr>
-        {{#each burgers}}
-        <tr>
-            <td> {{this.identifier}} </td>
-            <td> {{this.name}} </td>
-            <td> {{#if this.description}} {{this.description}} {{else}} No description {{/if}} </td>
-            <td> {{#if this.price}} {{this.price}}€ {{else}} 0.00€ {{/if}} </td>
-            <td> <a class="close-button" href={{this.url}}></a> </td>
-        </tr>
-        {{/each}}
-    </table>
-
-    <form action="/spadmin/AddBurger" method="POST">
-        <div class="input-div">
-            <label for="bIdentifier"> Burger identifier </label>
-            <input type="text" id="bIdentifier" name="bIdentifier" placeholder="Only small letters, no special letters or numbers" required>
-        </div>
-        <div class="input-div">
-            <label for="bName"> Burger name </label>
-            <input type="text" id="bName" name="bName" required>
-        </div>
-        <div class="input-div">
-            <label for="bDesc"> Burger description </label>
-            <input type="text" id="bDesc" name="bDesc" placeholder="Optional">
-        </div>
-        <div class="input-div">
-            <label for="bPrice"> Burger price </label>
-            <input type="text" id="bPrice" name="bPrice" placeholder="Optional, float">
-        </div>
-        <input type="submit" value="Add burger" id="add-burger-submit-button"/>
-    </form>
-
-<h2 id="friesMenu"> Fries Menu </h2>
-
-    <table>
-        <tr>
-            <th> Identifier </th>
-            <th> Name </th>
-            <th> Description </th>
-            <th> price </th>
-        </tr>
-        {{#each fries}}
-        <tr>
-            <td> {{this.identifier}} </td>
-            <td> {{this.name}} </td>
-            <td> {{#if this.description}} {{this.description}} {{else}} No description {{/if}} </td>
-            <td> {{#if this.price}} {{this.price}}€ {{else}} 0.00€ {{/if}} </td>
-            <td> <a class="close-button" href={{this.url}}></a> </td>
-        </tr>
-        {{/each}}
-    </table>
-
-    <form action="/spadmin/AddFries" method="POST">
-        <div class="input-div">
-            <label for="fIdentifier"> Fries identifier </label>
-            <input type="text" id="fIdentifier" name="fIdentifier" placeholder="Only small letters, no special letters or numbers" required>
-        </div>
-        <div class="input-div">
-            <label for="fName"> Fries name </label>
-            <input type="text" id="fName" name="fName" required>
-        </div>
-        <div class="input-div">
-            <label for="fDesc"> Fries description </label>
-            <input type="text" id="fDesc" name="fDesc" placeholder="Optional">
-        </div>
-        <div class="input-div">
-            <label for="fPrice"> Fries price </label>
-            <input type="text" id="fPrice" name="fPrice" placeholder="Optional, float">
-        </div>
-        <input type="submit" value="Add fries" id="add-fries-submit-button"/>
-    </form>
-
-<h2 id="drinkMenu"> Drinks Menu </h2>
-
-    <table>
-        <tr>
-            <th> Identifier </th>
-            <th> Name </th>
-            <th> Description </th>
-            <th> price </th>
-        </tr>
-        {{#each drinks}}
-        <tr>
-            <td> {{this.identifier}} </td>
-            <td> {{this.name}} </td>
-            <td> {{#if this.description}} {{this.description}} {{else}} No description {{/if}} </td>
-            <td> {{#if this.price}} {{this.price}}€ {{else}} 0.00€ {{/if}} </td>
-            <td> <a class="close-button" href={{this.url}}></a> </td>
-        </tr>
-        {{/each}}
-    </table>
-
-    <form action="/spadmin/AddDrink" method="POST">
-        <div class="input-div">
-            <label for="dIdentifier"> Drink identifier </label>
-            <input type="text" id="dIdentifier" name="dIdentifier" placeholder="Only small letters, no special letters or numbers" required>
-        </div>
-        <div class="input-div">
-            <label for="dName"> Drink name </label>
-            <input type="text" id="dName" name="dName" required>
-        </div>
-        <div class="input-div">
-            <label for="dDesc"> Drink description </label>
-            <input type="text" id="dDesc" name="dDesc" placeholder="Optional">
-        </div>
-        <div class="input-div">
-            <label for="dPrice"> Drink price </label>
-            <input type="text" id="dPrice" name="dPrice" placeholder="Optional, float">
-        </div>
-        <input type="submit" value="Add drink" id="add-drink-submit-button"/>
-    </form>
-
-<h2 id="dessertMenu"> Desserts Menu </h2>
-
-    <table>
-        <tr>
-            <th> Identifier </th>
-            <th> Name </th>
-            <th> Description </th>
-            <th> price </th>
-        </tr>
-        {{#each desserts}}
-        <tr>
-            <td> {{this.identifier}} </td>
-            <td> {{this.name}} </td>
-            <td> {{#if this.description}} {{this.description}} {{else}} No description {{/if}} </td>
-            <td> {{#if this.price}} {{this.price}}€ {{else}} 0.00€ {{/if}} </td>
-            <td> <a class="close-button" href={{this.url}}></a> </td>
-        </tr>
-        {{/each}}
-    </table>
-
-    <form action="/spadmin/AddDessert" method="POST">
-        <div class="input-div">
-            <label for="deIdentifier"> Dessert identifier </label>
-            <input type="text" id="deIdentifier" name="deIdentifier" placeholder="Only small letters, no special letters or numbers" required>
-        </div>
-        <div class="input-div">
-            <label for="deName"> Dessert name </label>
-            <input type="text" id="deName" name="deName" required>
-        </div>
-        <div class="input-div">
-            <label for="deDesc"> Dessert description </label>
-            <input type="text" id="deDesc" name="deDesc" placeholder="Optional">
-        </div>
-        <div class="input-div">
-            <label for="dePrice"> Dessert price </label>
-            <input type="text" id="dePrice" name="dePrice" placeholder="Optional, float">
-        </div>
-        <input type="submit" value="Add dessert" id="add-dessert-submit-button"/>
-    </form>
-
-
-<a href="/spadmin/clearDatabases" class="button" style="align-self: center;" onclick="return ((confirm('Are you sure ? This will clear the content of all databases. There is no going back')) ? confirm('Are you REALLY REALLY sure ? There is no WAY to go back. You will lose the content of all databases') : false )"> <button> Clear databases </button> </a>
+<h2> Actions : </h2>
+<div class="actions-container">
+    <a href="/spadmin/downloadUsers" class="button" style="align-self: center;"> <button> Download user database </button> </a>
+    <a href="/spadmin/clearUsers" class="button" style="align-self: center;" onclick="return confirm('Are you sure ? There is no going back. You will lose all user data.')"> <button> Delete ALL users </button> </a>
+    <a href="/spadmin/clearDatabases" class="button" style="align-self: center;" onclick="return ((confirm('Are you sure ? This will clear the content of all databases. There is no going back')) ? confirm('Are you REALLY REALLY sure ? There is no WAY to go back. You will lose the content of all databases') : false )"> <button> Clear databases </button> </a>
+</div>
