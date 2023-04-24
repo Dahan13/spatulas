@@ -1,0 +1,34 @@
+<link rel="stylesheet" href="/stylesheets/home-style.css"/>
+<link rel="stylesheet" href="/stylesheets/spadmin-style.css"/>
+
+<a class="button" href="/spadmin/databases" style="margin-bottom:15px"> <button> Back </button> </a>
+
+<h1> Create a new database : </h1>
+
+<form action="/spadmin/createDatabase" method="POST">
+    {{#if error}}
+        <p class="error-message"> Error. Please try again </p>
+    {{/if}}
+    <div class="input-div">
+        <label for="foodName"> Name of the new database : </label>
+        <input type="text" id="foodName" name="foodName" maxlength="100" placeholder="Burgers"/>
+    </div>
+
+    <div class="input-div">
+        <label for="name"> (Optional) Name of the first item in it : </label>
+        <input type="text" id="name" name="name" maxlength="100" placeholder="Classico"/>
+    </div>
+
+    <div class="input-div">
+        <label for="description"> (Optional) Its description : </label>
+        <input type="text" id="description" name="description" maxlength="100" placeholder="Un classique inégalable"/>
+    </div>
+
+    <div class="input-div">
+        <label for="price"> (Optional) Its price (€): </label>
+        <input type="text" id="price" name="price" placeholder="5.0"/>
+    </div>
+
+    <input type="submit" value="Submit" id="submit-button" disabled/>
+</form>
+<script src="/javascripts/createDatabase.js"></script>

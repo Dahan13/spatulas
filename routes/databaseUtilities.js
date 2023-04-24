@@ -1,6 +1,6 @@
 const pool = require('./databaseConnector');
 const validator = require('validator');
-let { getTimes, setRegistration, getGlobalTimes } = require('./settingsUtilities');
+let { setRegistration, getGlobalTimes } = require('./settingsUtilities');
 
 /**
  * This function will create all tables for the website to properly function, only if they are not already created.
@@ -131,10 +131,10 @@ async function insertTable(tableName, name, description = null, price = null, co
     await db.query('ALTER TABLE spatulasCommands ADD ' + tableName + ' VARCHAR(255) NOT NULL REFERENCES ' + tableName + '(name)');
 
     // Inserting the first row
-    insertRow(tableName, name, description, price, db);
+    await insertRow(tableName, name, description, price, db);
 
     // Releasing the connection if it was not passed as a parameter
-    if (!connection) {
+    if (connection == null) {
         db.release();
     }
 
@@ -409,24 +409,6 @@ async function clearUsers(connection = null) {
 }   
 
 /**
- * Returns a list containing all burgers
- * @param {function} callback 
- */
-function getBurgers(callback, addURL = false, connection = null) {
-    db = (connection) ? connection : pool
-    db.query('SELECT * FROM spatulasBurgers', (err, rows, fields) => {
-        if (addURL) {
-            for (let i = 0; i < rows.length; i++) {
-                rows[i].url = '/spadmin/deleteBurger/' + rows[i].identifier;
-            }
-            callback(rows, fields);
-        } else {
-            callback(rows, fields);
-        }
-    })
-}
-
-/**
  * Count the number of each burger, it can optionally only count the burgers that are not ready yet
  * @param {function} callback 
  * @param {*} connection 
@@ -520,7 +502,7 @@ async function checkTables(values, connection = null) {
  * @returns {Array} Array is in the same order as the table names in spatulasTables 
  */
 async function getValuesFromRequest(body, connection = null) {
-    let db = (connection) ? connection : pool.promise().getConnection();
+    let db = (connection) ? connection : await pool.promise().getConnection();
     
     let values = [];
     let tables = await getTableNames(db);
@@ -534,13 +516,55 @@ async function getValuesFromRequest(body, connection = null) {
 }
 
 /**
- * Delete the burger in the database with the specified Id
- * @param {String} burgerId 
+ * Deletes the specified table
+ * @param {String} tableName
+ * @param {*} connection
+ */
+async function deleteTable(tableName, connection = null) {
+    let conn = (connection) ? connection : await pool.promise().getConnection();
+
+    let tables = await getTableNames(conn);
+
+    // Iterating over each table
+    for (let i = 0; i < tables.length; i++) {
+        if (tables[i].foodName == tableName) { // If the table name is the same as the one we want to delete from
+            // Delete the column in spatulasCommands
+            await conn.execute('ALTER TABLE spatulasCommands DROP COLUMN ' + tableName);
+            // Delete the name of the table in spatulasTables
+            await conn.execute('DELETE FROM spatulasTables WHERE foodName = ?', [tableName]);
+            // Delete the table
+            await conn.execute('DROP TABLE ' + tableName);
+            break;
+        }
+    }
+
+    if (!connection) conn.release();
+
+    return;
+}
+
+/**
+ * Deletes the specified element from a specified table
+ * @param {String} foodId
+ * @param {String} tableName
  * @param {*} connection 
  */
-function deleteBurger(burgerId, connection = null) {
-    conn = (connection) ? connection : pool;
-    conn.execute('DELETE FROM spatulasBurgers WHERE identifier = ?', [burgerId]);
+async function deleteElement(foodId, tableName, connection = null) {
+    conn = (connection) ? connection : await pool.promise().getConnection();
+
+    let tables = await getTableNames(conn);
+
+    // Iterating over each table
+    for (let i = 0; i < tables.length; i++) {
+        if (tables[i].foodName == tableName) { // If the table name is the same as the one we want to delete from
+            await conn.execute('DELETE FROM ' + tableName + ' WHERE name = ?', [foodId]);
+            break;
+        }
+    }
+
+    if (!connection) conn.release();
+    
+    return;
 }
 
 /**
@@ -601,7 +625,7 @@ async function purgeDatabase(connection = null) {
 
     await createDatabase(conn);
     conn.release();
-    
+
     return;
 }
 
@@ -631,7 +655,8 @@ module.exports = {
     getValuesFromRequest,
     countBurgers,
     getTablesCount,
-    deleteBurger,
+    deleteElement,
+    deleteTable,
     calculatePrice,
     toggleCommandBoolean,
     purgeDatabase,

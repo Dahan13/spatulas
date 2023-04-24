@@ -1,0 +1,20 @@
+<link rel="stylesheet" href="/stylesheets/home-style.css"/>
+<link rel="stylesheet" href="/stylesheets/spadmin-style.css"/>
+
+<a class="button" href="/spadmin/" style="margin-bottom:15px"> <button> Back </button> </a>
+
+<h1> Databases : </h1>
+
+<nav>
+    <a href="/spadmin/createDatabase">
+        <img src="/images/spadmin/add_database.webp" alt="Create database">
+        <p> New database </p>
+    </a>
+
+    {{#each tables}}
+        <a href="/spadmin/database/{{this.foodName}}">
+            <img src="/images/spadmin/database.webp" alt="Manage {{this.foodName}}">
+            <p> {{this.foodName}} </p>
+        </a>
+    {{/each}}
+</nav>

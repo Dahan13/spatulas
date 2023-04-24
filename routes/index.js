@@ -2,25 +2,9 @@ var express = require('express');
 const { body, query, check } = require('express-validator');
 var router = express.Router();
 let pool = require('./databaseConnector');
-let { createDatabase, insertCommand, getCommands, calculatePrice, getUsersByStatus, getCommandsByTime, getTables, insertTable, insertRow, checkTables, getValuesFromRequest, getTableNames } = require("./databaseUtilities.js");
-let { getTimes, getRegistration, getRegistrationDay, checkTime, getTimeIndex, checkPassword, getGlobalTimes, getTimeCount, checkAndRepairTimes } = require('./settingsUtilities');
+let { insertCommand, getCommands, calculatePrice, getCommandsByTime, getTables, checkTables, getValuesFromRequest, getTableNames } = require("./databaseUtilities.js");
+let { getRegistration, getRegistrationDay, checkTime, checkPassword, getGlobalTimes, getTimeCount, checkAndRepairTimes } = require('./settingsUtilities');
 let { sendTimeCount } = require('./webSocket');
-
-async function init() {
-  let conn = await pool.promise().getConnection();
-
-  await createDatabase(conn);
-  await insertTable("Burgers", "Cheeseburger", "This is a cheeseburger", 5, conn);
-  await insertRow("Burgers", "Baconburger", "This is a baconBurger", 5, conn);
-  await insertRow("Burgers", "Gourmet", "This is some serious gourmet shit !", 6, conn);
-  await insertTable("Fries", "Frites paprika", "Miam !", 1, conn);
-  await insertRow("Fries", "Sans frites", "Pas faim !", 0, conn);
-  await insertTable("Drinks", "Canette", null, 1, conn);
-  await insertRow("Drinks", "Pas soif", null, 0, conn);
-
-  conn.release();
-}
-init();
 
 
 // ! This is a temporary fix for the unlikely case all time stamps were removed, we add a new one set at "19h00" to prevent the system from breaking

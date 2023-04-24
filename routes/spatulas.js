@@ -4,8 +4,8 @@ var stringify = require('csv-stringify');
 const { body, query } = require('express-validator');
 var router = express.Router();
 let pool = require('./databaseConnector')
-let { countBurgers, deleteBurger, clearUsers, purgeDatabase, getUsersByStatus, getTablesCount, createCommandFoodString, getCommands } = require("./databaseUtilities.js");
-let { getTimes, getRegistration, getRegistrationDay, getLimit, setRegistration, setRegistrationDay, setLimit, addTime, removeTime, getPassword, checkPassword, authenticate, setPassword, getKitchenLimit, setKitchenLimit, getGlobalTimes } = require('./settingsUtilities');
+let { clearUsers, purgeDatabase, getUsersByStatus, getTablesCount, createCommandFoodString, getCommands, getTableNames, insertTable, getTable, deleteElement, deleteTable, insertRow } = require("./databaseUtilities.js");
+let { getRegistration, getRegistrationDay, getLimit, setRegistration, setRegistrationDay, setLimit, addTime, removeTime, checkPassword, authenticate, setPassword, getKitchenLimit, setKitchenLimit, getGlobalTimes } = require('./settingsUtilities');
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
@@ -59,7 +59,7 @@ router.get('/manage', (req, res, next) => {
         getLimit((limit) => {
           getKitchenLimit((kitchenLimit) => {
             conn.release();
-            res.render('admin', { title: 'Administration', admin: true, limit: limit, day: day, regisBool: regisBool, times: times, kitchenLimit: kitchenLimit,  count: count});
+            res.render('settings', { title: 'Settings', admin: true, limit: limit, day: day, regisBool: regisBool, times: times, kitchenLimit: kitchenLimit,  count: count});
           })
         })
       })
@@ -73,6 +73,61 @@ router.post('/changePassword', (req, res, next) => {
     setPassword(req.body.password);
     res.cookie('spatulasPower', req.body.password);
     res.redirect('/spadmin/manage');
+  })
+})
+
+router.get('/databases', (req, res, next) => {
+  authenticate(req, res, async () => {
+    let tables = await getTableNames();
+    res.render('databases', { title: 'Databases', admin: true, tables: tables });
+  })
+})
+
+router.get('/createDatabase', (req, res, next) => {
+  authenticate(req, res, async () => {
+    res.render('create-database', { title: 'Create Database', admin: true, error: (req.query.error) ? req.query.error : null });
+  })
+})
+
+router.post('/createDatabase',
+body('foodName').trim().escape(),
+body('name').trim().escape(),
+body('description').trim().escape(),
+body('price').trim().escape(),
+(req, res, next) => {
+  authenticate(req, res, async () => {
+
+    let conn = await pool.promise().getConnection();
+    let tables = await getTableNames(conn);
+
+    // Checking if the table is already in the database
+    let alreadyInTables = false;
+    for (let i = 0; i < tables.length; i++) {
+      if (tables[i].foodName.toLowerCase() == req.body.foodName.toLowerCase()) {
+        alreadyInTables = true;
+        break;
+      }
+    }
+
+    // Checking if input is correct
+    if (req.body.foodName && !(alreadyInTables)) {
+      // Checking if a name for the first item was supplied or not
+      let name = (req.body.name) ? req.body.name : "default";
+      await insertTable(req.body.foodName, name, (req.body.description) ? req.body.description : null, (req.body.price) ? req.body.price : null, conn);
+      res.redirect('/spadmin/database/' + req.body.foodName);
+    } else {
+      res.redirect('/spadmin/createDatabase?error=true');
+    }
+    conn.release()
+  })
+})
+
+router.get('/database/:name', (req, res, next) => {
+  authenticate(req, res, async () => {
+    let conn = await pool.promise().getConnection();
+    let table = await getTable(req.params.name, conn)
+    conn.release();
+    res.render('database', { title: 'Database', admin: true, table: table, name: req.params.name });
   })
 })
 
@@ -152,70 +207,34 @@ router.get('/clearDatabases', (req,res,next) => {
   })
 })
 
-router.post('/AddBurger', (req, res, next) => {
-  authenticate(req, res, () => {
-    req.body.bPrice = req.body.bPrice.replace(',', '.');
-    insertBurger(req.body.bIdentifier, req.body.bName, (req.body.bDesc) ? req.body.bDesc : null, parseFloat(req.body.bPrice) ? parseFloat(req.body.bPrice) : null);
-    res.redirect('/spadmin/manage#burgerMenu');
-  })  
-})
-
-router.get('/deleteBurger/:burgerId', (req, res, next) => {
-  authenticate(req, res, () => {
-    deleteBurger(req.params.burgerId);
-    res.redirect('/spadmin/manage#burgerMenu');
+router.get('/delete/:table/:food', (req, res, next) => {
+  authenticate(req, res, async () => {
+    await deleteElement(req.params.food, req.params.table);
+    res.redirect('/spadmin/database/' + req.params.table);
   })
 })
 
-router.post('/AddFries', (req, res, next) => {
-  authenticate(req, res, () => {
-    req.body.fPrice = req.body.fPrice.replace(',', '.');
-    insertFries(req.body.fIdentifier, req.body.fName, (req.body.fDesc) ? req.body.fDesc : null, parseFloat(req.body.fPrice) ? parseFloat(req.body.fPrice) : null);
-    res.redirect('/spadmin/manage#friesMenu');
+router.get('/deleteDatabase/:table', (req, res, next) => {
+  authenticate(req, res, async () => {
+    await deleteTable(req.params.table);
+    res.redirect('/spadmin/databases');
   })
 })
 
-router.get('/deleteFries/:friesId', (req, res, next) => {
-  authenticate(req, res, () => {
-    deleteFries(req.params.friesId);
-    res.redirect('/spadmin/manage#friesMenu');
-  })
-})
-
-router.post('/AddDrink', (req, res, next) => {
-  authenticate(req, res, () => {
-    req.body.dPrice = req.body.dPrice.replace(',', '.');
-    insertDrink(req.body.dIdentifier, req.body.dName, (req.body.dDesc) ? req.body.dDesc : null, parseFloat(req.body.dPrice) ? parseFloat(req.body.dPrice) : null);
-    res.redirect('/spadmin/manage#drinkMenu');
-  })
-})
-
-router.get('/deleteDrink/:drinkId', (req, res, next) => {
-  authenticate(req, res, () => {
-    deleteDrink(req.params.drinkId);
-    res.redirect('/spadmin/manage#drinkMenu');
-  })
-})
-
-router.post('/AddDessert', (req, res, next) => {
-  authenticate(req, res, () => {
-    req.body.dePrice = req.body.dePrice.replace(',', '.');
-    insertDessert(req.body.deIdentifier, req.body.deName, (req.body.deDesc) ? req.body.deDesc : null, parseFloat(req.body.dePrice) ? parseFloat(req.body.dePrice) : null);
-    res.redirect('/spadmin/manage#dessertMenu');
-  })
-})
-
-router.get('/deleteDessert/:dessertId', (req, res, next) => {
-  authenticate(req, res, () => {
-    deleteDessert(req.params.dessertId);
-    res.redirect('/spadmin/manage#dessertMenu');
+router.post('/add/:table',
+body('name').trim().escape(),
+body('description').trim().escape(),
+body('price').toInt(),
+(req, res, next) => {
+  authenticate(req, res, async () => {
+    await insertRow(req.params.table, req.body.name, (req.body.description) ? req.body.description : null, (req.body.price) ? req.body.price : null);
+    res.redirect('/spadmin/database/' + req.params.table);
   })
 })
 
 router.get('/downloadUsers', (req, res, next) => {
   authenticate(req, res, async () => {
     let rows = await getCommands(null, null, 'time');
-    console.log(rows)
     stringify.stringify(rows, {
       header: true
     }, (err, output) => {
