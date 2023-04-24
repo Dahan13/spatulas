@@ -139,18 +139,16 @@ router.post('/updateKitchenLimit', (req, res, next) => {
 })
 
 router.get('/clearUsers', (req,res,next) => {
-  authenticate(req, res, () => {
-    clearUsers();
+  authenticate(req, res, async () => {
+    await clearUsers();
     res.redirect('/spadmin/manage#generalParameters');
   })
 })
 
 router.get('/clearDatabases', (req,res,next) => {
-  authenticate(req, res, () => {
-    purgeDatabase();
-    setTimeout(() => {
-      res.redirect('/spadmin/manage');
-    }, 1000) 
+  authenticate(req, res, async () => {
+    await purgeDatabase();
+    res.redirect('/spadmin/manage');
   })
 })
 
@@ -215,20 +213,20 @@ router.get('/deleteDessert/:dessertId', (req, res, next) => {
 })
 
 router.get('/downloadUsers', (req, res, next) => {
-  authenticate(req, res, () => {
-    pool.query('SELECT * FROM spatulasUsers ORDER BY time', (err, rows) => {
-      stringify.stringify(rows, {
-        header: true
-      }, (err, output) => {
-        fs.writeFile('./users.csv', output, 'utf-8', () => {
-          res.download('./users.csv', () => {
-            fs.unlink('./users.csv', (err) => {
-              if (err) {
-                console.log(err);
-              }
-            });
+  authenticate(req, res, async () => {
+    let rows = await getCommands(null, null, 'time');
+    console.log(rows)
+    stringify.stringify(rows, {
+      header: true
+    }, (err, output) => {
+      fs.writeFile('./commands.csv', output, 'utf-8', () => {
+        res.download('./commands.csv', () => {
+          fs.unlink('./commands.csv', (err) => {
+            if (err) {
+              console.log(err);
+            }
           });
-        })
+        });
       })
     })
   })

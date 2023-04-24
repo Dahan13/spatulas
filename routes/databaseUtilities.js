@@ -400,9 +400,12 @@ async function getCommandsByTime(searchString = "", orderCriteria = "userId", co
     return sortedcommands;
 }
 
-function clearUsers(connection = null) {
-    db = (connection) ? connection : pool
-    conn.execute('TRUNCATE TABLE spatulasUsers');
+async function clearUsers(connection = null) {
+    db = (connection) ? connection : await pool.promise().getConnection();
+
+    // Dropping the table
+    await db.query('TRUNCATE TABLE spatulasCommands');
+    db.release();
 }   
 
 /**
@@ -582,21 +585,24 @@ async function toggleCommandBoolean(userId, statusToUpdate, connection = null) {
     return;
 }
 
-function purgeDatabase() {
-    pool.getConnection((err, conn) => {
-        conn.execute('DROP TABLE spatulasUsers', () => {
-            conn.execute('DROP TABLE spatulasBurgers', () => {
-                conn.execute('DROP TABLE spatulasFries', () => {
-                    conn.execute('DROP TABLE spatulasDrinks', () => {
-                        conn.execute('DROP TABLE spatulasDesserts', () => {
-                            createDatabase(conn);
-                            conn.release();
-                        })
-                    })
-                });
-            });
-        })
-    })
+async function purgeDatabase(connection = null) {
+    let conn = (connection) ? connection : await pool.promise().getConnection();
+    
+    await conn.query('DROP TABLE spatulasCommands');
+
+    // Getting table names
+    let tables = await getTableNames(conn);
+    for (let i = 0; i < tables.length; i++) {
+        await conn.query('DROP TABLE ' + tables[i].foodName);
+    }
+
+    await conn.query('DROP TABLE spatulasTables');
+    await conn.query('DROP TABLE spatulasCheckboxes');
+
+    await createDatabase(conn);
+    conn.release();
+    
+    return;
 }
 
 async function refreshCommand(userId, conn = null) {
