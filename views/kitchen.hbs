@@ -1,19 +1,19 @@
-<link rel="stylesheet" href="/stylesheets/home-style.css"/>
-<link rel="stylesheet" href="/stylesheets/spadmin-style.css"/>
-<link rel="stylesheet" href="/stylesheets/kitchen-style.css"/>
+<link rel="stylesheet" href="/stylesheets/home-style.css" />
+<link rel="stylesheet" href="/stylesheets/spadmin-style.css" />
+<link rel="stylesheet" href="/stylesheets/kitchen-style.css" />
 <a class="button" href="/spadmin/" style="margin-bottom:15px"> <button> Back </button> </a>
 <h1> Kitchen tab (&#215; <span id="command-count"> # </span>/{{limit}})</h1>
 
 {{#unless notEmpty}}
-    <h2 style="margin-top: 50px; text-align:center; border: none"> <em> Wow ! Such void ! </em> </h2>
+<h2 style="margin-top: 50px; text-align:center; border: none"> <em> Wow ! Such void ! </em> </h2>
 {{else}}
 
 <div class="global-kitchen">
 
-<div class="global-command">
-<h2> Commands </h2>
-    <div class="commands-container">
-        {{#each commands}}
+    <div class="global-command">
+        <h2> Commands </h2>
+        <div class="commands-container">
+            {{#each commands}}
             <div class="command-wrapper">
                 <div class="command-container">
                     <div class="com-id">
@@ -26,31 +26,32 @@
                             <p> {{this.foodString}} </p>
                         </div>
                     </div>
-                    
+
                 </div>
             </div>
-        {{/each}}
+            {{/each}}
+        </div>
     </div>
-</div>
 
-<div class="global-count">
-<h2> Counts </h2>
-    {{#each count}}
-        <h3> {{this.name}} </h3>
+    <div class="global-count">
+        <h2> Counts </h2>
+        {{#each count}}
+        {{#unless this.infos.empty}}
+        <h3> {{this.infos.foodName}} </h3>
         <table>
             {{#each this.count}}
-                <tr>
-                    <th> {{this.name}} </th>
-                    <td> &#215; {{this.count}} </td>
-                </tr>
+            <tr>
+                <th> {{this.name}} </th>
+                <td> &#215; {{this.count}} </td>
+            </tr>
             {{/each}}
         </table>
-    {{/each}}
-</div>
-{{/unless}}
+        {{/unless}}
+        {{/each}}
+    </div>
+    {{/unless}}
 </div>
 
 
 
 <script src="/javascripts/kitchen.js"> </script>
-

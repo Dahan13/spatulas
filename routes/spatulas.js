@@ -4,7 +4,7 @@ var stringify = require('csv-stringify');
 const { body, query } = require('express-validator');
 var router = express.Router();
 let pool = require('./databaseConnector')
-let { clearUsers, purgeDatabase, getUsersByStatus, getTablesCount, createCommandFoodString, getCommands, getTableNames, insertTable, getTable, deleteElement, deleteTable, insertRow } = require("./databaseUtilities.js");
+let { clearUsers, purgeDatabase, getUsersByStatus, getTablesCount, createCommandFoodString, getCommands, getTablesInfos, insertTable, getTable, deleteElement, deleteTable, insertRow, getTableInfos } = require("./databaseUtilities.js");
 let { getRegistration, getRegistrationDay, getLimit, setRegistration, setRegistrationDay, setLimit, addTime, removeTime, checkPassword, authenticate, setPassword, getKitchenLimit, setKitchenLimit, getGlobalTimes } = require('./settingsUtilities');
 
 /* GET users listing. */
@@ -78,7 +78,7 @@ router.post('/changePassword', (req, res, next) => {
 
 router.get('/databases', (req, res, next) => {
   authenticate(req, res, async () => {
-    let tables = await getTableNames();
+    let tables = await getTablesInfos();
     res.render('databases', { title: 'Databases', admin: true, tables: tables });
   })
 })
@@ -91,14 +91,11 @@ router.get('/createDatabase', (req, res, next) => {
 
 router.post('/createDatabase',
 body('foodName').trim().escape(),
-body('name').trim().escape(),
-body('description').trim().escape(),
-body('price').trim().escape(),
 (req, res, next) => {
   authenticate(req, res, async () => {
 
     let conn = await pool.promise().getConnection();
-    let tables = await getTableNames(conn);
+    let tables = await getTablesInfos(conn);
 
     // Checking if the table is already in the database
     let alreadyInTables = false;
@@ -112,8 +109,7 @@ body('price').trim().escape(),
     // Checking if input is correct
     if (req.body.foodName && !(alreadyInTables)) {
       // Checking if a name for the first item was supplied or not
-      let name = (req.body.name) ? req.body.name : "default";
-      await insertTable(req.body.foodName, name, (req.body.description) ? req.body.description : null, (req.body.price) ? req.body.price : null, conn);
+      await insertTable(req.body.foodName, conn);
       res.redirect('/spadmin/database/' + req.body.foodName);
     } else {
       res.redirect('/spadmin/createDatabase?error=true');
@@ -126,8 +122,14 @@ router.get('/database/:name', (req, res, next) => {
   authenticate(req, res, async () => {
     let conn = await pool.promise().getConnection();
     let table = await getTable(req.params.name, conn)
+    let infos = await getTableInfos(req.params.name, conn);
     conn.release();
-    res.render('database', { title: 'Database', admin: true, table: table, name: req.params.name });
+
+    if (infos) {
+      res.render('database', { title: 'Database', admin: true, table: table, infos: infos });
+    } else {
+      res.redirect('/spadmin/databases');
+    }
   })
 })
 

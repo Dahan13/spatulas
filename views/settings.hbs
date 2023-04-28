@@ -1,6 +1,6 @@
-<link rel="stylesheet" href="/stylesheets/home-style.css"/>
-<link rel="stylesheet" href="/stylesheets/queue-style.css"/>
-<link rel="stylesheet" href="/stylesheets/spadmin-style.css"/>
+<link rel="stylesheet" href="/stylesheets/home-style.css" />
+<link rel="stylesheet" href="/stylesheets/queue-style.css" />
+<link rel="stylesheet" href="/stylesheets/spadmin-style.css" />
 
 <a class="button" href="/spadmin/" style="margin-bottom:15px"> <button> Back </button> </a>
 <h1 style="margin-top:10px"> Manage the website </h1>
@@ -10,98 +10,107 @@
         <label for="password"> Master Password </label>
         <input type="password" id="password" name="password" required maxlength="100">
     </div>
-    <input type="submit" value="Change password" id="general-parameters-password-submit-button"/>
+    <input type="submit" value="Change password" id="general-parameters-password-submit-button" />
 </form>
 
 <h2 id="generalParameters"> General Parameters : </h2>
-    <form action="/spadmin/updateRegistration" method="POST">
-        <input type="submit" value={{#if regisBool}}"Close registration" {{else}} "Open registration" {{/if}} id="general-parameters-registration-submit-button"/>
-    </form>
+<form action="/spadmin/updateRegistration" method="POST">
+    <input type="submit" value={{#if regisBool}}"Close registration" {{else}} "Open registration" {{/if}}
+        id="general-parameters-registration-submit-button" />
+</form>
 
-    <table>
-        <tr>
-            <th> Registration Status : </th>
-            <td> {{#if regisBool}} OPENED {{else}} CLOSED {{/if}} </td>
-        </tr>
-        <tr>
-            <th> Registration Day : </th>
-            <td> {{day}} </td>
-        </tr>
-        <tr>
-            <th> Time Spans : </th>
-            <td> 
-                {{#each times}}
-                    {{this.time}}
-                {{/each}} 
-            </td>
-        </tr>
-        <tr>
-            <th> Limit per time : </th>
-            <td> {{limit}} </td>
-        </tr>
-        <tr>
-            <th> Kitchen limit : </th>
-            <td> {{kitchenLimit}} </td>
-        </tr>
-    </table>
+<table>
+    <tr>
+        <th> Registration Status : </th>
+        <td> {{#if regisBool}} OPENED {{else}} CLOSED {{/if}} </td>
+    </tr>
+    <tr>
+        <th> Registration Day : </th>
+        <td> {{day}} </td>
+    </tr>
+    <tr>
+        <th> Time Spans : </th>
+        <td>
+            {{#each times}}
+            {{this.time}}
+            {{/each}}
+        </td>
+    </tr>
+    <tr>
+        <th> Limit per time : </th>
+        <td> {{limit}} </td>
+    </tr>
+    <tr>
+        <th> Kitchen limit : </th>
+        <td> {{kitchenLimit}} </td>
+    </tr>
+</table>
 
-    <form action="/spadmin/updateRegistrationDay" method="POST" class="one-line-form">
-        <div class="input-div">
-            <label for="registrationDay"> Change Day </label>
-            <input type="text" id="registrationDay" name="registrationDay" placeholder="Monday, 1st of January 1970" required>
-        </div>
-        <input type="submit" value="Update Registration Day" id="general-parameters-registration-day-submit-button"/>
-    </form>
+<form action="/spadmin/updateRegistrationDay" method="POST" class="one-line-form">
+    <div class="input-div">
+        <label for="registrationDay"> Change Day </label>
+        <input type="text" id="registrationDay" name="registrationDay" placeholder="Monday, 1st of January 1970"
+            required>
+    </div>
+    <input type="submit" value="Update Registration Day" id="general-parameters-registration-day-submit-button" />
+</form>
 
-    <form action="/spadmin/addTimeStamp" method="POST" class="one-line-form">
-        <div class="input-div">
-            <label for="addTimeStamp"> Change time stamps </label>
-            <input type="text" id="addTimeStamp" name="addTimeStamp" placeholder="19h00" required>
-        </div>
-        <input type="submit" value="Add a time stamp" id="general-parameters-addtime-submit-button"/>
-    </form>
+<form action="/spadmin/addTimeStamp" method="POST" class="one-line-form">
+    <div class="input-div">
+        <label for="addTimeStamp"> Change time stamps </label>
+        <input type="text" id="addTimeStamp" name="addTimeStamp" placeholder="19h00" required>
+    </div>
+    <input type="submit" value="Add a time stamp" id="general-parameters-addtime-submit-button" />
+</form>
 
-    <form action="/spadmin/removeTimeStamp" method="POST" class="one-line-form">
-        <div class="input-div">
-            <label for="removeTimeStamp">  </label>
-            <input type="text" id="removeTimeStamp" name="removeTimeStamp" placeholder="19h00" required>
-        </div>
-        <input type="submit" value="Remove a time stamp" id="general-parameters-removetime-submit-button"/>
-    </form>
+<form action="/spadmin/removeTimeStamp" method="POST" class="one-line-form">
+    <div class="input-div">
+        <label for="removeTimeStamp"> </label>
+        <input type="text" id="removeTimeStamp" name="removeTimeStamp" placeholder="19h00" required>
+    </div>
+    <input type="submit" value="Remove a time stamp" id="general-parameters-removetime-submit-button" />
+</form>
 
-    <form action="/spadmin/updateLimit" method="POST" class="one-line-form">
-        <div class="input-div">
-            <label for="limit"> Limit per time stamp</label>
-            <input type="number" id="limit" name="limit" min="1" required>
-        </div>
-        <input type="submit" value="Update limit" id="general-parameters-limit-submit-button"/>
-    </form>
+<form action="/spadmin/updateLimit" method="POST" class="one-line-form">
+    <div class="input-div">
+        <label for="limit"> Limit per time stamp</label>
+        <input type="number" id="limit" name="limit" min="1" required>
+    </div>
+    <input type="submit" value="Update limit" id="general-parameters-limit-submit-button" />
+</form>
 
-    <form action="/spadmin/updateKitchenLimit" method="POST" class="one-line-form">
-        <div class="input-div">
-            <label for="kitchenLimit"> Kitchen limit </label>
-            <input type="number" id="kitchenLimit" name="kitchenLimit" min="1" required>
-        </div>
-        <input type="submit" value="Update kitchen limit" id="general-parameters-kitchen-limit-submit-button"/>
-    </form>
+<form action="/spadmin/updateKitchenLimit" method="POST" class="one-line-form">
+    <div class="input-div">
+        <label for="kitchenLimit"> Kitchen limit </label>
+        <input type="number" id="kitchenLimit" name="kitchenLimit" min="1" required>
+    </div>
+    <input type="submit" value="Update kitchen limit" id="general-parameters-kitchen-limit-submit-button" />
+</form>
 
 <h2> Food count : </h2>
 
 {{#each count}}
-    <h3> {{this.name}} : </h3>
-    <table>
-        {{#each this.count}}
-            <tr>
-                <th> {{this.name}} </th>
-                <td> x{{this.count}} </td>
-            </tr>
-        {{/each}}
-    </table>
+{{#unless this.infos.empty}}
+<h3> {{this.infos.foodName}} : </h3>
+<table>
+    {{#each this.count}}
+    <tr>
+        <th> {{this.name}} </th>
+        <td> x{{this.count}} </td>
+    </tr>
+    {{/each}}
+</table>
+{{/unless}}
 {{/each}}
 
 <h2> Actions : </h2>
 <div class="actions-container">
-    <a href="/spadmin/downloadUsers" class="button" style="align-self: center;"> <button> Download user database </button> </a>
-    <a href="/spadmin/clearUsers" class="button" style="align-self: center;" onclick="return confirm('Are you sure ? There is no going back. You will lose all user data.')"> <button> Delete ALL users </button> </a>
-    <a href="/spadmin/clearDatabases" class="button" style="align-self: center;" onclick="return ((confirm('Are you sure ? This will clear the content of all databases. There is no going back')) ? confirm('Are you REALLY REALLY sure ? There is no WAY to go back. You will lose the content of all databases') : false )"> <button> Clear databases </button> </a>
+    <a href="/spadmin/downloadUsers" class="button" style="align-self: center;"> <button> Download user database
+        </button> </a>
+    <a href="/spadmin/clearUsers" class="button" style="align-self: center;"
+        onclick="return confirm('Are you sure ? There is no going back. You will lose all user data.')"> <button> Delete
+            ALL users </button> </a>
+    <a href="/spadmin/clearDatabases" class="button" style="align-self: center;"
+        onclick="return ((confirm('Are you sure ? This will clear the content of all databases. There is no going back')) ? confirm('Are you REALLY REALLY sure ? There is no WAY to go back. You will lose the content of all databases') : false )">
+        <button> Clear databases </button> </a>
 </div>

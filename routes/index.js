@@ -2,7 +2,7 @@ var express = require('express');
 const { body, query, check } = require('express-validator');
 var router = express.Router();
 let pool = require('./databaseConnector');
-let { insertCommand, getCommands, calculatePrice, getCommandsByTime, getTables, checkTables, getValuesFromRequest, getTableNames } = require("./databaseUtilities.js");
+let { insertCommand, getCommands, calculatePrice, getCommandsByTime, getTables, checkTables, getValuesFromRequest, getTablesInfos } = require("./databaseUtilities.js");
 let { getRegistration, getRegistrationDay, checkTime, checkPassword, getGlobalTimes, getTimeCount, checkAndRepairTimes } = require('./settingsUtilities');
 let { sendTimeCount } = require('./webSocket');
 
@@ -41,7 +41,7 @@ router.get('/queue',
       let connection = await pool.promise().getConnection();
 
       let users = await getCommandsByTime(req.query["search-query"], "lastUpdated DESC", connection);
-      let tables = await getTableNames(connection);
+      let tables = await getTablesInfos(connection);
       let toEncodeUsers = await getCommands(null, null, null, null, connection);
 
       connection.release();
