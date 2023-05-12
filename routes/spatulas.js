@@ -97,17 +97,9 @@ body('foodName').trim().escape(),
     let conn = await pool.promise().getConnection();
     let tables = await getTablesInfos(conn);
 
-    // Checking if the table is already in the database
-    let alreadyInTables = false;
-    for (let i = 0; i < tables.length; i++) {
-      if (tables[i].foodName.toLowerCase() == req.body.foodName.toLowerCase()) {
-        alreadyInTables = true;
-        break;
-      }
-    }
-
     // Checking if input is correct
-    if (req.body.foodName && !(alreadyInTables)) {
+    console.log(req.body.foodName.length)
+    if (req.body.foodName && req.body.foodName.length < 32 && req.body.foodName.length > 0) {
       // Checking if a name for the first item was supplied or not
       await insertTable(req.body.foodName, conn);
       res.redirect('/spadmin/database/' + req.body.foodName);
@@ -118,11 +110,11 @@ body('foodName').trim().escape(),
   })
 })
 
-router.get('/database/:name', (req, res, next) => {
+router.get('/database/:id', (req, res, next) => {
   authenticate(req, res, async () => {
     let conn = await pool.promise().getConnection();
-    let table = await getTable(req.params.name, conn)
-    let infos = await getTableInfos(req.params.name, conn);
+    let table = await getTable(req.params.id, conn)
+    let infos = await getTableInfos(req.params.id, conn);
     conn.release();
 
     if (infos) {
@@ -137,7 +129,7 @@ router.get('/kitchen', (req, res, next) => {
   authenticate(req, res, async () => {
     let conn = await pool.promise().getConnection();
     getKitchenLimit(async (limit) => {
-      let commands = await getCommands("preparation = 1 AND ready = 0 and delivered = 0", null, "lastUpdated", limit, conn);
+      let commands = await getCommands("preparation = 1 AND ready = 0 and delivered = 0", null, "lastUpdated", limit, true, conn);
       createCommandFoodString(commands, ", ", conn)
       let count = await getTablesCount("preparation = 1 AND ready = 0 AND delivered = 0 ORDER BY lastUpdated", limit, conn)
       conn.release();
@@ -236,7 +228,7 @@ body('price').toInt(),
 
 router.get('/downloadUsers', (req, res, next) => {
   authenticate(req, res, async () => {
-    let rows = await getCommands(null, null, 'time');
+    let rows = await getCommands(null, null, 'time', 999, true);
     stringify.stringify(rows, {
       header: true
     }, (err, output) => {

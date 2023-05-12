@@ -12,9 +12,9 @@
     </a>
 
     {{#each tables}}
-        <a href="/spadmin/database/{{this.foodName}}">
+        <a href="/spadmin/database/{{this.tableId}}">
             <img src="/images/spadmin/database.webp" alt="Manage {{this.foodName}}">
-            <p> {{this.foodName}} </p>
+            <p> {{{this.foodName}}} </p>
         </a>
     {{/each}}
 </nav>

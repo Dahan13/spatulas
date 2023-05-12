@@ -91,11 +91,11 @@
 
 {{#each count}}
 {{#unless this.infos.empty}}
-<h3> {{this.infos.foodName}} : </h3>
+<h3> {{{this.infos.foodName}}} : </h3>
 <table>
     {{#each this.count}}
     <tr>
-        <th> {{this.name}} </th>
+        <th> {{{this.name}}} </th>
         <td> x{{this.count}} </td>
     </tr>
     {{/each}}

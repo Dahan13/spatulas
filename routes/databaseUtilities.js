@@ -27,21 +27,21 @@ async function createDatabase(conn = null) {
 
 /**
  * Returns a list containing all rows of the given table. It returns null if the table is empty or does not exist
- * @param {string} tableName
+ * @param {int} tableId
  * @param {Any} connection An optional connection to the database, if none is provided, it will use the pool automatically. The connection must be able to handle promises
  */
-async function getTable(tableName, connection = null) {
+async function getTable(tableId, connection = null) {
     let db = (connection) ? connection : await pool.promise().getConnection();
 
-    // Checking if the table exists
-    let queryResult = await db.query('SELECT * FROM spatulasTables WHERE foodName = ?', [tableName]);
+    // Checking if the table exists in spatulasTables
+    let queryResult = await db.query('SELECT * FROM spatulasTables WHERE tableId = ?', [tableId]);
     let rows = queryResult[0];
     if (rows.length == 0) {
         return null;
     }
 
-    // Getting the table
-    queryResult = await db.query('SELECT * FROM ' + tableName);
+    // Getting the table's content
+    queryResult = await db.query('SELECT * FROM `' + rows[0].foodName + '`');
     rows = queryResult[0];
 
     // Releasing the connection if it was not passed as a parameter
@@ -59,27 +59,27 @@ async function getTable(tableName, connection = null) {
 
 /**
  * Returns the informations related to a table stored in spatulasTables.
- * @param {string} tableName
+ * @param {int} tableId
  * @param {Any} connection
  * @returns {Object} An object containing the infos of the table, or null if the table does not exist.
  * Object{foodName: string, id: int, count: int, empty: boolean}
  */
-async function getTableInfos(tableName, connection = null) {
+async function getTableInfos(tableId, connection = null) {
     let db = (connection) ? connection : await pool.promise().getConnection();
 
     let infos = {};
     // First we check for the table existence in our system
-    let queryResult = await db.query('SELECT * FROM spatulasTables WHERE foodName = ?', [tableName]);
+    let queryResult = await db.query('SELECT * FROM spatulasTables WHERE tableId = ?', [tableId]);
     let rows = queryResult[0];
     if (rows.length == 0) {
         return null;
     } else {
         infos.foodName = rows[0].foodName;
-        infos.id = rows[0].tableId;
+        infos.tableId = rows[0].tableId;
     }
 
     // Now we get the table
-    let table = await getTable(tableName, db);
+    let table = await getTable(tableId, db);
     infos.count = (table?.length) ? table.length : 0;
     infos.empty = (table?.length) ? false : true;
 
@@ -104,8 +104,7 @@ async function getTablesInfos(connection = null) {
 
     // Now for each table, we will get it's number of rows and whether it's empty or not
     for (let i = 0; i < rows.length; i++) {
-        let tableName = rows[i].foodName;
-        let table = await getTable(tableName, db);
+        let table = await getTable(rows[i].tableId, db);
         rows[i].count = (table?.length) ? table.length : 0;
         rows[i].empty = (table?.length) ? false : true;
     }
@@ -129,15 +128,14 @@ async function getTables(connection = null) {
     let db = (connection) ? connection : await pool.promise().getConnection();
 
     // Getting all the table names
-    let tableName = await getTablesInfos(db);
-    let tables = tableName;
+    let tablesInfos = await getTablesInfos(db);
 
     // Now getting all data
     let tablesContent = [];
-    for (let i = 0; i < tables.length; i++) {
+    for (let i = 0; i < tablesInfos.length; i++) {
         let tableContent = {};
-        tableContent.infos = tables[i];
-        tableContent.content = await getTable(tables[i].foodName, db);
+        tableContent.infos = tablesInfos[i];
+        tableContent.content = await getTable(tablesInfos[i].tableId, db);
         tablesContent.push(tableContent);
     }
 
@@ -168,17 +166,17 @@ async function insertTable(tableName, connection = null) {
     if (tables[0].length > 0) {
         return;
     } else {
-        await db.query("DROP TABLE IF EXISTS " + tableName);
+        await db.query("DROP TABLE IF EXISTS `" + tableName + "`"); // Just in case the named table somehow exists in the database but is not stored within spatulasTables
     }
 
     // Inserting the table name in the spatulasTables table
     await db.query('INSERT INTO spatulasTables (foodName) VALUES (?)', [tableName]);
 
     // Creating the table
-    await db.query('CREATE TABLE ' + tableName + ' (name VARCHAR(255) PRIMARY KEY, description VARCHAR(255) DEFAULT NULL, price FLOAT DEFAULT 0.0)');
+    await db.query('CREATE TABLE `' + tableName + '` (id INT PRIMARY KEY NOT NULL AUTO_INCREMENT, name VARCHAR(255) NOT NULL, description VARCHAR(255) DEFAULT NULL, price FLOAT DEFAULT 0.0)');
 
     // Adding the column to the spatulasCommands table
-    await db.query('ALTER TABLE spatulasCommands ADD ' + tableName + ' VARCHAR(255) DEFAULT NULL REFERENCES ' + tableName + '(name)');
+    await db.query('ALTER TABLE spatulasCommands ADD `' + tableName + '` VARCHAR(255) DEFAULT NULL REFERENCES `' + tableName + '` (id)');
 
     // Releasing the connection if it was not passed as a parameter
     if (connection == null) {
@@ -190,29 +188,34 @@ async function insertTable(tableName, connection = null) {
 
 /**
  * Inserts a row in the given table with the given name, description and price (both are optional)
- * @param {string} tableName
+ * @param {int} tableId
  * @param {string} name
  * @param {string} description
  * @param {float} price
  * @param {Any} connection An optional connection to the database, if none is provided, it will use the pool automatically
  */
-async function insertRow(tableName, name, description = null, price = null, connection = null) {
+async function insertRow(tableId, name, description = null, price = null, connection = null) {
     let db = (connection) ? connection : await pool.promise().getConnection();
 
     // We check if the table already exists
-    let tables = await db.query("SELECT * FROM spatulasTables WHERE foodName = ?", [tableName]);
+    let tables = await db.query("SELECT * FROM spatulasTables WHERE tableId = ?", [tableId]);
     if (tables[0].length == 0) {
         return;
     }
 
-    // We check if the primary key is already taken
-    let row = await db.query('SELECT * FROM ' + tableName + ' WHERE name = ?', [name]);
-    if (row[0].length > 0) {
+    // We check if the name is not null
+    if (name == null) {
         return;
     }
 
     // Inserting the row
-    await db.query('INSERT INTO ' + tableName + ' (name, description, price) VALUES (?, ?, ?)', [name, description, price]);
+    await db.query('INSERT INTO `' + tables[0][0].foodName + '` (name, description, price) VALUES (?, ?, ?)', [name, description, price]);
+
+    // Releasing the connection if it was not passed as a parameter
+    if (connection == null) {
+        db.release();
+    }
+
     return;
 }
 
@@ -244,7 +247,7 @@ async function insertCommand(lastName, firstName, time, price, foods, connection
         if (tableNumber[i].empty) continue; // If the table is empty, we skip it
         valuesArray.push(foods[foodIndex]);
         valuesString += '? ';
-        columnNames += tableNumber[i].foodName;
+        columnNames += '`' + tableNumber[i].foodName + '`';
         if (foodIndex != foods.length - 1) {
             columnNames += ', ';
             valuesString += ', ';
@@ -285,7 +288,7 @@ async function insertCommand(lastName, firstName, time, price, foods, connection
 }
 
 /**
- * Returns a string adapted to be used in a query after the WHERE clause.
+ * Returns a string adapted to be used in a query after the WHERE clause for spatulasCommands.
  * It takes in input a search string, words separated by spaces.
  * @param {string} searchString
  * @returns {string} A string that can be used in a query to find all the users that have each of their words in their first name or last name.
@@ -317,10 +320,11 @@ function buildSearchStringForQuery(searchString = null) {
  * @param {string} orderCriteria
  * @param {string} searchString
  * @param {int} limit
+ * @param {boolean} convertFoodIdToName If true, the function will convert the foodId to the food name
  * @param {Any} connection An optional connection to the database, if none is provided, it will use the pool automatically
  * @returns {Array} An array containing all the commands matching the parameters
  */
-async function getCommands(conditions = null, searchString = null, orderCriteria = null, limit = null, connection = null) {
+async function getCommands(conditions = null, searchString = null, orderCriteria = null, limit = null, convertFoodIdToName = false, connection = null) {
     let db = (connection) ? connection : await pool.promise().getConnection();
     let queryString = "";
 
@@ -347,13 +351,33 @@ async function getCommands(conditions = null, searchString = null, orderCriteria
 
     // We execute the query
     let value = await db.query('SELECT * FROM spatulasCommands' + queryString);
+    value = value[0]
+
+    // We convert the food id to their name if needed
+    // ! This operation is very costly, it is possible to bypass the need for it in the back end with a bit a witchcraft
+    if (convertFoodIdToName) {
+        let tablesInfos = await getTables(db);
+        for (let i = 0; i < value.length; i++) { // for each command
+            for (let k = 0; k < tablesInfos.length; k++) { // for each table
+                if (value[i][tablesInfos[k].infos.foodName]) {
+                    for (let j = 0; j < tablesInfos[k].content.length; j++) { // for each food
+                        if (value[i][tablesInfos[k].infos.foodName] == tablesInfos[k].content[j].id) {
+                            value[i][tablesInfos[k].infos.foodName] = tablesInfos[k].content[j].name;
+                            break;
+                        }
+                    }
+                }
+            }
+
+        }
+    }
 
     // Releasing the connection if it was not passed as a parameter
     if (!connection) {
         db.release();
     }
 
-    return value[0]
+    return value
 }
 
 /**
@@ -398,11 +422,9 @@ async function createCommandFoodString(commands, separator = " ", connection = n
         let commandString = "";
         let command = commands[i];
 
-        let food = await db.query('SELECT * FROM spatulasCommands WHERE commandId = ?', [command.commandId]);
-        food = food[0];
         for (let j = 0; j < tables.length; j++) {
-            if (food[0][tables[j].foodName]) {
-                commandString += food[0][tables[j].foodName];
+            if (command[tables[j].foodName]) {
+                commandString += command[tables[j].foodName];
                 if (j != tables.length - 1) {
                     commandString += separator;
                 }
@@ -453,24 +475,6 @@ async function clearUsers(connection = null) {
 }
 
 /**
- * Count the number of each burger, it can optionally only count the burgers that are not ready yet
- * @param {function} callback 
- * @param {*} connection 
- */
-function countBurgers(callback, toPrepareOnly = false, connection = null) {
-    db = (connection) ? connection : pool;
-    if (toPrepareOnly) {
-        db.query('SELECT count(*) AS count, name FROM (SELECT burger, identifier, name FROM spatulasUsers INNER JOIN spatulasBurgers ON spatulasUsers.burger = spatulasBurgers.identifier WHERE spatulasUsers.preparation = 1 AND spatulasUsers.ready = 0 AND spatulasUsers.delivered = 0) AS burgerClient GROUP BY name', (err, rows, fields) => {
-            callback(rows);
-        })
-    } else {
-        db.query('SELECT count(*) AS count, name FROM (SELECT burger, identifier, name FROM spatulasUsers INNER JOIN spatulasBurgers ON spatulasUsers.burger = spatulasBurgers.identifier) AS burgerClient GROUP BY name', (err, rows, fields) => {
-            callback(rows);
-        })
-    }
-}
-
-/**
  * Count the number of each item (burger, fries, drink), in a list of lists
  * @param {function} callback
  * @param {*} connection
@@ -480,8 +484,10 @@ function countBurgers(callback, toPrepareOnly = false, connection = null) {
 async function getTablesCount(queriesCondition = "", limit = null, conn = null) {
     let db = (conn) ? conn : await pool.promise().getConnection(); // If a connection is provided, use it, otherwise create a new one. Note that we are using promises in this function, so we need to use the promise() function to get a promise-based connection
 
+    // Adding the queries condition
     if (queriesCondition != "") queriesCondition = "WHERE " + queriesCondition; // Add WHERE if there is a condition (to avoid having to add it in the queries)
     if (limit) queriesCondition += " LIMIT 0, " + limit; // Add limit if there is one
+
     let items = [];
 
     // Getting table names
@@ -489,7 +495,7 @@ async function getTablesCount(queriesCondition = "", limit = null, conn = null) 
 
     // Iterating over each table
     for (let i = 0; i < tables.length; i++) {
-        let itemsFound = await db.query('SELECT count(*) AS count, name FROM (SELECT ' + tables[i].foodName + ', name FROM spatulasCommands INNER JOIN ' + tables[i].foodName + ' ON spatulasCommands.' + tables[i].foodName + ' = ' + tables[i].foodName + '.name ' + queriesCondition + ') AS tempClient GROUP BY name');
+        let itemsFound = await db.query('SELECT count(*) AS count, id, name FROM (SELECT `' + tables[i].foodName + '`, id, name FROM spatulasCommands s INNER JOIN `' + tables[i].foodName + '` f ON s.`' + tables[i].foodName + '` = f.id ' + queriesCondition + ') AS tempClient GROUP BY id');
         items.push({ infos: tables[i], count: itemsFound[0] });
     }
 
@@ -499,15 +505,16 @@ async function getTablesCount(queriesCondition = "", limit = null, conn = null) 
 
 /**
  * This function return wether or not the specified value is in the specified table
+ * It checks whether or not the value is in the name or id column
  * @param {String} tableName
- * @param {String} value
+ * @param {String | int} value
  * @param {any} connection
  * @returns {boolean}
  */
 async function checkTable(tableName, value, connection = null) {
     conn = (connection) ? connection : pool.promise().getConnection();
 
-    let result = await conn.query('SELECT * FROM ' + tableName + ' WHERE name = ?', [value]);
+    let result = await conn.query('SELECT * FROM `' + tableName + '` WHERE name = ? OR id = ?', [value, value]);
     if (result[0].length > 0) {
         return true;
     } else {
@@ -530,7 +537,6 @@ async function checkTables(values, connection = null) {
     let tablesIndex;
     let valuesIndex = 0; // * We will use different indexes for the tables and the values, because we may have empty tables. If we have an empty table, we don't increment the values index
     for (tablesIndex = 0; tablesIndex < tables.length; tablesIndex++) {
-        console.log(tables[tablesIndex].foodName, values[valuesIndex])
         if (tables[tablesIndex].empty) continue; // If the table is empty, we skip it
         if (!(await checkTable(tables[tablesIndex].foodName, values[valuesIndex], db))) {
             return false;
@@ -563,23 +569,23 @@ async function getValuesFromRequest(body, connection = null) {
 
 /**
  * Deletes the specified table
- * @param {String} tableName
+ * @param {int} tableId
  * @param {*} connection
  */
-async function deleteTable(tableName, connection = null) {
+async function deleteTable(tableId, connection = null) {
     let conn = (connection) ? connection : await pool.promise().getConnection();
 
     let tables = await getTablesInfos(conn);
 
     // Iterating over each table
     for (let i = 0; i < tables.length; i++) {
-        if (tables[i].foodName == tableName) { // If the table name is the same as the one we want to delete from
+        if (tables[i].tableId == tableId) { // If the table name is the same as the one we want to delete from
             // Delete the column in spatulasCommands
-            await conn.execute('ALTER TABLE spatulasCommands DROP COLUMN ' + tableName);
+            await conn.execute('ALTER TABLE spatulasCommands DROP COLUMN `' + tables[i].foodName + '`');
             // Delete the name of the table in spatulasTables
-            await conn.execute('DELETE FROM spatulasTables WHERE foodName = ?', [tableName]);
+            await conn.execute('DELETE FROM spatulasTables WHERE tableId = ?', [tableId]);
             // Delete the table
-            await conn.execute('DROP TABLE ' + tableName);
+            await conn.execute('DROP TABLE `' + tables[i].foodName + '`');
             break;
         }
     }
@@ -591,19 +597,19 @@ async function deleteTable(tableName, connection = null) {
 
 /**
  * Deletes the specified element from a specified table
- * @param {String} foodId
- * @param {String} tableName
+ * @param {int} foodId
+ * @param {int} tableId
  * @param {*} connection 
  */
-async function deleteElement(foodId, tableName, connection = null) {
+async function deleteElement(foodId, tableId, connection = null) {
     conn = (connection) ? connection : await pool.promise().getConnection();
 
     let tables = await getTablesInfos(conn);
 
     // Iterating over each table
     for (let i = 0; i < tables.length; i++) {
-        if (tables[i].foodName == tableName) { // If the table name is the same as the one we want to delete from
-            await conn.execute('DELETE FROM ' + tableName + ' WHERE name = ?', [foodId]);
+        if (tables[i].tableId == tableId) { // If the table name is the same as the one we want to delete from
+            await conn.execute('DELETE FROM `' + tables[i].foodName + '` WHERE id = ?', [foodId]);
             break;
         }
     }
@@ -628,7 +634,7 @@ async function calculatePrice(values, connection = null) {
     let valuesIndex = 0;
     for (let i = 0; i < tables.length; i++) {
         if (tables[i].empty) continue; // If the table is empty, we skip it
-        let result = await db.query('SELECT price FROM ' + tables[i].foodName + ' WHERE name = ?', [values[valuesIndex]]);
+        let result = await db.query('SELECT price FROM `' + tables[i].foodName + '` WHERE name = ? OR id = ?', [values[valuesIndex], values[valuesIndex]]);
         price += result[0][0].price;
         valuesIndex++;
     }
@@ -658,19 +664,24 @@ async function toggleCommandBoolean(userId, statusToUpdate, connection = null) {
     return;
 }
 
+/**
+ * Destroy the database and recreate it
+ * @param {*} connection 
+ * @returns 
+ */
 async function purgeDatabase(connection = null) {
     let conn = (connection) ? connection : await pool.promise().getConnection();
 
-    await conn.query('DROP TABLE spatulasCommands');
+    await conn.query('DROP TABLE IF EXISTS spatulasCommands');
 
     // Getting table names
     let tables = await getTablesInfos(conn);
     for (let i = 0; i < tables.length; i++) {
-        await conn.query('DROP TABLE ' + tables[i].foodName);
+        await conn.query('DROP TABLE IF EXISTS `' + tables[i].foodName + '`');
     }
 
-    await conn.query('DROP TABLE spatulasTables');
-    await conn.query('DROP TABLE spatulasCheckboxes');
+    await conn.query('DROP TABLE IF EXISTS spatulasTables');
+    await conn.query('DROP TABLE IF EXISTS spatulasCheckboxes');
 
     await createDatabase(conn);
     conn.release();
@@ -703,7 +714,6 @@ module.exports = {
     getTablesInfos,
     checkTables,
     getValuesFromRequest,
-    countBurgers,
     getTablesCount,
     deleteElement,
     deleteTable,

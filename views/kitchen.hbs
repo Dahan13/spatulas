@@ -23,7 +23,7 @@
                     </div>
                     <div class="command-infos-container">
                         <div class="command-infos">
-                            <p> {{this.foodString}} </p>
+                            <p> {{{this.foodString}}} </p>
                         </div>
                     </div>
 
@@ -37,11 +37,11 @@
         <h2> Counts </h2>
         {{#each count}}
         {{#unless this.infos.empty}}
-        <h3> {{this.infos.foodName}} </h3>
+        <h3> {{{this.infos.foodName}}} </h3>
         <table>
             {{#each this.count}}
             <tr>
-                <th> {{this.name}} </th>
+                <th> {{{this.name}}} </th>
                 <td> &#215; {{this.count}} </td>
             </tr>
             {{/each}}

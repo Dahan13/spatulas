@@ -2,11 +2,11 @@ var express = require('express');
 const { body, query, check } = require('express-validator');
 var router = express.Router();
 let pool = require('./databaseConnector');
-let { insertCommand, getCommands, calculatePrice, getCommandsByTime, getTables, checkTables, getValuesFromRequest, getTablesInfos } = require("./databaseUtilities.js");
+let { insertCommand, getCommands, calculatePrice, getCommandsByTime, getTables, checkTables, getValuesFromRequest, getTablesInfos, purgeDatabase, createDatabase } = require("./databaseUtilities.js");
 let { getRegistration, getRegistrationDay, checkTime, checkPassword, getGlobalTimes, getTimeCount, checkAndRepairTimes } = require('./settingsUtilities');
 let { sendTimeCount } = require('./webSocket');
 
-
+createDatabase();
 // ! This is a temporary fix for the unlikely case all time stamps were removed, we add a new one set at "19h00" to prevent the system from breaking
 checkAndRepairTimes();
 
@@ -42,7 +42,7 @@ router.get('/queue',
 
       let users = await getCommandsByTime(req.query["search-query"], "lastUpdated DESC", connection);
       let tables = await getTablesInfos(connection);
-      let toEncodeUsers = await getCommands(null, null, null, null, connection);
+      let toEncodeUsers = await getCommands(null, null, null, null, true, connection);
 
       connection.release();
 
@@ -116,8 +116,8 @@ router.get('/credits', (req, res, next) => {
 router.get('/display', async (req, res, next) => {
   let db = await pool.promise().getConnection();
 
-  let userPrep = await getCommands('preparation = 1 AND ready = 0 AND delivered = 0', null, "lastUpdated", null, db);
-  let userReady = await getCommands('ready = 1 AND delivered = 0', null, "lastUpdated", null, db);
+  let userPrep = await getCommands('preparation = 1 AND ready = 0 AND delivered = 0', null, "lastUpdated", null, false, db);
+  let userReady = await getCommands('ready = 1 AND delivered = 0', null, "lastUpdated", null, false, db);
 
   db.release();
 

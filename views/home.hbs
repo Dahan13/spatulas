@@ -26,13 +26,13 @@
     {{#each tables}}
     {{#unless this.infos.empty}}
         <div class="input-div">
-            <label for="table-{{this.infos.foodName}}"> {{this.infos.foodName}} </label>
+            <label for="table-{{this.infos.foodName}}"> {{{this.infos.foodName}}} </label>
             <select name="{{this.infos.foodName}}" id="table-{{this.infos.foodName}}">
                 <option disabled selected value="none"> -- Select an option -- </option>
                 {{#each this.content}}
-            <option value="{{this.name}}" id="{{../this.infos.foodName}}-{{this.name}}" {{#if this.price }}
+                <option value="{{this.id}}" id="{{../this.infos.foodName}}-{{this.id}}" {{#if this.price }}
                     data-price={{this.price}} {{/if}}> {{{this.name}}} ({{#if this.price}}{{this.price}}{{else}}0.00{{/if}}€)
-                    {{#if this.description}}: {{this.description}} {{/if}} </option>
+                    {{#if this.description}}: {{{this.description}}} {{/if}} </option>
                 {{/each}}
             </select>
         </div>
