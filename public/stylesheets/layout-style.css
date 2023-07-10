@@ -227,6 +227,15 @@ footer {
   height: 40px;
 }
 
+.plus {
+  clip-path: polygon(0 33%, 0 66%, 33% 66%, 33% 100%, 66% 100%, 66% 66%, 100% 66%, 100% 33%, 66% 33%, 66% 0%, 33% 0%, 33% 33%);
+  -webkit-clip-path: polygon(0 33%, 0 66%, 33% 66%, 33% 100%, 66% 100%, 66% 66%, 100% 66%, 100% 33%, 66% 33%, 66% 0%, 33% 0%, 33% 33%);
+
+  width: 25px;
+  height: 25px;
+  background: var(--text-color);
+}
+
 @media only screen and (max-width: 330px) {
 
   .logo-holder > a > img,  .protected-access > a > img, .logo-holder, .protected-access{

@@ -54,6 +54,8 @@ table {
     width: 95%;
     align-self: center;
     max-width: 95vw;
+
+    table-layout: fixed;
 }
 
 h2 {
@@ -67,6 +69,7 @@ h3 {
 
 td {
     text-align: center;
+    word-wrap:break-word
 }
 
 tr {
@@ -98,6 +101,26 @@ th {
     align-items: center;
     width: 100%;
     flex-wrap: wrap;
+}
+
+.title-options {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 95%;
+    padding-bottom: 10px;
+
+    border-bottom: 4px solid var(--text-color);
+}
+
+.title-options > h1 {
+    border: 0;
+}
+
+.title-options > button, .title-options > a {
+    font-size: 1.5rem;
+    margin: 0;
 }
 
 @media only screen and (min-width: 1020px) {

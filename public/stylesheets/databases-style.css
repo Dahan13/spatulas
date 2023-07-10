@@ -1,0 +1,128 @@
+td {
+    border-left: 1px solid var(--text-color);
+}
+
+td:first-child {
+    border-left: none;
+}
+
+.content {
+    max-width: none;
+    width: 95%;
+}
+
+.table-container {
+    width: 100%;
+    padding: 2px;
+    border: 1px solid var(--text-color);
+    border-radius: 5px;
+    margin-top: 10px;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+}
+
+.table-container > img {
+    height: 100px;
+}
+
+.table-container > img, .table-container > h2 {
+    margin: 5px;
+}
+
+.table-container ~ .table-container {
+    flex-direction: column;
+    justify-content: space-around;
+    cursor: default;
+}
+
+
+
+.table-toolbar {
+    width: 99%;
+    border-bottom: 1px solid var(--text-color);
+    margin-bottom: 12px;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.table-toolbar>h2 {
+    margin: 3px;
+    border: none
+}
+
+.table-toolbar > .table-actions {
+    width: 60px;
+    height: 60px;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.table-actions > a {
+    height: 100%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.table-actions > a > img {
+    height: 90%;
+}
+
+.table-content {
+    width: 99%;
+    overflow: auto;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+.table-content > table {
+    width: 100%;
+    border-collapse: collapse;
+    align-self: center;
+}
+
+.element-adder {
+    align-self: flex-start;
+    margin: 8px;
+    padding: 4px;
+    border: 1px solid var(--text-color);
+    border-radius: 5px;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.element-adder > span {
+    margin: 0 4px;
+    font-size: 1.3em;
+    font-weight: bold;
+}
+
+.element-adder:hover {
+    cursor: pointer;
+    background-color: var(--text-color);
+}
+
+.element-adder:hover > .plus {
+    background-color: var(--main-background-color);
+}
+
+.element-adder:hover > span {
+    color: var(--main-background-color);
+}

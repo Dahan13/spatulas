@@ -4,7 +4,7 @@ var stringify = require('csv-stringify');
 const { body, query } = require('express-validator');
 var router = express.Router();
 let pool = require('./databaseConnector')
-let { clearUsers, purgeDatabase, getUsersByStatus, getTablesCount, createCommandFoodString, getCommands, getTablesInfos, insertTable, getTable, deleteElement, deleteTable, insertRow, getTableInfos } = require("./databaseUtilities.js");
+let { clearUsers, purgeDatabase, getUsersByStatus, getTablesCount, createCommandFoodString, getCommands, getTablesInfos, insertTable, getTable, deleteElement, deleteTable, insertRow, getTableInfos, getTables } = require("./databaseUtilities.js");
 let { getRegistration, getRegistrationDay, getLimit, setRegistration, setRegistrationDay, setLimit, addTime, removeTime, checkPassword, authenticate, setPassword, getKitchenLimit, setKitchenLimit, getGlobalTimes } = require('./settingsUtilities');
 
 /* GET users listing. */
@@ -78,8 +78,8 @@ router.post('/changePassword', (req, res, next) => {
 
 router.get('/databases', (req, res, next) => {
   authenticate(req, res, async () => {
-    let tables = await getTablesInfos();
-    res.render('databases', { title: 'Databases', admin: true, tables: tables });
+    let tables = await getTables();
+    res.render('databases', { title: 'Databases', admin: true, tables: tables, classic_display: false });
   })
 })
 

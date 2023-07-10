@@ -1,10 +1,14 @@
-<link rel="stylesheet" href="/stylesheets/home-style.css"/>
-<link rel="stylesheet" href="/stylesheets/spadmin-style.css"/>
+<link rel="stylesheet" href="/stylesheets/home-style.css" />
+<link rel="stylesheet" href="/stylesheets/spadmin-style.css" />
 
 <a class="button" href="/spadmin/" style="margin-bottom:15px"> <button> Back </button> </a>
 
-<h1> Databases : </h1>
+<div class="title-options">
+    <h1> Databases : </h1>
+    <button> Use the {{#if classic_display}} simplified {{else}} classic {{/if}} display </button>
+</div>
 
+{{#if classic_display}}
 <nav>
     <a href="/spadmin/createDatabase">
         <img src="/images/spadmin/add_database.webp" alt="Create database">
@@ -12,9 +16,53 @@
     </a>
 
     {{#each tables}}
-        <a href="/spadmin/database/{{this.tableId}}">
-            <img src="/images/spadmin/database.webp" alt="Manage {{this.foodName}}">
-            <p> {{{this.foodName}}} </p>
-        </a>
+    <a href="/spadmin/database/{{this.infos.tableId}}">
+        <img src="/images/spadmin/database.webp" alt="Manage {{this.infos.foodName}}">
+        <p> {{{this.infos.foodName}}} </p>
+    </a>
     {{/each}}
 </nav>
+{{else}}
+<link rel="stylesheet" href="/stylesheets/databases-style.css"/>
+<div class="table-container database-adder">
+    <img src="/images/spadmin/add_database.webp" alt="Add a database">
+    <h2 style="border: none"> Add a new database </h2>
+</div>
+{{#each tables}}
+<div class="table-container">
+    <div class="table-toolbar">
+        <h2> {{{this.infos.foodName}}} </h2>
+        <div class="table-actions">
+            <a href="/spadmin/deleteDatabase/{{this.infos.tableId}}" class="button" style="align-self: center;"
+                onclick="return confirm('Are you sure ? There is no going back. You will lose all {{this.infos.foodName}} data.')">
+                <img src="/images/spadmin/delete.webp" alt="Delete table {{this.infos.foodName}}"> 
+            </a>
+        </div>
+    </div>
+    <div class="table-content">
+        {{#unless this.infos.empty}}
+        <table>
+            <tr>
+                <th> Name </th>
+                <th> Description </th>
+                <th> Price </th>
+                <th> Actions </th>
+            </tr>
+            {{#each this.content}}
+            <tr>
+                <td> {{{this.name}}} </td>
+                <td> {{#if this.description}} {{{this.description}}} {{else}} Not Specified {{/if}} </td>
+                <td> {{#if this.price}} {{this.price}}€ {{else}} 0.00€ {{/if}} </td>
+                <td> <a class="close-button" href="/spadmin/delete/{{this.infos.tableId}}/{{this.id}}"></a> </td>
+            </tr>
+            {{/each}}
+        </table>
+        
+        {{else}}
+        <h3 style="text-align:center; border:none"> <em> This database is empty and is therefore deactivated </em> </h3>
+        {{/unless}}
+    </div>
+    <div class="element-adder"> <div class="plus"> </div> <span> Add </span> </div>
+</div>
+{{/each}}
+{{/if}}
