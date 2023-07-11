@@ -172,8 +172,7 @@ footer {
 .popup {
   cursor: auto;
 
-  width: 90%;
-  min-height: 50%;
+  padding: 10px;
   margin-bottom: 15px;
 
   background-color: var(--main-background-color);
@@ -184,6 +183,19 @@ footer {
   flex-direction: column;
   align-items: center;
   justify-content: space-around;
+}
+
+.popup > form {
+  width: 99%;
+}
+
+.popup h1 {
+  font-size: 1.3rem;
+  margin-bottom: 2px;
+}
+
+.popup label, .popup input[type="text"] {
+  font-size: 1.15rem;
 }
 
 .invisible {
@@ -313,8 +325,16 @@ footer {
   }
 
   .popup {
-    width: 1000px;
-    min-height: 30%;
+    padding: 15px;
+  }
+
+  .popup h1 {
+    font-size: 1.6rem;
+    margin-bottom: 6px;
+  }
+  
+  .popup label, .popup input[type="text"] {
+    font-size: 1.4rem;
   }
 
   .close-button {

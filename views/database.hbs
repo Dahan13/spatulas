@@ -18,7 +18,7 @@
         <td> {{{this.name}}} </td>
         <td> {{#if this.description}} {{{this.description}}} {{else}} Not Specified {{/if}} </td>
         <td> {{#if this.price}} {{this.price}}€ {{else}} 0.00€ {{/if}} </td>
-        <td> <a class="close-button" href="/spadmin/delete/{{../infos.tableId}}/{{{this.id}}}"></a> </td>
+        <td> <a class="close-button" href="/spadmin/delete/{{../infos.tableId}}/{{{this.id}}}/classic"></a> </td>
     </tr>
     {{/each}}
 </table>
@@ -31,7 +31,7 @@
     <button> Delete database </button> </a>
 
 <h2> Add a new item : </h2>
-<form action="/spadmin/add/{{infos.tableId}}" method="POST">
+<form action="/spadmin/add/{{infos.tableId}}/classic" method="POST">
     <div class="input-div">
         <label for="name"> Name </label>
         <input type="text" id="name" name="name" required>

@@ -122,7 +122,7 @@ async function getTablesInfos(connection = null) {
  * Returns a list containing objects, containing infos of each table with a list of all rows of the table stored in the spatulasTables table.
  * 
  * @param {Any} connection An optional connection to the database, if none is provided, it will use the pool automatically
- * @return {Array} of Object{infos: Object{foodName: string, id: int, count: int, empty: boolean}, content: Array{Object{}}}
+ * @return {Array} of Object{infos: Object{foodName: string, tableId: int, count: int, empty: boolean}, content: Array{Object{}}}
  */
 async function getTables(connection = null) {
     let db = (connection) ? connection : await pool.promise().getConnection();
@@ -157,6 +157,7 @@ async function getTables(connection = null) {
  * @param {string} description
  * @param {float} price
  * @param {Any} connection An optional connection to the database, if none is provided, it will use the pool automatically
+ * @returns {boolean} True if the table was created, false if the table already exists
  */
 async function insertTable(tableName, connection = null) {
     let db = (connection) ? connection : await pool.promise().getConnection();
@@ -164,7 +165,7 @@ async function insertTable(tableName, connection = null) {
     // if the table already exists, return
     let tables = await db.query("SELECT * FROM spatulasTables WHERE foodName = ?", [tableName]);
     if (tables[0].length > 0) {
-        return;
+        return false;
     } else {
         await db.query("DROP TABLE IF EXISTS `" + tableName + "`"); // Just in case the named table somehow exists in the database but is not stored within spatulasTables
     }
@@ -183,7 +184,7 @@ async function insertTable(tableName, connection = null) {
         db.release();
     }
 
-    return;
+    return true;
 }
 
 /**
@@ -456,7 +457,7 @@ async function getCommandsByTime(searchString = "", orderCriteria = "userId", co
         sortedcommands[i] = {}; // Create a new object for this time stamp
         sortedcommands[i]["timeSettings"] = times[i]; // Add the time stamp to the list
 
-        let commandsFound = await getCommands("time LIKE \'" + times[i].time + "\'", searchString, orderCriteria, null, db); // Get all commands that have been added at this time stamp (we use the getCommands function to do so)
+        let commandsFound = await getCommands("time LIKE \'" + times[i].time + "\'", searchString, orderCriteria, null, false, db); // Get all commands that have been added at this time stamp (we use the getCommands function to do so)
         sortedcommands[i]["users"] = (commandsFound.length > 0) ? commandsFound : null; // If there are no commands, we set the value to null
     }
 

@@ -5,12 +5,14 @@
 
 <div class="title-options">
     <h1> Databases : </h1>
-    <button> Use the {{#if classic_display}} simplified {{else}} classic {{/if}} display </button>
+    <button id="display-switcher" data-theme="{{#if classic_display}}classic{{else}}minimized{{/if}}"> Use the {{#if classic_display}} simplified {{else}} classic {{/if}} display </button>
 </div>
-
+{{#if error}}
+<p class="error-message" style="margin-top:10px"> Error. Please try again </p>
+{{/if}}
 {{#if classic_display}}
 <nav>
-    <a href="/spadmin/createDatabase">
+    <a href="#" id="database-adder-classic">
         <img src="/images/spadmin/add_database.webp" alt="Create database">
         <p> New database </p>
     </a>
@@ -23,19 +25,19 @@
     {{/each}}
 </nav>
 {{else}}
-<link rel="stylesheet" href="/stylesheets/databases-style.css"/>
-<div class="table-container database-adder">
+<link rel="stylesheet" href="/stylesheets/databases-style.css" />
+<div class="database-adder">
     <img src="/images/spadmin/add_database.webp" alt="Add a database">
     <h2 style="border: none"> Add a new database </h2>
 </div>
 {{#each tables}}
 <div class="table-container">
     <div class="table-toolbar">
-        <h2> {{{this.infos.foodName}}} </h2>
+        <h2 id="{{this.infos.tableId}}"> {{{this.infos.foodName}}} </h2>
         <div class="table-actions">
             <a href="/spadmin/deleteDatabase/{{this.infos.tableId}}" class="button" style="align-self: center;"
                 onclick="return confirm('Are you sure ? There is no going back. You will lose all {{this.infos.foodName}} data.')">
-                <img src="/images/spadmin/delete.webp" alt="Delete table {{this.infos.foodName}}"> 
+                <img src="/images/spadmin/delete.webp" alt="Delete table {{this.infos.foodName}}">
             </a>
         </div>
     </div>
@@ -53,16 +55,19 @@
                 <td> {{{this.name}}} </td>
                 <td> {{#if this.description}} {{{this.description}}} {{else}} Not Specified {{/if}} </td>
                 <td> {{#if this.price}} {{this.price}}€ {{else}} 0.00€ {{/if}} </td>
-                <td> <a class="close-button" href="/spadmin/delete/{{this.infos.tableId}}/{{this.id}}"></a> </td>
+                <td> <a class="close-button" href="/spadmin/delete/{{../infos.tableId}}/{{this.id}}/minimized"></a> </td>
             </tr>
             {{/each}}
         </table>
-        
+
         {{else}}
         <h3 style="text-align:center; border:none"> <em> This database is empty and is therefore deactivated </em> </h3>
         {{/unless}}
     </div>
-    <div class="element-adder"> <div class="plus"> </div> <span> Add </span> </div>
+    <div class="element-adder" data-databaseName="{{{this.infos.foodName}}}" data-databaseId="{{{this.infos.tableId}}}">
+        <div class="plus" data-databaseName="{{{this.infos.foodName}}}" data-databaseId="{{{this.infos.tableId}}}"> </div> <span data-databaseName="{{{this.infos.foodName}}}" data-databaseId="{{{this.infos.tableId}}}"> Add </span>
+    </div>
 </div>
 {{/each}}
 {{/if}}
+<script src="/javascripts/databases.js"></script>
