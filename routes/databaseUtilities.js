@@ -233,6 +233,9 @@ async function insertRow(tableId, name, description = null, price = null, connec
  */
 async function insertCommand(lastName, firstName, time, price, foods, connection = null) {
     db = (connection) ? connection : await pool.promise().getConnection();
+    if (price < 0) {
+        price = 0;
+    }
 
     // Getting our tables infos
     let tableNumber = await getTablesInfos(db);
@@ -393,10 +396,10 @@ async function getCommands(conditions = null, searchString = null, orderCriteria
 async function getUsersByStatus(orderCriteria1 = null, searchString1 = null, orderCriteria2 = null, searchString2 = null, orderCriteria3 = null, searchString3 = null, orderCriteria4 = null, searchString4 = null, connection = null) {
     let db = (connection) ? connection : await pool.promise().getConnection();
 
-    let untreatedUsers = await getCommands('preparation = 0 AND ready = 0 AND delivered = 0', searchString1, orderCriteria1, null, db);
-    let preparationUsers = await getCommands('preparation = 1 AND ready = 0 AND delivered = 0', searchString2, orderCriteria2, null, db);
-    let readyUsers = await getCommands('ready = 1 AND delivered = 0', searchString3, orderCriteria3, null, db);
-    let deliveredUsers = await getCommands('delivered = 1', searchString4, orderCriteria4, null, db);
+    let untreatedUsers = await getCommands('preparation = 0 AND ready = 0 AND delivered = 0', searchString1, orderCriteria1, null, true, db);
+    let preparationUsers = await getCommands('preparation = 1 AND ready = 0 AND delivered = 0', searchString2, orderCriteria2, null, true, db);
+    let readyUsers = await getCommands('ready = 1 AND delivered = 0', searchString3, orderCriteria3, null, true, db);
+    let deliveredUsers = await getCommands('delivered = 1', searchString4, orderCriteria4, null, true, db);
 
 
     // Releasing the connection if it was not passed as a parameter

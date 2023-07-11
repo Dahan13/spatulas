@@ -38,9 +38,10 @@ router.get('/queue',
 query('search-query').trim().escape(),
 (req, res, next) => {
   authenticate(req, res, async () => {
-    let users = await getUsersByStatus('commandId', req.query["search-query"], 'lastUpdated', req.query["search-query"], 'lastUpdated', req.query["search-query"], 'lastUpdated', req.query["search-query"])
-    await createCommandFoodString(users, ", ")
-
+    let conn = await pool.promise().getConnection();
+    let users = await getUsersByStatus('commandId', req.query["search-query"], 'lastUpdated', req.query["search-query"], 'lastUpdated', req.query["search-query"], 'lastUpdated', req.query["search-query"], conn)
+    await createCommandFoodString(users, ", ", conn);
+    conn.release();
     res.render('admin-queue', { title: 'Queue Manager', admin: true, searching: (req.query["search-query"]) ? true : false, users: users, notEmpty: (typeof users !== "undefined" && users.length > 0) ? true : false });
   })
 })
@@ -222,7 +223,7 @@ router.get('/deleteDatabase/:table', (req, res, next) => {
 router.post('/add/:table/:display',
 body('name').trim().escape(),
 body('description').trim().escape(),
-body('price').toInt(),
+body('price').toFloat(),
 (req, res, next) => {
   authenticate(req, res, async () => {
     await insertRow(req.params.table, req.body.name, (req.body.description) ? req.body.description : null, (req.body.price) ? req.body.price : null);
