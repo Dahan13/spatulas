@@ -2,7 +2,7 @@ const { WebSocket } = require('ws');
 const validator = require('validator');
 let pool = require('./databaseConnector');
 const { checkPassword } = require('./settingsUtilities')
-const { toggleReady, toggleDelivered, togglePrepare, refreshCommand } = require("./databaseUtilities")
+const { toggleCommandBoolean } = require("./databaseUtilities")
 
 
 const server = new WebSocket.Server({
@@ -14,30 +14,29 @@ server.on('connection', function(socket) {
   sockets.push(socket);
 
   socket.on('message', function(msg) {
-    let message = validator.escape(msg.toString('utf-8'));
+    let message = validator.escape(msg.toString('utf-8')); // Sanitizing user inputs
     console.log('SOCKET Received : ', message);
     result = message.split('  ');
-    checkPassword(result[0], (auth) => {
-      let userId = validator.toInt(result[1]);
-      let action = validator.toInt(result[2]);
-      pool.getConnection((err, conn) => {
-        refreshCommand(userId, () => {
+    checkPassword(result[0], async (auth) => {
+      if (auth) {
+        let userId = validator.toInt(result[1]);
+        let action = validator.toInt(result[2]);
+        let conn = await pool.promise().getConnection()
+        let toToggle = ""
           switch (action) {
             case 0:
-              togglePrepare(userId, conn);
-              pool.releaseConnection(conn);
+              toToggle = "preparation";
               break;
             case 1:
-              toggleReady(userId, conn);
-              pool.releaseConnection(conn);
+              toToggle = "ready";
               break;
             case 2:
-              toggleDelivered(userId, conn);
-              pool.releaseConnection(conn);
+              toToggle = "delivered";
               break;
           }
-        }, conn)
-      })
+          await toggleCommandBoolean(userId, toToggle, conn)
+          conn.release();
+      }
     })
   });
 

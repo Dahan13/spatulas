@@ -1,8 +1,15 @@
-const { count, time } = require('console');
 var fs = require('fs');
+var Promise = require("bluebird");
+Promise.promisifyAll(fs); // Promisifying the fs module
+
 var ini = require('ini');
 const pool = require('./databaseConnector');
+const validator = require('validator');
 
+/**
+ * ! This function is deprecated, switch to readIniAsync instead !
+ * @param {*} callback 
+ */
 function readIni(callback) {
     fs.readFile('./settings.ini', 'utf-8', (err, data) => {
         if (err) {
@@ -11,6 +18,15 @@ function readIni(callback) {
             callback(ini.parse(data));
         }
     })
+}
+
+/**
+ * Returns the .ini setting file as an Object
+ * @returns {Object} Settings file as an Object 
+ */
+async function readIniAsync() {
+    let data = await fs.readFileAsync('./settings.ini', 'utf-8');
+    return ini.parse(data);
 }
 
 function getPassword(callback) {
@@ -31,10 +47,23 @@ function getRegistrationDay(callback) {
     })
 }
 
+/**
+ * ! This function is deprecated, switch to getLimitAsync instead !
+ * @param {*} callback 
+ */
 function getLimit(callback) {
     readIni((data) => {
         callback(parseInt(data.Time.limit, 10));
     })
+}
+
+/**
+ * Returns the limit of commands for a time stamp
+ * @returns {int} Limit of commands for a time stamp
+ */
+async function getLimitAsync() {
+    let data = await readIniAsync();
+    return parseInt(data.Time.limit, 10);
 }
 
 /**
@@ -74,37 +103,48 @@ function checkAndRepairTimes() {
 
 /**
  * This function will return a list containing object, each object containing the time, the number of commands, if it's full and the limit
- * @param {function} callback
  * @param {*} connection
+ * @returns {[{time: "XXhXX", count: int, limit: int, full: Boolean}]} 
  */
-function getGlobalTimes(callback, connection = null) {
-    let conn = (connection) ? connection : pool;
-    getLimit((limit) => {
-        readIni((data) => {
-            conn.query("SELECT COUNT(*) as count, time FROM spatulasUsers GROUP BY time", (err, rows, fields) => {
-                let result = [];
-                for (let i = 0; i < data.Time.array.length; i++) {
-                    let time = data.Time.array[i];
-                    let count = 0;
-                    let full = false;
-                    for (let j = 0; j < rows.length; j++) {
-                        if (rows[j].time == time) {
-                            count = rows[j].count;
-                            full = (count >= limit);
-                            break;
-                        }
-                    }
-                    result.push({
-                        time: time,
-                        count: count,
-                        limit: limit,
-                        full: full
-                    })
-                }
-                callback(result);
-            })
+async function getGlobalTimes(connection = null) {
+    let conn = (connection) ? connection : await pool.promise().getConnection();
+    let result = [];
+
+    // Getting the limit and the data
+    let limit = await getLimitAsync();
+    let data = await readIniAsync();
+    let queryResult = await conn.query("SELECT COUNT(*) as count, time FROM spatulasCommands GROUP BY time");
+    let rows = queryResult[0];
+
+    // For each time stamp in the settings file
+    for (let i = 0; i < data.Time.array.length; i++) {
+        let time = data.Time.array[i];
+        let count = 0;
+        let full = false;
+
+        // For each time stamp in the database
+        for (let j = 0; j < rows.length; j++) {
+            if (rows[j].time == time) {
+                count = rows[j].count;
+                full = (count >= limit);
+                break;
+            }
+        }
+        
+        result.push({
+            time: time,
+            count: count,
+            limit: limit,
+            full: full
         })
-    })
+    }
+    
+    // If we are using a connection, we need to release it
+    if (!connection) {
+        conn.release();
+    }
+
+    return result
 }
 
 /**
@@ -113,29 +153,46 @@ function getGlobalTimes(callback, connection = null) {
  * @param {function} callback
  * @param {*} connection
  */
-function getTimeCount(callback, timeValue, connection = null) {
-    let conn = (connection) ? connection : pool;
-    getGlobalTimes((times) => {
-        for (let i = 0; i < times.length; i++) {
-            if (times[i].time == timeValue) {
-                callback(times[i].count);
-                return;
-            }
+async function getTimeCount(callback, timeValue, connection = null) {
+    let conn = (connection) ? connection : pool.promise().getConnection();
+    times = await getGlobalTimes(conn);
+
+    // If we are using a connection, we need to release it
+    if (!connection) {
+        conn.release();
+    }
+
+    for (let i = 0; i < times.length; i++) {
+        if (times[i].time == timeValue) {
+            callback(times[i].count);
+            return;
         }
-        callback(0);
-    }, conn)
+    }
+    callback(0);
 }
 
-function checkTime(value, callback, onlyAvailable = false, connection = null) {
-    getTimes((times) => {
-        for (let i = 0; i < times.length; i++) {
-            if (value == times[i]) {
-                callback(true);
-                return;
-            }
+/** 
+ * This function will check if a time stamp is valid (i.e if it's in the list of time stamps)
+ * @param {string} value
+ * @param {*} connection
+ * @returns {boolean}
+ */
+async function checkTime(value, connection = null) {
+    conn = (connection) ? connection : pool.promise().getConnection();
+
+    times = await getGlobalTimes(conn)
+
+    // If we are using a connection, we need to release it
+    if (!connection) {
+        conn.release();
+    }
+
+    for (let i = 0; i < times.length; i++) {
+        if (value == times[i].time) {
+            return true;
         }
-        callback(false);
-    }, onlyAvailable, connection)
+    }
+    return false;
 }
 
 function getTimeIndex(value, callback, connection = null) {

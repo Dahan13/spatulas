@@ -12,6 +12,7 @@
     "url": "git+https://github.com/Dahan13/spatulas.git"
   },
   "dependencies": {
+    "bluebird": "^3.7.2",
     "cookie-parser": "~1.4.4",
     "csv": "^6.2.5",
     "debug": "~2.6.9",
@@ -29,7 +30,7 @@
     "ws": "^8.11.0"
   },
   "devDependencies": {
-    "nodemon": "^2.0.20"
+    "nodemon": "^3.0.1"
   },
   "keywords": [
     "nodeJS",

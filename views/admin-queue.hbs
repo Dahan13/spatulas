@@ -1,4 +1,5 @@
 <link rel="stylesheet" href="/stylesheets/home-style.css"/>
+<link rel="stylesheet" href="/stylesheets/queue-style.css"/>
 <link rel="stylesheet" href="/stylesheets/admin-queue-style.css"/>
 <div class="error-message invisible"> <p> Error : Connection with the server has been lost. Please wait to see if the connection is reestablished. </p>
     <p> If the problem persists, please contact an admin. </p>
@@ -7,7 +8,7 @@
 <div class="queue-title">   
     <a class="button" href="/spadmin/" style="margin-bottom:15px"> <button> Back </button> </a>
     <div>
-        <img class="invisible" id="search-button" src="/images/queue/search.webp" alt="search">
+        <img id="search-button" src="/images/queue/search.webp" alt="search">
         {{#if searching}}
             <a class="close-button" href="/spadmin/queue" aria-label="Cancel search" id="cancel-search"> </a>
         {{/if}}
@@ -19,20 +20,17 @@
 {{#each users}}
     {{#if this.ready}}
     {{#unless this.delivered}}
-<div class="command-wrapper" id={{this.userId}}>
+<div class="command-wrapper" id={{this.commandId}}>
     <div class="command-container">
         <div class="com-id">
             <div>
-                {{this.userId}}
+                {{this.commandId}}
             </div>
         </div>
         <div class="command-info-container">
             <p class="title"> {{this.firstName}} {{this.lastName}} </p>
             <div class="command-infos">
-                    <p> {{this.burger}}, </p>
-                    <p> {{this.fries}}, </p>
-                    <p> {{this.drink}}, </p>
-                    <p> {{this.dessert}} </p>
+                    <p> {{{this.foodString}}} </p>
                 </div>
         </div>
         <div class="command-time-container">
@@ -46,9 +44,9 @@
             </div>
         </div>
         <div class="command-widgets">
-            <div class="wprepare {{#if this.preparation}} activated {{/if}}" data-id={{this.userId}}> </div>
-            <div class="send activated" data-id={{this.userId}}> </div>
-            <div class="validate" data-id={{this.userId}}> </div>
+            <div class="wprepare {{#if this.preparation}} activated {{/if}}" data-id={{this.commandId}}> </div>
+            <div class="send activated" data-id={{this.commandId}}> </div>
+            <div class="validate" data-id={{this.commandId}}> </div>
         </div>
     </div>
 </div>
@@ -62,20 +60,17 @@
     {{#if this.preparation}}
     {{#unless this.ready}}
     {{#unless this.delivered}}
-<div class="command-wrapper" id={{this.userId}}>
+<div class="command-wrapper" id={{this.commandId}}>
     <div class="command-container">
         <div class="com-id">
             <div>
-                {{this.userId}}
+                {{this.commandId}}
             </div>
         </div>
         <div class="command-info-container">
             <p class="title"> {{this.firstName}} {{this.lastName}} </p>
             <div class="command-infos">
-                    <p> {{this.burger}}, </p>
-                    <p> {{this.fries}}, </p>
-                    <p> {{this.drink}}, </p>
-                    <p> {{this.dessert}} </p>
+                    <p> {{{this.foodString}}} </p>
                 </div>
         </div>
         <div class="command-time-container">
@@ -89,9 +84,9 @@
             </div>
         </div>
         <div class="command-widgets">
-            <div class="wprepare activated" data-id={{this.userId}}> </div>
-            <div class="send" data-id={{this.userId}}> </div>
-            <div class="validate" data-id={{this.userId}}> </div>
+            <div class="wprepare activated" data-id={{this.commandId}}> </div>
+            <div class="send" data-id={{this.commandId}}> </div>
+            <div class="validate" data-id={{this.commandId}}> </div>
         </div>
     </div>
 </div>
@@ -106,20 +101,17 @@
     {{#unless this.delivered}}
     {{#unless this.ready}}
     {{#unless this.preparation}}
-<div class="command-wrapper" id={{this.userId}}>
+<div class="command-wrapper" id={{this.commandId}}>
     <div class="command-container">
         <div class="com-id">
             <div>
-                {{this.userId}}
+                {{this.commandId}}
             </div>
         </div>
         <div class="command-info-container">
             <p class="title"> {{this.firstName}} {{this.lastName}} </p>
             <div class="command-infos">
-                    <p> {{this.burger}}, </p>
-                    <p> {{this.fries}}, </p>
-                    <p> {{this.drink}}, </p>
-                    <p> {{this.dessert}} </p>
+                    <p> {{{this.foodString}}} </p>
                 </div>
         </div>
         <div class="command-time-container">
@@ -133,9 +125,9 @@
             </div>
         </div>
         <div class="command-widgets">
-            <div class="wprepare" data-id={{this.userId}}> </div>
-            <div class="send" data-id={{this.userId}}> </div>
-            <div class="validate" data-id={{this.userId}}> </div>
+            <div class="wprepare" data-id={{this.commandId}}> </div>
+            <div class="send" data-id={{this.commandId}}> </div>
+            <div class="validate" data-id={{this.commandId}}> </div>
         </div>
     </div>
 </div>
@@ -148,20 +140,17 @@
 <div class="commands-container delivered" id="delivered-container">
 {{#each users}}
     {{#if this.delivered}}
-<div class="command-wrapper" id={{this.userId}}>
+<div class="command-wrapper" id={{this.commandId}}>
     <div class="command-container">
         <div class="com-id">
             <div>
-                {{this.userId}}
+                {{this.commandId}}
             </div>
         </div>
         <div class="command-info-container">
             <p class="title"> {{this.firstName}} {{this.lastName}} </p>
             <div class="command-infos">
-                    <p> {{this.burger}}, </p>
-                    <p> {{this.fries}}, </p>
-                    <p> {{this.drink}}, </p>
-                    <p> {{this.dessert}} </p>
+                    <p> {{{this.foodString}}} </p>
                 </div>
         </div>
         <div class="command-time-container">
@@ -175,9 +164,9 @@
             </div>
         </div>
         <div class="command-widgets">
-            <div class="wprepare {{#if this.preparation}} activated {{/if}}" data-id={{this.userId}}> </div>
-            <div class="send {{#if this.ready}} activated {{/if}}" data-id={{this.userId}}> </div>
-            <div class="validate activated" data-id={{this.userId}}> </div>
+            <div class="wprepare {{#if this.preparation}} activated {{/if}}" data-id={{this.commandId}}> </div>
+            <div class="send {{#if this.ready}} activated {{/if}}" data-id={{this.commandId}}> </div>
+            <div class="validate activated" data-id={{this.commandId}}> </div>
         </div>
     </div>
 </div>
@@ -187,4 +176,6 @@
 <h2 style="margin-top: 50px; text-align:center; align-self:center"> <em> Wow ! Such void ! </em> </h2>
 {{/if}}
 </div>
-<script src="/javascripts/queueAdmin.js"></script>
+<script src="/javascripts/queueAdminWS.js"></script>
+<script src="/javascripts/queueAdminSearch.js"></script>
+<script src="/javascripts/queueAdminWidgets.js"></script>

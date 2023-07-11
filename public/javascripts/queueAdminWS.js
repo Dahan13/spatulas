@@ -1,26 +1,82 @@
-setTimeout(() => {
-    window.location.reload();
-}, 600000);
-
 const vanillaCommandsContainer = document.getElementById("vanilla-container");
 const prepareCommandsContainer = document.getElementById("preparation-container");
 const readyCommandsContainer = document.getElementById("ready-container");
 const deliveredCommandsContainer = document.getElementById("delivered-container");
+const senders = document.querySelectorAll(".send")
+const preparers = document.querySelectorAll(".wprepare");
+const validators = document.querySelectorAll(".validate");
+const searchButton = document.getElementById("search-button");
 
-// Defining utility functions
-function getCommand(id) {
-    return document.getElementById(id);
+// WebSocket communication
+let error = document.querySelector('.error-message');
+let url = 'ws://' + window.location.hostname + ":8000";
+let password = `; ${document.cookie}`.split(`; ${'spatulasPower'}=`)[1];
+let socket = start(url);
+
+
+function start(webSocketURL) {
+    ws = new WebSocket(webSocketURL);
+    
+    ws.onopen = (evt) =>  {
+        if (!error.classList.contains('invisible')) { // Removing the error message if it was here
+            error.classList.toggle('invisible');
+        }
+    }
+    
+    ws.onclose = function() {
+        
+        setTimeout(() => {
+            if (error.classList.contains('invisible')) {
+                error.classList.toggle('invisible');
+            }
+            setTimeout(function(){socket = start(url)}, 10000)
+        }, 1000);
+    }
+
+
+    return ws
 }
 
-function getWidgets(id) {
-    let command = getCommand(id);   
-    let widgets = [];
-    widgets.push(command.childNodes[1].childNodes[9].childNodes[1])
-    widgets.push(command.childNodes[1].childNodes[9].childNodes[3])
-    widgets.push(command.childNodes[1].childNodes[9].childNodes[5])
-    return widgets
+
+// Adding event listeners to link the socket with 
+for (let i = 0; i < senders.length; i++) {
+    senders[i].addEventListener('click', sendPayload);
+    preparers[i].addEventListener('click', sendPayload);
+    validators[i].addEventListener('click', sendPayload);
 }
 
+// This function will send a payload to the server, containing the id of the command, and the action to perform.
+function sendPayload(evenement) {
+    let id = evenement.target.dataset.id
+    let payload;
+    if (evenement.target.classList.contains('wprepare')) {
+        payload = 0;
+    } else if (evenement.target.classList.contains('send')) {
+        payload = 1;
+    } else if (evenement.target.classList.contains('validate') || evenement.target.classList.contains('close-button')) {
+        payload = 2;
+    }
+    socket.send(password + "  " + id + "  " + payload)
+}
+
+// Removing event listeners from the cancel search button to prevent fatal errors.
+const cancelSearch = document.getElementById('cancel-search');
+if (cancelSearch) {
+    cancelSearch.removeEventListener('click', sendPayload);
+}
+
+function activateEventListeners(id) {
+    let widgets = getWidgets(id);
+
+    widgets[0].addEventListener('click', sendPayload);
+    widgets[0].addEventListener('click', clickPrepare);
+    widgets[1].addEventListener('click', sendPayload);
+    widgets[1].addEventListener('click', clickSend);
+    widgets[2].addEventListener('click', sendPayload);
+    widgets[2].addEventListener('click', clickValidate);
+}
+
+// These functions perform actions on the front-end, depending on the status of the command and the button pressed.
 function clickSend(evenement) {
     let id = evenement.target.dataset.id;
     let command = getCommand(id);
@@ -124,83 +180,16 @@ function clickValidate(evenement) {
 }
 
 // Adding EventListeners
-const senders = document.querySelectorAll(".send")
 for (let i = 0; i < senders.length; i++) {
     senders[i].addEventListener('click', clickSend);
 }
 
-const preparers = document.querySelectorAll(".wprepare");
+
 for (let i = 0; i < preparers.length; i++) {
     preparers[i].addEventListener('click', clickPrepare);
 }
 
-const validators = document.querySelectorAll(".validate");
+
 for (let i = 0; i < validators.length; i++) {
     validators[i].addEventListener('click', clickValidate);
-}
-
-// WebSocket communication
-let error = document.querySelector('.error-message');
-let url = 'ws://' + window.location.hostname + ":8000";
-let password = `; ${document.cookie}`.split(`; ${'spatulasPower'}=`)[1];
-let socket = start(url);
-
-function start(webSocketURL) {
-    ws = new WebSocket(webSocketURL);
-    
-    ws.onopen = (evt) =>  {
-        if (!error.classList.contains('invisible')) { // Removing the error message if it was here
-            error.classList.toggle('invisible');
-        }
-    }
-    
-    ws.onclose = function() {
-        
-        setTimeout(() => {
-            if (error.classList.contains('invisible')) {
-                error.classList.toggle('invisible');
-            }
-            setTimeout(function(){socket = start(url)}, 10000)
-        }, 1000);
-    }
-
-    return ws
-}
-
-
-// Adding event listeners to link the socket with 
-for (let i = 0; i < senders.length; i++) {
-    senders[i].addEventListener('click', sendPayload);
-    preparers[i].addEventListener('click', sendPayload);
-    validators[i].addEventListener('click', sendPayload);
-}
-
-function sendPayload(evenement) {
-    let id = evenement.target.dataset.id
-    let payload;
-    if (evenement.target.classList.contains('wprepare')) {
-        payload = 0;
-    } else if (evenement.target.classList.contains('send')) {
-        payload = 1;
-    } else if (evenement.target.classList.contains('validate') || evenement.target.classList.contains('close-button')) {
-        payload = 2;
-    }
-    socket.send(password + "  " + id + "  " + payload)
-}
-
-// Removing event listeners from the cancel search button to prevent fatal errors.
-const cancelSearch = document.getElementById('cancel-search');
-if (cancelSearch) {
-    cancelSearch.removeEventListener('click', sendPayload);
-}
-
-function activateEventListeners(id) {
-    let widgets = getWidgets(id);
-
-    widgets[0].addEventListener('click', sendPayload);
-    widgets[0].addEventListener('click', clickPrepare);
-    widgets[1].addEventListener('click', sendPayload);
-    widgets[1].addEventListener('click', clickSend);
-    widgets[2].addEventListener('click', sendPayload);
-    widgets[2].addEventListener('click', clickValidate);
 }

@@ -1,0 +1,48 @@
+<link rel="stylesheet" href="/stylesheets/home-style.css" />
+<link rel="stylesheet" href="/stylesheets/spadmin-style.css" />
+
+<a class="button" href="/spadmin/databases" style="margin-bottom:15px"> <button> Back </button> </a>
+
+<h1> Database {{{infos.foodName}}} </h1>
+
+{{#unless infos.empty}}
+<table>
+    <tr>
+        <th> Name </th>
+        <th> Description </th>
+        <th> Price </th>
+        <th> Actions </th>
+    </tr>
+    {{#each table}}
+    <tr>
+        <td> {{{this.name}}} </td>
+        <td> {{#if this.description}} {{{this.description}}} {{else}} Not Specified {{/if}} </td>
+        <td> {{#if this.price}} {{this.price}}€ {{else}} 0.00€ {{/if}} </td>
+        <td> <a class="close-button" href="/spadmin/delete/{{../infos.tableId}}/{{{this.id}}}/classic"></a> </td>
+    </tr>
+    {{/each}}
+</table>
+{{else}}
+<h2 style="text-align:center; border:none"> <em> This database is empty and is therefore deactivated </em> </h2>
+{{/unless}}
+
+<a href="/spadmin/deleteDatabase/{{infos.tableId}}" class="button" style="align-self: center;"
+    onclick="return confirm('Are you sure ? There is no going back. You will lose all {{infos.foodName}} data.')">
+    <button> Delete database </button> </a>
+
+<h2> Add a new item : </h2>
+<form action="/spadmin/add/{{infos.tableId}}/classic" method="POST">
+    <div class="input-div">
+        <label for="name"> Name </label>
+        <input type="text" id="name" name="name" required>
+    </div>
+    <div class="input-div">
+        <label for="description"> Description </label>
+        <input type="text" id="description" name="description" placeholder="Optional">
+    </div>
+    <div class="input-div">
+        <label for="price"> Price </label>
+        <input type="text" id="price" name="price" placeholder="Optional, float">
+    </div>
+    <input type="submit" value="Add a new item in {{{infos.foodName}}}" id="Add a new {{{infos.foodName}}}" />
+</form>

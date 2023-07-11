@@ -2,12 +2,11 @@ var express = require('express');
 const { body, query, check } = require('express-validator');
 var router = express.Router();
 let pool = require('./databaseConnector');
-let { createDatabase, insertUser, getUsers, getPreparationUsers, getReadyUsers, getBurgers, getFries, getDrinks, checkBurger, checkDrink, checkFries, searchUser, calculatePrice, getUsersByStatus, getUsersByTime, getDesserts, checkDessert } = require("./databaseUtilities.js");
-let { getTimes, getRegistration, getRegistrationDay, checkTime, getTimeIndex, checkPassword, getGlobalTimes, getTimeCount, checkAndRepairTimes } = require('./settingsUtilities');
+let { insertCommand, getCommands, calculatePrice, getCommandsByTime, getTables, checkTables, getValuesFromRequest, getTablesInfos, purgeDatabase, createDatabase } = require("./databaseUtilities.js");
+let { getRegistration, getRegistrationDay, checkTime, checkPassword, getGlobalTimes, getTimeCount, checkAndRepairTimes } = require('./settingsUtilities');
 let { sendTimeCount } = require('./webSocket');
 
 createDatabase();
-
 // ! This is a temporary fix for the unlikely case all time stamps were removed, we add a new one set at "19h00" to prevent the system from breaking
 checkAndRepairTimes();
 
@@ -17,21 +16,15 @@ router.get('/',
   function(req, res, next) {
     checkPassword(req.cookies.spatulasPower, (auth) => {
       getRegistration((registStatus) => {
-        getRegistrationDay((day) => {
-          pool.getConnection((err, conn) => {
-            getBurgers((burgers, ) => {
-              getFries((fries) => {
-                getDrinks((drinks) => {
-                  getDesserts((desserts) => {
-                    getGlobalTimes((times) => {
-                      res.render('home', { title: 'Home', admin: auth, registrationOpen: (registStatus || auth), userRegistrationOpen: registStatus, adminRegistrationOpen: auth, burgers: burgers, fries: fries, drinks: drinks, times: times, desserts: desserts, day: day, error: (req.query.error) ? req.query.error : null });
-                    }, conn)
-                  }, false, conn)
-                }, false, conn)
-              }, false, conn)
-            }, false, conn)
-            pool.releaseConnection(conn);
-          })
+        getRegistrationDay(async (day) => {
+          // We will now access the MySQL database for all needed informations
+          let conn = await pool.promise().getConnection()
+          let tables = await getTables(conn);
+          let times = await getGlobalTimes(conn);
+
+          await conn.release(); // Releasing connection
+          // Rendering home page
+          res.render('home', { title: 'Home', admin: auth, registrationOpen: (registStatus || auth), userRegistrationOpen: registStatus, adminRegistrationOpen: auth, tables: tables, times: times, day: day, error: (req.query.error) ? req.query.error : null });
         })
       })
     })
@@ -44,55 +37,58 @@ router.get('/register', (req, res, next) => {
 router.get('/queue', 
   query('search-query').trim().escape(),
   (req, res, next) => {
-    checkPassword(req.cookies.spatulasPower, (auth) => {
-      getUsersByTime((users) => {
-        res.render('queue', { title: 'Queue', admin: auth, searching: (req.query["search-query"]) ? true : false, users: users });
-      }, req.query["search-query"], "lastUpdated DESC")
+    checkPassword(req.cookies.spatulasPower, async (auth) => {
+      let connection = await pool.promise().getConnection();
+
+      let users = await getCommandsByTime(req.query["search-query"], "lastUpdated DESC", connection);
+      let tables = await getTablesInfos(connection);
+      let toEncodeUsers = await getCommands(null, null, null, null, true, connection);
+
+      connection.release();
+
+      res.render('queue', { title: 'Queue', admin: auth, searching: (req.query["search-query"]) ? true : false, users: users, tables: tables, jsTables: encodeURIComponent(JSON.stringify(tables)), jsUsers: encodeURIComponent(JSON.stringify(toEncodeUsers)) });
     })
 })
 
 router.post('/register', 
   body('lastName').trim().escape(), // Sanitizing user inputs
   body('firstName').trim().escape(),
-  body('burger').trim().escape(),
-  body('fries').trim().escape(),
-  body('drink').trim().escape(),
-  body('dessert').trim().escape(),
   body("time").trim().escape(),
   body('accept').trim().escape(),
   (req, res, next) => {
     getRegistration((registStatus) => {
-      checkPassword(req.cookies.spatulasPower, (adminRegistStatus) => {
+      checkPassword(req.cookies.spatulasPower, async (adminRegistStatus) => {
         if (registStatus || adminRegistStatus) { // Only allowing to post new commands if registrations are open or if it's an admin
-          pool.getConnection((err, conn) => {
-            checkBurger(req.body.burger, (burgerBool) => {
-              checkDrink(req.body.drink, (drinkBool) => {
-                checkFries(req.body.fries, (friesBool) => {
-                  checkDessert(req.body.dessert, (dessertBool) => {
-                    checkTime(req.body.time, (timeBool) => { // Checking that all inputs are in database
-                      if (req.body.lastName && req.body.lastName.length <= 32 && req.body.firstName && req.body.firstName.length <= 32 && req.body.burger && req.body.fries && req.body.drink && req.body.time && req.body.accept == 'on' && burgerBool && drinkBool && friesBool && dessertBool && timeBool) {
-                        calculatePrice(req.body.burger, req.body.fries, req.body.drink, req.body.dessert, (price) => {
-                          insertUser(req.body.lastName, req.body.firstName, req.body.burger, req.body.fries, req.body.drink, req.body.dessert, req.body.time, price, conn);
 
-                          // Before sending user to queue, we send a message through websocket to inform of the change of remaining places on the time stamp
-                          getTimeCount((count) => {
-                            sendTimeCount(req.body.time, count);
-                            pool.releaseConnection(conn);
-                            res.redirect('/queue');
-                          }, req.body.time, conn)
-                        
-                        }, conn);
-                      } else {
-                        pool.releaseConnection(conn);
-                        res.redirect('/?error=true');
-                      }
-                    }, (adminRegistStatus) ? null : true, conn)
-                  }, conn)
-                }, conn)
-              }, conn)
-            }, conn)
-          })
-        } else {
+          // We will now access the MySQL database for all needed informations
+          let conn = await pool.promise().getConnection()
+          let foods = await getValuesFromRequest(req.body, conn);
+          let foodBoolean = await checkTables(foods, conn);
+          let timeBool = await checkTime(req.body.time, conn);
+
+          // Checking if the user filled all the fields and if the time stamp is valid
+          if (req.body.lastName && req.body.lastName.length <= 32 && req.body.firstName && req.body.firstName.length <= 32 && req.body.time && req.body.accept == 'on' && timeBool && foodBoolean) {
+
+            // Calculating the price of the order and inserting the user in the database
+            let price = await calculatePrice(foods, conn);
+            let insertResult = await insertCommand(req.body.lastName, req.body.firstName, req.body.time, price, foods, conn);
+
+            if (insertResult) { // If the user was successfully inserted in the database
+              // Before sending user to queue, we send a message through websocket to inform of the change of remaining places on the time stamp
+              getTimeCount((count) => {
+                sendTimeCount(req.body.time, count);
+                conn.release();
+                res.redirect('/queue');
+              }, req.body.time, conn)
+            } else { // If the user was not successfully inserted in the database
+              conn.release();
+              res.redirect('/?error=true');
+            }      
+          } else { // If the user did not fill all the fields
+            conn.release();
+            res.redirect('/?error=true');
+          }
+        } else { // If the user tried to post a command while registrations were closed
           res.redirect('/');
         }
       })
@@ -117,15 +113,15 @@ router.get('/credits', (req, res, next) => {
   })
 })
 
-router.get('/display', (req, res, next) => {
-  pool.getConnection((err, conn) => {
-    getPreparationUsers((userPrep) => {
-      getReadyUsers((userReady) => {
-        pool.releaseConnection(conn);
-        res.render('room-display', { title: "Room display", userReady: userReady, userPreparation: userPrep })
-      }, "lastUpdated", conn)
-    }, "lastUpdated", conn)
-  })
+router.get('/display', async (req, res, next) => {
+  let db = await pool.promise().getConnection();
+
+  let userPrep = await getCommands('preparation = 1 AND ready = 0 AND delivered = 0', null, "lastUpdated", null, false, db);
+  let userReady = await getCommands('ready = 1 AND delivered = 0', null, "lastUpdated", null, false, db);
+
+  db.release();
+
+  res.render('room-display', { title: "Room display", userReady: userReady, userPreparation: userPrep })
 })
 
 module.exports = router;

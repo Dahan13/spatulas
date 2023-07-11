@@ -1,88 +1,76 @@
-<link rel="stylesheet" href="/stylesheets/home-style.css"/>
+<link rel="stylesheet" href="/stylesheets/home-style.css" />
 {{#if adminRegistrationOpen}}
-    <div class="error-message"> <p> As an administrator, </p>
-        <p> You retain access to everything on this webpage, including all timestamps. </p>
-    </div>
+<div class="error-message">
+    <p> As an administrator, </p>
+    <p> You retain access to everything on this webpage, including all timestamps. </p>
+</div>
 {{/if}}
 
 {{#if registrationOpen}}
-    <h1> Registration for {{day}} </h1>
-    {{#if error}}
-        <p class="error-message"> Error. Please try again </p>
-    {{/if}}
-    <form action="register" method="POST"> {{!-- enctype="multipart/form-data" --}}
-        <div class="name-holder">
-            <div class="input-div">
-                <label for="lastName"> Last Name </label>
-                <input type="text" id="lastName" name="lastName" placeholder="Doe" maxlength="32">
-            </div>
-            <div class="input-div">
-                <label for="firstName"> First Name </label>
-                <input type="text" id="firstName" name="firstName" placeholder="John" maxlength="32">
-            </div>
+<h1> Registration for {{day}} </h1>
+{{#if error}}
+<p class="error-message"> Error. Please try again </p>
+{{/if}}
+<form action="register" method="POST"> {{!-- enctype="multipart/form-data" --}}
+    <div class="name-holder">
+        <div class="input-div">
+            <label for="lastName"> Last Name </label>
+            <input type="text" id="lastName" name="lastName" placeholder="Doe" maxlength="32">
         </div>
         <div class="input-div">
-            <label for="burger"> Burger </label>
-            <select name="burger" id="burger">
-                    <option disabled selected value="none"> -- Select an option -- </option>
-                {{#each burgers}}
-                    <option value="{{this.identifier}}" id="{{this.identifier}}" {{#if this.price }} data-price={{this.price}} {{/if}}> {{this.name}} ({{#if this.price}}{{this.price}}{{else}}0.00{{/if}}€) {{#if this.description}}: {{this.description}} {{/if}} </option>
-                {{/each}}
-            </select>
+            <label for="firstName"> First Name </label>
+            <input type="text" id="firstName" name="firstName" placeholder="John" maxlength="32">
         </div>
-        <div class="input-div">
-            <label for="fries"> Fries </label>
-            <select name="fries" id="fries">
-                <option disabled selected value="none"> -- Select an option -- </option>
-                {{#each fries}}
-                    <option value="{{this.identifier}}" id="{{this.identifier}}" {{#if this.price }} data-price={{this.price}} {{/if}}> {{this.name}} ({{#if this.price}}{{this.price}}{{else}}0.00{{/if}}€) {{#if this.description}}: {{this.description}} {{/if}} </option>
-                {{/each}}
-            </select>
-        </div>
-        <div class="input-div">
-            <label for="drink"> Drink </label>
-            <select name="drink" id="drink">
-                <option disabled selected value="none"> -- Select an option -- </option>
-                {{#each drinks}}
-                    <option value="{{this.identifier}}" id="{{this.identifier}}" {{#if this.price }} data-price={{this.price}} {{/if}}> {{this.name}} ({{#if this.price}}{{this.price}}{{else}}0.00{{/if}}€) {{#if this.description}}: {{this.description}} {{/if}} </option>
-                {{/each}}
-            </select>
-        </div>
-        <div class="input-div">
-            <label for="dessert"> Dessert </label>
-            <select name="dessert" id="dessert">
-                <option disabled selected value="none"> -- Select an option -- </option>
-                {{#each desserts}}
-                    <option value="{{this.identifier}}" id="{{this.identifier}}" {{#if this.price }} data-price={{this.price}} {{/if}}> {{this.name}} ({{#if this.price}}{{this.price}}{{else}}0.00{{/if}}€) {{#if this.description}}: {{this.description}} {{/if}} </option>
-                {{/each}}
-            </select>
-        </div>
-        <div class="input-div">
-            <label for="time"> Pick up time </label>
-            <select name="time" id="time">
-                <option disabled selected value="none"> -- Select an option -- </option>
-                {{#each times}}
-                    {{#if this.full}}
-                        {{#if ../adminRegistrationOpen}}
-                            <option value={{this.time}} id=count-{{this.time}}>{{this.time}} ({{this.count}}/{{this.limit}})</option>
-                        {{/if}}
-                    {{else}}
-                        <option value={{this.time}} id=count-{{this.time}}>{{this.time}} ({{this.count}}/{{this.limit}})</option>
-                    {{/if}}
-                {{/each}}
-            </select>
-        </div>
-        <div class="input-div input-div-checkbox">
-            <input type="checkbox" name="accept" id="accept">
-            <label for="accept"> <p> I agree to the General Terms of Use of the website </p> <p> I hereby consent to pay <bold id="price-range"> !IF YOU SEE THIS PLEASE REPORT IT! </bold> to receive my command. </p> </label>
-        </div>
-        <input type="submit" value="Submit" id="submit-button" disabled/>
-    </form>
-    <script src='/javascripts/home.js'> </script>
-{{else}}
-    <img class="huge-logo" src="/images/home/huge_logo.webp" alt="Logo Spatul'As X Corentin">
-    <div class="message-container">
-        <h1> Registrations are not open ! </h1>
-        <em> Come back later... </em>
     </div>
+
+    {{#each tables}}
+    {{#unless this.infos.empty}}
+        <div class="input-div">
+            <label for="table-{{this.infos.foodName}}"> {{{this.infos.foodName}}} </label>
+            <select name="{{this.infos.foodName}}" id="table-{{this.infos.foodName}}">
+                <option disabled selected value="none"> -- Select an option -- </option>
+                {{#each this.content}}
+                <option value="{{this.id}}" id="{{../this.infos.foodName}}-{{this.id}}" {{#if this.price }}
+                    data-price={{this.price}} {{/if}}> {{{this.name}}} ({{#if this.price}}{{this.price}}{{else}}0.00{{/if}}€)
+                    {{#if this.description}}: {{{this.description}}} {{/if}} </option>
+                {{/each}}
+            </select>
+        </div>
+    {{/unless}}
+    {{/each}}
+
+    <div class="input-div">
+        <label for="time"> Pick up time </label>
+        <select name="time" id="time">
+            <option disabled selected value="none"> -- Select an option -- </option>
+            {{#each times}}
+            {{#if this.full}}
+            {{#if ../adminRegistrationOpen}}
+            <option value={{this.time}} id=count-{{this.time}}>{{this.time}} ({{this.count}}/{{this.limit}})</option>
+            {{/if}}
+            {{else}}
+            <option value={{this.time}} id=count-{{this.time}}>{{this.time}} ({{this.count}}/{{this.limit}})</option>
+            {{/if}}
+            {{/each}}
+        </select>
+    </div>
+    <div class="input-div input-div-checkbox">
+        <input type="checkbox" name="accept" id="accept">
+        <label for="accept">
+            <p> I agree to the General Terms of Use of the website </p>
+            <p> I hereby consent to pay <bold id="price-range"> !IF YOU SEE THIS PLEASE REPORT IT! </bold> to receive my
+                command. </p>
+        </label>
+    </div>
+    <input type="submit" value="Submit" id="submit-button" disabled />
+</form>
+<script src='/javascripts/homeInputs.js'> </script>
+<script src='/javascripts/homePrice.js'> </script>
+<script src='/javascripts/homeWS.js'> </script>
+{{else}}
+<img class="huge-logo" src="/images/home/huge_logo.webp" alt="Logo Spatul'As X Corentin">
+<div class="message-container">
+    <h1> Registrations are not open ! </h1>
+    <em> Come back later... </em>
+</div>
 {{/if}}

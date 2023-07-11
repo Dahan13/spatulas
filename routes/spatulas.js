@@ -4,8 +4,8 @@ var stringify = require('csv-stringify');
 const { body, query } = require('express-validator');
 var router = express.Router();
 let pool = require('./databaseConnector')
-let { getUntreatedUsers, getPreparationUsers, getReadyUsers, getDeliveredUsers, getBurgers, getFries, getDrinks, searchUser, countBurgers, countFries, countDrinks, insertBurger, deleteBurger, deleteFries, deleteDrink, insertFries, insertDrink, clearUsers, convertFoodIdToFoodName, purgeDatabase, getUsersByStatus, getAllItemsCount, getDesserts, countDesserts, insertDessert, deleteDessert } = require("./databaseUtilities.js");
-let { getTimes, getRegistration, getRegistrationDay, getLimit, setRegistration, setRegistrationDay, setLimit, addTime, removeTime, getPassword, checkPassword, authenticate, setPassword, getKitchenLimit, setKitchenLimit } = require('./settingsUtilities');
+let { clearUsers, purgeDatabase, getUsersByStatus, getTablesCount, createCommandFoodString, getCommands, getTablesInfos, insertTable, getTable, deleteElement, deleteTable, insertRow, getTableInfos, getTables } = require("./databaseUtilities.js");
+let { getRegistration, getRegistrationDay, getLimit, setRegistration, setRegistrationDay, setLimit, addTime, removeTime, checkPassword, authenticate, setPassword, getKitchenLimit, setKitchenLimit, getGlobalTimes } = require('./settingsUtilities');
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
@@ -35,60 +35,37 @@ router.get('/disconnect', (req, res, next) => {
 })
 
 router.get('/queue',
-query('first-name').trim().escape(),
-query('last-name').trim().escape(),
-query('index').trim().escape().toInt(),
+query('search-query').trim().escape(),
 (req, res, next) => {
-  authenticate(req, res, () => {
-    if (req.query['first-name'] || req.query['last-name']) { // ! This part is currently not working, will be fixed in v3.0.0 with the new database system
-      pool.getConnection((err, conn) => {
-        searchUser(req.query['first-name'], req.query['last-name'], (users) => {
-          convertFoodIdToFoodName(users, (users) => {
-            res.render('admin-queue', { title: 'Queue Manager', admin: true, searching: true, users: users, notEmpty: (typeof users !== "undefined" && users.length > 0) ? true : false });
-            pool.releaseConnection(conn);
-          }, conn)
-        }, null, 999, conn)
-      })
-    } else {
-      getUsersByStatus((users) => {  
-        res.render('admin-queue', { title: 'Queue Manager', admin: true, searching: false, users: users, notEmpty: (typeof users !== "undefined" && users.length > 0) ? true : false });
-      }, true, 'userId', 'lastUpdated', 'lastUpdated', 'lastUpdated');     
-    }
+  authenticate(req, res, async () => {
+    let conn = await pool.promise().getConnection();
+    let users = await getUsersByStatus('commandId', req.query["search-query"], 'lastUpdated', req.query["search-query"], 'lastUpdated', req.query["search-query"], 'lastUpdated', req.query["search-query"], conn)
+    await createCommandFoodString(users, ", ", conn);
+    conn.release();
+    res.render('admin-queue', { title: 'Queue Manager', admin: true, searching: (req.query["search-query"]) ? true : false, users: users, notEmpty: (typeof users !== "undefined" && users.length > 0) ? true : false });
   })
 })
 
 router.get('/manage', (req, res, next) => {
-  authenticate(req, res, () => {
-    pool.getConnection((err, conn) => {
-      getBurgers((burgers) => {
-        getFries((fries) => {
-          getDrinks((drinks) => {
-            countBurgers((burgerCount) => {
-              countFries((friesCount) => {
-                countDrinks((drinkCount) => {
-                  getTimes((times) => {
-                    getRegistration((regisBool) => {
-                      getRegistrationDay((day) => {
-                        getLimit((limit) => {
-                          getKitchenLimit((kitchenLimit) => {
-                            getDesserts((desserts) => {
-                              countDesserts((dessertCount) => {
-                                res.render('admin', { title: 'Administration', admin: true, limit: limit, day: day, regisBool: regisBool, times: times, drinkCount: drinkCount, friesCount: friesCount, burgerCount: burgerCount, burgers: burgers, drinks: drinks, fries: fries, kitchenLimit: kitchenLimit, desserts: desserts, dessertCount: dessertCount });
-                                pool.releaseConnection(conn);
-                              }, conn)
-                            }, true , conn)
-                          })
-                        })
-                      })
-                    })
-                  }, false, conn)
-                }, false, conn)
-              }, false, conn)
-            }, false, conn)
-          }, true, conn)
-        }, true, conn)
-      }, true, conn)
+  authenticate(req, res, async () => {
+
+    // Getting all database related informations
+    let conn = await pool.promise().getConnection();
+    let times = await getGlobalTimes(conn);
+    let count = await getTablesCount("delivered = 0", null, conn);
+
+    // Getting all settings related informations
+    getRegistration((regisBool) => {
+      getRegistrationDay((day) => {
+        getLimit((limit) => {
+          getKitchenLimit((kitchenLimit) => {
+            conn.release();
+            res.render('settings', { title: 'Settings', admin: true, limit: limit, day: day, regisBool: regisBool, times: times, kitchenLimit: kitchenLimit,  count: count});
+          })
+        })
+      })
     })
+
   })
 })
 
@@ -100,19 +77,60 @@ router.post('/changePassword', (req, res, next) => {
   })
 })
 
+router.get('/databases', (req, res, next) => {
+  authenticate(req, res, async () => {
+    let tables = await getTables();
+    res.render('databases', { title: 'Databases', admin: true, tables: tables, classic_display: (req.cookies.theme == "classic") ? true : false, error: (req.query.error) ? req.query.error : null });
+  })
+})
+
+router.post('/createDatabase',
+body('foodName').trim().escape(),
+(req, res, next) => {
+  authenticate(req, res, async () => {
+
+    let conn = await pool.promise().getConnection();
+
+    // Checking if input is correct
+    if (req.body.foodName && req.body.foodName.length < 32 && req.body.foodName.length > 0) {
+      // Checking if a name for the first item was supplied or not
+      let result = await insertTable(req.body.foodName, conn);
+      if (result) {
+        res.redirect('/spadmin/databases');
+      } else {
+        res.redirect('/spadmin/databases?error=true');
+      }
+    } else {
+      res.redirect('/spadmin/databases?error=true');
+    }
+    conn.release()
+  })
+})
+
+router.get('/database/:id', (req, res, next) => {
+  authenticate(req, res, async () => {
+    let conn = await pool.promise().getConnection();
+    let table = await getTable(req.params.id, conn)
+    let infos = await getTableInfos(req.params.id, conn);
+    conn.release();
+
+    if (infos) {
+      res.render('database', { title: 'Database', admin: true, table: table, infos: infos });
+    } else {
+      res.redirect('/spadmin/databases');
+    }
+  })
+})
+
 router.get('/kitchen', (req, res, next) => {
-  authenticate(req, res, () => {
-    pool.getConnection((err, conn) => {
-      getKitchenLimit((limit) => {
-        getPreparationUsers((users) => {
-          convertFoodIdToFoodName(users, (users) => {
-            getAllItemsCount((count) => {
-              res.render('kitchen', { title: 'Kitchen Tab', admin: true, users: users, count: count, limit: limit, notEmpty: (typeof users !== "undefined" && users.length > 0) ? true : false });
-              pool.releaseConnection(conn);
-            }, "preparation = 1 AND ready = 0 AND delivered = 0 ORDER BY lastUpdated", limit, conn)
-          }, conn)
-        }, 'lastUpdated', limit, conn)
-      })
+  authenticate(req, res, async () => {
+    let conn = await pool.promise().getConnection();
+    getKitchenLimit(async (limit) => {
+      let commands = await getCommands("preparation = 1 AND ready = 0 and delivered = 0", null, "lastUpdated", limit, true, conn);
+      createCommandFoodString(commands, ", ", conn)
+      let count = await getTablesCount("preparation = 1 AND ready = 0 AND delivered = 0 ORDER BY lastUpdated", limit, conn)
+      conn.release();
+      res.render('kitchen', { title: 'Kitchen Tab', admin: true, commands: commands, count: count, limit: limit, notEmpty: (typeof commands !== "undefined" && commands.length > 0) ? true : false });
     })
   })
 })
@@ -167,96 +185,73 @@ router.post('/updateKitchenLimit', (req, res, next) => {
 })
 
 router.get('/clearUsers', (req,res,next) => {
-  authenticate(req, res, () => {
-    clearUsers();
+  authenticate(req, res, async () => {
+    await clearUsers();
     res.redirect('/spadmin/manage#generalParameters');
   })
 })
 
 router.get('/clearDatabases', (req,res,next) => {
-  authenticate(req, res, () => {
-    purgeDatabase();
-    setTimeout(() => {
-      res.redirect('/spadmin/manage');
-    }, 1000) 
+  authenticate(req, res, async () => {
+    await purgeDatabase();
+    res.redirect('/spadmin/manage');
   })
 })
 
-router.post('/AddBurger', (req, res, next) => {
-  authenticate(req, res, () => {
-    req.body.bPrice = req.body.bPrice.replace(',', '.');
-    insertBurger(req.body.bIdentifier, req.body.bName, (req.body.bDesc) ? req.body.bDesc : null, parseFloat(req.body.bPrice) ? parseFloat(req.body.bPrice) : null);
-    res.redirect('/spadmin/manage#burgerMenu');
-  })  
-})
-
-router.get('/deleteBurger/:burgerId', (req, res, next) => {
-  authenticate(req, res, () => {
-    deleteBurger(req.params.burgerId);
-    res.redirect('/spadmin/manage#burgerMenu');
+router.get('/delete/:table/:food/:display', (req, res, next) => {
+  authenticate(req, res, async () => {
+    await deleteElement(req.params.food, req.params.table);
+    console.log(req.params.display)
+    if (req.params.display == "classic") {
+      res.redirect('/spadmin/database/' + req.params.table);
+    } else if (req.params.display == "minimized") {
+      res.redirect('/spadmin/databases#' + req.params.table);
+    } else {
+      console.log('\x1b[31m%s\x1b[0m' , "Error: unknown display parameter. While this may not cause any server breaking issue, it could create bad user experience across the board.");
+      res.redirect('/spadmin/databases#' + req.params.table);
+    }
   })
 })
 
-router.post('/AddFries', (req, res, next) => {
-  authenticate(req, res, () => {
-    req.body.fPrice = req.body.fPrice.replace(',', '.');
-    insertFries(req.body.fIdentifier, req.body.fName, (req.body.fDesc) ? req.body.fDesc : null, parseFloat(req.body.fPrice) ? parseFloat(req.body.fPrice) : null);
-    res.redirect('/spadmin/manage#friesMenu');
+router.get('/deleteDatabase/:table', (req, res, next) => {
+  authenticate(req, res, async () => {
+    await deleteTable(req.params.table);
+    res.redirect('/spadmin/databases');
   })
 })
 
-router.get('/deleteFries/:friesId', (req, res, next) => {
-  authenticate(req, res, () => {
-    deleteFries(req.params.friesId);
-    res.redirect('/spadmin/manage#friesMenu');
-  })
-})
-
-router.post('/AddDrink', (req, res, next) => {
-  authenticate(req, res, () => {
-    req.body.dPrice = req.body.dPrice.replace(',', '.');
-    insertDrink(req.body.dIdentifier, req.body.dName, (req.body.dDesc) ? req.body.dDesc : null, parseFloat(req.body.dPrice) ? parseFloat(req.body.dPrice) : null);
-    res.redirect('/spadmin/manage#drinkMenu');
-  })
-})
-
-router.get('/deleteDrink/:drinkId', (req, res, next) => {
-  authenticate(req, res, () => {
-    deleteDrink(req.params.drinkId);
-    res.redirect('/spadmin/manage#drinkMenu');
-  })
-})
-
-router.post('/AddDessert', (req, res, next) => {
-  authenticate(req, res, () => {
-    req.body.dePrice = req.body.dePrice.replace(',', '.');
-    insertDessert(req.body.deIdentifier, req.body.deName, (req.body.deDesc) ? req.body.deDesc : null, parseFloat(req.body.dePrice) ? parseFloat(req.body.dePrice) : null);
-    res.redirect('/spadmin/manage#dessertMenu');
-  })
-})
-
-router.get('/deleteDessert/:dessertId', (req, res, next) => {
-  authenticate(req, res, () => {
-    deleteDessert(req.params.dessertId);
-    res.redirect('/spadmin/manage#dessertMenu');
+router.post('/add/:table/:display',
+body('name').trim().escape(),
+body('description').trim().escape(),
+body('price').toFloat(),
+(req, res, next) => {
+  authenticate(req, res, async () => {
+    await insertRow(req.params.table, req.body.name, (req.body.description) ? req.body.description : null, (req.body.price) ? req.body.price : null);
+    if (req.params.display == "classic") {
+      res.redirect('/spadmin/database/' + req.params.table);
+    } else if (req.params.display == "minimized") {
+      res.redirect('/spadmin/databases#' + req.params.table);
+    } else {
+      console.log('\x1b[31m%s\x1b[0m' , "Error: unknown display parameter. While this may not cause any server breaking issue, it could create bad user experience across the board.");
+      res.redirect('/spadmin/databases#' + req.params.table);
+    }
   })
 })
 
 router.get('/downloadUsers', (req, res, next) => {
-  authenticate(req, res, () => {
-    pool.query('SELECT * FROM spatulasUsers ORDER BY time', (err, rows) => {
-      stringify.stringify(rows, {
-        header: true
-      }, (err, output) => {
-        fs.writeFile('./users.csv', output, 'utf-8', () => {
-          res.download('./users.csv', () => {
-            fs.unlink('./users.csv', (err) => {
-              if (err) {
-                console.log(err);
-              }
-            });
+  authenticate(req, res, async () => {
+    let rows = await getCommands(null, null, 'time', 999, true);
+    stringify.stringify(rows, {
+      header: true
+    }, (err, output) => {
+      fs.writeFile('./commands.csv', output, 'utf-8', () => {
+        res.download('./commands.csv', () => {
+          fs.unlink('./commands.csv', (err) => {
+            if (err) {
+              console.log(err);
+            }
           });
-        })
+        });
       })
     })
   })
