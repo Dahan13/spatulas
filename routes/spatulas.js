@@ -230,7 +230,7 @@ body('price').toFloat(),
     if (req.params.display == "classic") {
       res.redirect('/spadmin/database/' + req.params.table);
     } else if (req.params.display == "minimized") {
-      res.redirect('/spadmin/databases');
+      res.redirect('/spadmin/databases#' + req.params.table);
     } else {
       console.log('\x1b[31m%s\x1b[0m' , "Error: unknown display parameter. While this may not cause any server breaking issue, it could create bad user experience across the board.");
       res.redirect('/spadmin/databases#' + req.params.table);
