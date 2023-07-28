@@ -3,12 +3,11 @@ const { body, query, check } = require('express-validator');
 var router = express.Router();
 let pool = require('./databaseConnector');
 let { insertCommand, getCommands, calculatePrice, getCommandsByTime, getTables, checkTables, getValuesFromRequest, getTablesInfos, purgeDatabase, createDatabase } = require("./databaseUtilities.js");
-let { getRegistration, getRegistrationDay, checkTime, checkPassword, getGlobalTimes, getTimeCount, checkAndRepairTimes } = require('./settingsUtilities');
+let { getRegistration, getRegistrationDay, checkPassword } = require('./settingsUtilities');
+let { getTimes, timeEnabled, clearTimeDatabase, checkTimeId, getTimeCount, getTimeValue, incrementTimeCount } = require('./timeUtilities');
 let { sendTimeCount } = require('./webSocket');
 
 createDatabase();
-// ! This is a temporary fix for the unlikely case all time stamps were removed, we add a new one set at "19h00" to prevent the system from breaking
-checkAndRepairTimes();
 
 /* GET home page. */
 router.get('/',
@@ -20,11 +19,11 @@ router.get('/',
           // We will now access the MySQL database for all needed informations
           let conn = await pool.promise().getConnection()
           let tables = await getTables(conn);
-          let times = await getGlobalTimes(conn);
+          let timeStatus = await timeEnabled(conn);
 
-          await conn.release(); // Releasing connection
           // Rendering home page
-          res.render('home', { title: 'Home', admin: auth, registrationOpen: (registStatus || auth), userRegistrationOpen: registStatus, adminRegistrationOpen: auth, tables: tables, times: times, day: day, error: (req.query.error) ? req.query.error : null });
+          res.render('home', { title: 'Home', admin: auth, registrationOpen: (registStatus || auth), userRegistrationOpen: registStatus, adminRegistrationOpen: auth, timeStatus: timeStatus, tables: tables, times: (timeStatus) ? await getTimes(conn) : null, day: day, error: (req.query.error) ? req.query.error : null });
+          await conn.release(); // Releasing connection
         })
       })
     })
@@ -41,12 +40,13 @@ router.get('/queue',
       let connection = await pool.promise().getConnection();
 
       let users = await getCommandsByTime(req.query["search-query"], "lastUpdated DESC", connection);
+      let timeStatus = await timeEnabled(connection);
       let tables = await getTablesInfos(connection);
       let toEncodeUsers = await getCommands(null, null, null, null, true, connection);
 
       connection.release();
 
-      res.render('queue', { title: 'Queue', admin: auth, searching: (req.query["search-query"]) ? true : false, users: users, tables: tables, jsTables: encodeURIComponent(JSON.stringify(tables)), jsUsers: encodeURIComponent(JSON.stringify(toEncodeUsers)) });
+      res.render('queue', { title: 'Queue', admin: auth, searching: (req.query["search-query"]) ? true : false, users: users, tables: tables, timeStatus: timeStatus, jsTables: encodeURIComponent(JSON.stringify(tables)), jsUsers: encodeURIComponent(JSON.stringify(toEncodeUsers)) });
     })
 })
 
@@ -64,22 +64,25 @@ router.post('/register',
           let conn = await pool.promise().getConnection()
           let foods = await getValuesFromRequest(req.body, conn);
           let foodBoolean = await checkTables(foods, conn);
-          let timeBool = await checkTime(req.body.time, conn);
+          let timeEnabledBool = await timeEnabled(conn);
+          let timeBool = (await timeEnabledBool) ? await checkTimeId(req.body.time, conn) : true; // If timestamps are enabled, we check if the timestamp is valid
 
           // Checking if the user filled all the fields and if the time stamp is valid
-          if (req.body.lastName && req.body.lastName.length <= 32 && req.body.firstName && req.body.firstName.length <= 32 && req.body.time && req.body.accept == 'on' && timeBool && foodBoolean) {
+          if (req.body.lastName && req.body.lastName.length <= 32 && req.body.firstName && req.body.firstName.length <= 32 && req.body.accept == 'on' && timeBool && foodBoolean) {
 
             // Calculating the price of the order and inserting the user in the database
             let price = await calculatePrice(foods, conn);
-            let insertResult = await insertCommand(req.body.lastName, req.body.firstName, req.body.time, price, foods, conn);
+            let insertResult = await insertCommand(req.body.lastName, req.body.firstName, await getTimeValue(req.body.time, conn), price, foods, conn);
 
             if (insertResult) { // If the user was successfully inserted in the database
+              if (timeEnabledBool) { // If timestamps are enabled, we need to update the remaining places on the timestamp
               // Before sending user to queue, we send a message through websocket to inform of the change of remaining places on the time stamp
-              getTimeCount((count) => {
-                sendTimeCount(req.body.time, count);
-                conn.release();
-                res.redirect('/queue');
-              }, req.body.time, conn)
+              await incrementTimeCount(req.body.time, conn); // Incrementing the timeCount
+              let timeCount = await getTimeCount(req.body.time, conn);
+              sendTimeCount(req.body.time, timeCount);
+              }
+              conn.release();
+              res.redirect('/queue');
             } else { // If the user was not successfully inserted in the database
               conn.release();
               res.redirect('/?error=true');
@@ -89,6 +92,7 @@ router.post('/register',
             res.redirect('/?error=true');
           }
         } else { // If the user tried to post a command while registrations were closed
+          conn.release();
           res.redirect('/');
         }
       })

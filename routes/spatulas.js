@@ -4,8 +4,8 @@ var stringify = require('csv-stringify');
 const { body, query } = require('express-validator');
 var router = express.Router();
 let pool = require('./databaseConnector')
-let { clearUsers, purgeDatabase, getUsersByStatus, getTablesCount, createCommandFoodString, getCommands, getTablesInfos, insertTable, getTable, deleteElement, deleteTable, insertRow, getTableInfos, getTables } = require("./databaseUtilities.js");
-let { getRegistration, getRegistrationDay, getLimit, setRegistration, setRegistrationDay, setLimit, addTime, removeTime, checkPassword, authenticate, setPassword, getKitchenLimit, setKitchenLimit, getGlobalTimes } = require('./settingsUtilities');
+let { clearUsers, purgeDatabase, getUsersByStatus, getTablesCount, createCommandFoodString, getCommands, insertTable, getTable, deleteElement, deleteTable, insertRow, getTableInfos, getTables } = require("./databaseUtilities.js");
+let { getRegistration, getRegistrationDay, getLimit, setRegistration, setRegistrationDay, setLimit, checkPassword, authenticate, setPassword, getKitchenLimit, setKitchenLimit } = require('./settingsUtilities');
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
@@ -51,7 +51,6 @@ router.get('/manage', (req, res, next) => {
 
     // Getting all database related informations
     let conn = await pool.promise().getConnection();
-    let times = await getGlobalTimes(conn);
     let count = await getTablesCount("delivered = 0", null, conn);
 
     // Getting all settings related informations
@@ -60,7 +59,7 @@ router.get('/manage', (req, res, next) => {
         getLimit((limit) => {
           getKitchenLimit((kitchenLimit) => {
             conn.release();
-            res.render('settings', { title: 'Settings', admin: true, limit: limit, day: day, regisBool: regisBool, times: times, kitchenLimit: kitchenLimit,  count: count});
+            res.render('settings', { title: 'Settings', admin: true, limit: limit, day: day, regisBool: regisBool, kitchenLimit: kitchenLimit,  count: count});
           })
         })
       })
@@ -130,7 +129,7 @@ router.get('/kitchen', (req, res, next) => {
       createCommandFoodString(commands, ", ", conn)
       let count = await getTablesCount("preparation = 1 AND ready = 0 AND delivered = 0 ORDER BY lastUpdated", limit, conn)
       conn.release();
-      res.render('kitchen', { title: 'Kitchen Tab', admin: true, commands: commands, count: count, limit: limit, notEmpty: (typeof commands !== "undefined" && commands.length > 0) ? true : false });
+      res.render('kitchen', { title: 'Preparation Tab', admin: true, commands: commands, count: count, limit: limit, notEmpty: (typeof commands !== "undefined" && commands.length > 0) ? true : false });
     })
   })
 })
@@ -201,7 +200,6 @@ router.get('/clearDatabases', (req,res,next) => {
 router.get('/delete/:table/:food/:display', (req, res, next) => {
   authenticate(req, res, async () => {
     await deleteElement(req.params.food, req.params.table);
-    console.log(req.params.display)
     if (req.params.display == "classic") {
       res.redirect('/spadmin/database/' + req.params.table);
     } else if (req.params.display == "minimized") {

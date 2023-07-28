@@ -57,8 +57,9 @@ function updateCount(time, count) {
     const timeNode = document.getElementById("count-" + time);
     let originalContent = timeNode.innerHTML;
 
-    // The string is in format "XXhXX (count/limit)"
-    let limit = parseInt(originalContent.split(" ")[1].split("/")[1]);
+    originalContent = originalContent.split(" ");
+    time = (originalContent.length == 3) ? originalContent[0] + " " + originalContent[1] : originalContent[0];
+    let limit = parseInt(originalContent[originalContent.length - 1].split("/")[1]);
     if (count >= limit) {
         timeNode.innerHTML = time + " (FULL)";
     } else {

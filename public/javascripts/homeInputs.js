@@ -11,16 +11,20 @@ firstNameInput.value = "";
 lastNameInput.value = "";
 checkbox.checked = false;
 submitButton.disabled = true;
-times.selectedIndex = 0;
+if (times) times.selectedIndex = 0;
 resetSelects();
 
 /**
  * This function will checks if all inputs were filled, thus allowing the submit button to be used 
  */
 function inputsChecker() {
-    if (firstNameInput.value.length >= 1 && lastNameInput.value.length >= 1 && checkbox.checked && submitButton.disabled && times.options[times.selectedIndex].value != "none" && checkSelects()) {
-        submitButton.disabled = false;
-    } else if (firstNameInput.value.length < 1 || lastNameInput.value.length < 1 || !checkbox.checked || times.options[times.selectedIndex].value == "none" || !checkSelects()) {
+    if (firstNameInput.value.length >= 1 && lastNameInput.value.length >= 1 && checkbox.checked && submitButton.disabled && checkSelects()) {
+        if ((times && times.options[times.selectedIndex].value != "none") || (!times)) {
+            submitButton.disabled = false;
+        }
+    } else if (firstNameInput.value.length < 1 || lastNameInput.value.length < 1 || !checkbox.checked || !checkSelects()) {
+        submitButton.disabled = true;
+    } else if (times && times.options[times.selectedIndex].value == "none" ) {
         submitButton.disabled = true;
     }
 }
@@ -30,7 +34,7 @@ inputsChecker();
 firstNameInput.addEventListener('input', inputsChecker);
 lastNameInput.addEventListener('input', inputsChecker);
 checkbox.addEventListener('input', inputsChecker);
-times.addEventListener('input', inputsChecker);
+if (times) times.addEventListener('input', inputsChecker);
 for (let i = 0; i < selectInputs.length; i++) {
     selectInputs[i].addEventListener('input', inputsChecker);
 }

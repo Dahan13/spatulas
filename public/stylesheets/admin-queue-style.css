@@ -164,6 +164,10 @@ h2 {
     justify-content: center;
 }
 
+.command-time-container {
+    width: 180px;
+}
+
 .ready > .command-wrapper > .command-container >.command-widgets > div {
     border:none;
 }

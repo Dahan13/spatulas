@@ -1,50 +1,94 @@
-<link rel="stylesheet" href="/stylesheets/home-style.css"/>
-<link rel="stylesheet" href="/stylesheets/queue-style.css"/>
-<div class="queue-title">   
+<link rel="stylesheet" href="/stylesheets/home-style.css" />
+<link rel="stylesheet" href="/stylesheets/queue-style.css" />
+<div class="queue-title">
     <h1> Queue :</h1>
     <div>
         <img id="search-button" src="/images/queue/search.webp" alt="search">
         {{#if searching}}
-            <a class="close-button" href="/queue" aria-label="Cancel search"> </a>
+        <a class="close-button" href="/queue" aria-label="Cancel search"> </a>
         {{/if}}
     </div>
 </div>
+
 <div class="commands-container">
+    {{#if timeStatus}}
     {{#each users}}
-        <p class="timestamp"> {{this.timeSettings.time}} ( <span id=count-{{this.timeSettings.time}}> {{this.timeSettings.count}}  / {{#if this.timeSettings.full}} {{this.timeSettings.count}} {{else}} {{this.timeSettings.limit}} {{/if}} </span>) :</p>
-        <div class="commands-wrapper">
-            {{#if this.users}}
-                {{#each this.users}}
-                {{#unless this.delivered}}
-                    <div class="command">
-                        <div class="command-container {{#if this.ready}} ready {{else}} {{#if this.preparation}} preparation {{/if}} {{/if}} ">
-                            <p> {{this.commandId}} </p>
-                            <div class="image-holder"></div>
-                        </div>
-                        <div class="infos-container">
-                            <div class="command-name-container">
-                                <div>
-                                    <p> {{this.firstName}} </p>
-                                    <p> {{this.lastName}} </p>
-                                </div>
-                            </div>
-                            <div class="menu invisible" id="menu-{{this.commandId}}"> 
-                                <div class="food-holder">
-                                </div>
-                                <div class="price-holder">
-                                    <p> {{this.price}}€ </p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="menu-button" data-commandId={{this.commandId}} id=but-{{this.commandId}}> <div data-commandId={{this.commandId}} id=but2-{{this.commandId}}> </div> </div>
+    <p class="timestamp"> {{this.timeSettings.time}} ( <span id=count-{{this.timeSettings.id}}>
+            {{this.timeSettings.time_count}} / {{#if this.timeSettings.full}} {{this.timeSettings.time_count}} {{else}}
+            {{this.timeSettings.time_limit}} {{/if}} </span>) :</p>
+    <div class="commands-wrapper">
+        {{#if this.users}}
+        {{#each this.users}}
+        {{#unless this.delivered}}
+        <div class="command">
+            <div
+                class="command-container {{#if this.ready}} ready {{else}} {{#if this.preparation}} preparation {{/if}} {{/if}} ">
+                <p> {{this.commandId}} </p>
+                <div class="image-holder"></div>
+            </div>
+            <div class="infos-container">
+                <div class="command-name-container">
+                    <div>
+                        <p> {{this.firstName}} </p>
+                        <p> {{this.lastName}} </p>
                     </div>
-                {{/unless}}
-                {{/each}}
-            {{else}}
-                <h2 style="text-align:center"> <em> Wow ! Such void ! </em> </h2>
-            {{/if}}
+                </div>
+                <div class="menu invisible" id="menu-{{this.commandId}}">
+                    <div class="food-holder">
+                    </div>
+                    <div class="price-holder">
+                        <p> {{this.price}}€ </p>
+                    </div>
+                </div>
+            </div>
+            <div class="menu-button" data-commandId={{this.commandId}} id=but-{{this.commandId}}>
+                <div data-commandId={{this.commandId}} id=but2-{{this.commandId}}> </div>
+            </div>
         </div>
+        {{/unless}}
+        {{/each}}
+        {{else}}
+        <h2 style="text-align:center"> <em> Wow ! Such void ! </em> </h2>
+        {{/if}}
+    </div>
     {{/each}}
+    {{else}}
+    <div class="commands-wrapper">
+        {{#if this.users}}
+        {{#each this.users}}
+        {{#unless this.delivered}}
+        <div class="command">
+            <div
+                class="command-container {{#if this.ready}} ready {{else}} {{#if this.preparation}} preparation {{/if}} {{/if}} ">
+                <p> {{this.commandId}} </p>
+                <div class="image-holder"></div>
+            </div>
+            <div class="infos-container">
+                <div class="command-name-container">
+                    <div>
+                        <p> {{this.firstName}} </p>
+                        <p> {{this.lastName}} </p>
+                    </div>
+                </div>
+                <div class="menu invisible" id="menu-{{this.commandId}}">
+                    <div class="food-holder">
+                    </div>
+                    <div class="price-holder">
+                        <p> {{this.price}}€ </p>
+                    </div>
+                </div>
+            </div>
+            <div class="menu-button" data-commandId={{this.commandId}} id=but-{{this.commandId}}>
+                <div data-commandId={{this.commandId}} id=but2-{{this.commandId}}> </div>
+            </div>
+        </div>
+        {{/unless}}
+        {{/each}}
+        {{else}}
+        <h2 style="text-align:center"> <em> Wow ! Such void ! </em> </h2>
+        {{/if}}
+    </div>
+    {{/if}}
 </div>
 
 <div class="reloader">
@@ -57,8 +101,3 @@
     const commands = JSON.parse(decodeURIComponent("{{{jsUsers}}}"));
 </script>
 <script src="javascripts/queue.js"></script>
-
-
-
-
-

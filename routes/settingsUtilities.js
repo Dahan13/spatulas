@@ -53,7 +53,7 @@ function getRegistrationDay(callback) {
  */
 function getLimit(callback) {
     readIni((data) => {
-        callback(parseInt(data.Time.limit, 10));
+        callback(parseInt(data.Limits.generalLimit, 10));
     })
 }
 
@@ -63,146 +63,7 @@ function getLimit(callback) {
  */
 async function getLimitAsync() {
     let data = await readIniAsync();
-    return parseInt(data.Time.limit, 10);
-}
-
-/**
- * ! This function is now deprecated, use getGlobalTimes instead !
- */
-function getTimes(callback, onlyAvailable = false, connection = null) {
-    conn = (connection) ? connection : pool;
-    readIni((data) => {
-        if (onlyAvailable) { // If we only want to times where there is still places (command limit not reach)
-            getLimit((limit) => {
-                conn.query('SELECT COUNT(*) AS count, time FROM spatulasUsers GROUP BY time', (err, rows, fields) => {  // We associate each time stamp with its number of commands
-                    for (let i = 0; i < rows.length; i++) {
-                        if (rows[i].count >= limit) { // If a commands count is above the limit for a timestamp
-                            data.Time.array = data.Time.array.filter(time => time != rows[i].time)
-                        }
-                    }
-                    callback(data.Time.array);
-                })
-            })
-        } else {
-            callback(data.Time.array);
-        } 
-    })
-}
-
-/**
- * ! This is a temporary function that will automatically add the "19h00" time stamp in case there is no time stamps to be found in the file
- */
-function checkAndRepairTimes() {
-    readIni((data) => {
-        if (!data.Time.array) { // If there is no time stamps at all
-            data.Time.array = ["19h00"];
-            fs.writeFileSync('./settings.ini', ini.stringify(data));
-        }
-    })
-}
-
-/**
- * This function will return a list containing object, each object containing the time, the number of commands, if it's full and the limit
- * @param {*} connection
- * @returns {[{time: "XXhXX", count: int, limit: int, full: Boolean}]} 
- */
-async function getGlobalTimes(connection = null) {
-    let conn = (connection) ? connection : await pool.promise().getConnection();
-    let result = [];
-
-    // Getting the limit and the data
-    let limit = await getLimitAsync();
-    let data = await readIniAsync();
-    let queryResult = await conn.query("SELECT COUNT(*) as count, time FROM spatulasCommands GROUP BY time");
-    let rows = queryResult[0];
-
-    // For each time stamp in the settings file
-    for (let i = 0; i < data.Time.array.length; i++) {
-        let time = data.Time.array[i];
-        let count = 0;
-        let full = false;
-
-        // For each time stamp in the database
-        for (let j = 0; j < rows.length; j++) {
-            if (rows[j].time == time) {
-                count = rows[j].count;
-                full = (count >= limit);
-                break;
-            }
-        }
-        
-        result.push({
-            time: time,
-            count: count,
-            limit: limit,
-            full: full
-        })
-    }
-    
-    // If we are using a connection, we need to release it
-    if (!connection) {
-        conn.release();
-    }
-
-    return result
-}
-
-/**
- * This function will return the count of commands for a specific time
- * @param {string} timeValue
- * @param {function} callback
- * @param {*} connection
- */
-async function getTimeCount(callback, timeValue, connection = null) {
-    let conn = (connection) ? connection : pool.promise().getConnection();
-    times = await getGlobalTimes(conn);
-
-    // If we are using a connection, we need to release it
-    if (!connection) {
-        conn.release();
-    }
-
-    for (let i = 0; i < times.length; i++) {
-        if (times[i].time == timeValue) {
-            callback(times[i].count);
-            return;
-        }
-    }
-    callback(0);
-}
-
-/** 
- * This function will check if a time stamp is valid (i.e if it's in the list of time stamps)
- * @param {string} value
- * @param {*} connection
- * @returns {boolean}
- */
-async function checkTime(value, connection = null) {
-    conn = (connection) ? connection : pool.promise().getConnection();
-
-    times = await getGlobalTimes(conn)
-
-    // If we are using a connection, we need to release it
-    if (!connection) {
-        conn.release();
-    }
-
-    for (let i = 0; i < times.length; i++) {
-        if (value == times[i].time) {
-            return true;
-        }
-    }
-    return false;
-}
-
-function getTimeIndex(value, callback, connection = null) {
-    getTimes((times) => {
-        for (let i = 0; i < times.length; i++) {
-            if (value == times[i]) {
-                callback(i);
-            }
-        }
-    }, false, connection)
+    return parseInt(data.Limits.generalLimit, 10);
 }
 
 function setPassword(password) {
@@ -218,17 +79,25 @@ function checkPassword(password, callback) {
     })
 }
 
+/**
+ * Given a HTTP request, and its response, the function will execute the callback function if the user is properly authenticated.
+ * If the user is not authenticated, it will redirect him to the redirectionURL
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} callback 
+ * @param {*} redirectionURL 
+ */
 function authenticate(req, res, callback, redirectionURL = '/') {
     if (req.cookies.spatulasPower) {
         getPassword((password) => {
             if (password == req.cookies.spatulasPower) {
                 callback();
             } else {
-                res.redirect('/');
+                res.redirect(redirectionURL);
             }
         })
     } else {
-        res.redirect('/');
+        res.redirect(redirectionURL);
     }
 }
 
@@ -250,34 +119,7 @@ function setLimit(newLimit) {
     readIni((data) => {
         newLimit = parseInt(newLimit);
         if (newLimit) {
-            data.Time.limit = newLimit;
-            fs.writeFileSync('./settings.ini', ini.stringify(data));
-        }
-    })
-}
-
-function addTime(timeValue) {
-    if (timeValue.length == 5 && timeValue.split('h').length == 2) {
-        readIni((data) => {
-            // We first check if the array already exists
-            if (data.Time.array) {
-                if ((data.Time.array.filter(time => time == timeValue)).length == 0) {
-                    data.Time.array.push(timeValue);
-                    data.Time.array.sort();
-                    fs.writeFileSync('./settings.ini', ini.stringify(data));
-                }
-            } else {
-                data.Time.array = [timeValue];
-                fs.writeFileSync('./settings.ini', ini.stringify(data));
-            }
-        })
-    }
-}
-
-function removeTime(timeValue) {
-    readIni((data) => {
-        if (data.Time.array && data.Time.array.length > 1) { // ! We don't want to remove the last time because it will crash the server. This is temporary until the system is more robust
-            data.Time.array = data.Time.array.filter(time => time != timeValue);
+            data.Limits.generalLimit = newLimit;
             fs.writeFileSync('./settings.ini', ini.stringify(data));
         }
     })
@@ -286,7 +128,7 @@ function removeTime(timeValue) {
 // Add a new getter and setter for the new setting "kitchenLimit" that is an integer (and also exports the functions as well please)
 function getKitchenLimit(callback) {
     readIni((data) => {
-        callback(data.Time.kitchenLimit);
+        callback(data.Limits.kitchenLimit);
     })
 }
 
@@ -294,10 +136,69 @@ function setKitchenLimit(newLimit) {
     readIni((data) => {
         newLimit = parseInt(newLimit);
         if (newLimit) {
-            data.Time.kitchenLimit = newLimit;
+            data.Limits.kitchenLimit = newLimit;
             fs.writeFileSync('./settings.ini', ini.stringify(data));
         }
     })
+}
+
+/**
+ * This function will indicate whether time is enabled or not on the website
+ * @returns {boolean} True if time is enabled, false otherwise
+ */
+async function getTimeStatus() {
+    let data = await readIniAsync();
+    return (data.Time.toggled == "1") ? true : false;
+}
+
+/**
+ * This function will toggle timestamps use globally on the website
+ */
+async function toggleTime() {
+    let data = await readIniAsync();
+    data.Time.toggled = (await getTimeStatus()) ? "0" : "1";
+    fs.writeFileSync('./settings.ini', ini.stringify(data));
+    return;
+}
+
+/**
+ * This function will indicate whether time custom limits are enabled or not on the website
+ * @returns {boolean} True if custom limits are enabled, false otherwise
+ */
+async function getCustomLimitStatus() {
+    let data = await readIniAsync();
+    return (data.Time.customLimits == "1") ? true : false;
+}
+
+/**
+ * This function will toggle custom limits use globally on the website
+*/
+async function toggleCustomLimit() {
+    let data = await readIniAsync();
+    data.Time.customLimits = (await getCustomLimitStatus()) ? "0" : "1";
+    fs.writeFileSync('./settings.ini', ini.stringify(data));
+    return;
+}
+
+/**
+ * This function return the current format of the website timestamps
+ * @returns {string} The current format of the website timestamps : "day" or "hour"
+ */
+async function getTimeFormat() {
+    let data = await readIniAsync();
+    return data.Time.format;
+}
+
+/**
+ * This function will set the format of the website timestamps
+ */
+async function toggleTimeFormat() {
+    let format = await getTimeFormat();
+
+    let data = await readIniAsync();
+    data.Time.format = (format == "day") ? "hour" : "day";
+    fs.writeFileSync('./settings.ini', ini.stringify(data));
+    return;
 }
 
 function getLogSizeLimit(callback) {
@@ -322,22 +223,21 @@ module.exports = {
     getRegistration,
     getRegistrationDay,
     getLimit,
-    getTimes,
-    checkAndRepairTimes,
-    getGlobalTimes,
-    getTimeCount,
-    getTimeIndex,
-    checkTime,
+    getLimitAsync,
     setPassword,
     checkPassword,
     setRegistration,
     setRegistrationDay,
     setLimit,
-    addTime,
-    removeTime,
     authenticate,
+    getTimeStatus,
+    toggleTime,
+    getCustomLimitStatus,
+    toggleCustomLimit,
     getKitchenLimit,
     setKitchenLimit,
+    getTimeFormat,
+    toggleTimeFormat,
     getLogSizeLimit,
     setLogSizeLimit
 }
