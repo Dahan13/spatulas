@@ -1,0 +1,297 @@
+form {
+    align-items: normal;
+}
+
+.settings-manager {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.settings-manager>div {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+
+    width: 100%;
+    margin: 10px 0;
+}
+
+.settings-manager>div>p {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.settings-manager>div>a {
+    font-size: 1.2em;
+    font-weight: bold;
+
+    border-bottom: 2px solid var(--text-color);
+    padding: 2px;
+
+    width: auto;
+    color: var(--text-color);
+}
+
+.settings-manager>div>a:hover {
+    cursor: pointer;
+    text-decoration: none;
+    padding: 1px;
+    border: 2px solid var(--text-color);
+}
+
+.timestamps-manager {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+
+    width: 100%;
+    margin-top: 30px;
+}
+
+.timestamp-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    width: 100%;
+}
+
+.timestamp-container>a {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    width: 4%;
+    padding: 2px;
+}
+
+.timestamp-container>a>img {
+    height: 20px;
+    margin: 2px;
+    cursor: pointer;
+}
+
+.timestamp-container:first-of-type>a>img {
+    opacity: 0;
+    cursor: default;
+}
+
+.timestamp {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    width: 96%;
+    height: auto;
+
+    border: 1px solid var(--text-color);
+    border-radius: 5px;
+    margin-bottom: 3px;
+}
+
+.timestamp>div, .timestamp>a {
+    width: 19%;
+    height: auto;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+
+    font-size: 0.72rem;
+    border-left: 1px solid var(--text-color);
+}
+
+.timestamp>div:first-of-type {
+    border-left: none;
+}
+
+.activation,
+.deactivation {
+    background-size: 23px;
+    display: inline-block;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.activation>a,
+.deactivation>a {
+    width: 100%;
+    height: 100%;
+}
+
+.activation {
+    background-image: url(/images/time/disabled.webp);
+}
+
+.deactivation {
+    background-image: url(/images/time/activated.webp);
+}
+
+.activation:hover,
+.deactivation:hover {
+    cursor: pointer;
+    background-image: url(/images/spadmin/edit.webp)
+}
+
+.limit {
+    color: var(--text-color);
+}
+
+.limit:hover {
+    font-size: 0px;
+    color: var(--main-background-color);
+}
+
+.limit:hover::after {
+    font-size: 1.2rem;
+    color: var(--text-color);
+    content: "Edit";
+}
+
+.timestamp-value {
+    font-weight: bold;
+}
+
+.time-adder {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+
+    border: 1px solid var(--text-color);
+    border-radius: 5px;
+    width: 65px;
+    padding: 3px;
+
+    align-self: flex-start;
+}
+
+.time-adder>.plus {
+    height: 20px;
+    width: 20px;
+}
+
+.time-adder>p {
+    font-size: 1.05em;
+    font-weight: bold;
+    margin-left: 4px;
+    color: var(--text-color);
+}
+
+.time-adder:hover {
+    cursor: pointer;
+    background-color: var(--text-color);
+}
+
+.time-adder:hover>.plus {
+    background-color: var(--main-background-color);
+}
+
+.time-adder:hover>p {
+    color: var(--main-background-color);
+}
+
+.time-selector {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+.time-input {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+
+    margin-top: 7px;
+}
+
+.time-input>input {
+    width: 100px;
+    height: 20px;
+    margin-left: 10px;
+}
+
+.time-input>img {
+    height: 35px;
+    width: 35px;
+}
+
+.time-input>img:hover {
+    cursor: pointer;
+    filter: invert(70%);
+}
+
+.date-selector {
+    display: flex;
+    flex-direction: column;
+    margin-top: 10px;
+}
+
+.date-selector>aeon-datepicker>input {
+    background-color: var(--main-background-color);
+    border-bottom: 1px solid var(--text-color);
+}
+
+@media only screen and (min-width: 1020px) {
+    label {
+        font-size: 1.5rem;
+    }
+
+    .settings-manager>div>p {
+        font-size: 1.5em;
+        margin-right: 15px;
+    }
+
+    .settings-manager>div>a {
+        font-size: 1.5em;
+        padding: 6px;
+    }
+
+    .settings-manager>div>a:hover {
+        padding: 4px;
+    }
+
+    .timestamp-container>a>img {
+        height: 35px;
+        margin: 2px 5px;
+    }
+
+    .timestamp>div, .timestamp>a {
+        font-size: 1.2rem;
+    }
+
+    .timestamp:last-of-type>.plus {
+        height: 28px;
+        width: 28px;
+    }
+
+    .time-input>input {
+        font-size: 1.4rem;
+        width: 150px;
+        margin-left: 15px;
+    }
+
+    .time-input>img {
+        height: 50px;
+        width: 50px;
+    }
+
+    .date-selector>aeon-datepicker>input {
+        background-color: var(--main-background-color);
+        border-bottom: 1px solid var(--text-color);
+        font-size: 1.4rem;
+    }
+
+    .activation,
+    .deactivation {
+        background-size: 33px;
+    }
+}

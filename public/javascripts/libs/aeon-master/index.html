@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Aeon Date Picker</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body {
+        font-size: 16px;
+        font-family: sans-serif;
+      }
+
+      input {
+        font-size: inherit;
+        font-family: inherit;
+        padding: 0.3rem;
+      }
+
+      form {
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #eee;
+      }
+
+      :root {
+        --aeon-rgb: 170, 10, 10;
+      }
+    </style>
+    <script src="./dist/aeon.js" type="module"></script>
+  </head>
+  <body>
+    <h1>
+      Aeon Date Picker
+    </h1>
+
+    <form>
+      <p>
+        <label for="date-start">Start Date</label>
+        <aeon-datepicker default-date="2020-01-01" default-time="09:30">
+          <input
+            id="date-start"
+            name="date-start"
+            type="date"
+            value="2020-04-06"
+            placeholder="Start date"
+          />
+          <input id="time-start" type="time" value="12:00" />
+        </aeon-datepicker>
+      </p>
+      <p>
+        <label for="date-end">End Date</label>
+        <aeon-datepicker default-date="2025-01-01" default-time="17:00">
+          <input
+            id="date-end"
+            name="date-end"
+            type="date"
+            placeholder="End date"
+          />
+          <input id="time-end" type="time" />
+        </aeon-datepicker>
+      </p>
+      <button>
+        Go
+      </button>
+    </form>
+
+    <div id="output">
+      <p>Start date: <span id="output-start"></span></p>
+      <p>End date: <span id="output-end"></span></p>
+    </div>
+
+    <script>
+      const form = document.querySelector('form');
+      form.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        document.querySelector('#output-start').innerHTML = `${
+          form.querySelector('#date-start').value
+        } ${form.querySelector('#time-start').value}`;
+
+        document.querySelector('#output-end').innerHTML = `${
+          form.querySelector('#date-end').value
+        } ${form.querySelector('#time-end').value}`;
+      });
+    </script>
+  </body>
+</html>

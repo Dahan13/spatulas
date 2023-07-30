@@ -1,0 +1,67 @@
+<link rel="stylesheet" href="/stylesheets/home-style.css" />
+<link rel="stylesheet" href="/stylesheets/spadmin-style.css" />
+<link rel="stylesheet" href="/stylesheets/time-style.css" />
+
+<a class="button" href="/spadmin/" style="margin-bottom:15px"> <button> Back </button> </a>
+
+<h1> Timestamp Manager : </h1>
+
+{{#if error}}
+<p class="error-message"> Error. Please try again </p>
+{{/if}}
+
+<div class="settings-manager">
+    <div>
+        <p> Timestamps are {{#if timeEnabledBool}} enabled {{else}} disabled {{/if}} </p>
+        <a href="/spadmin/time/toggleTime"> {{#if timeEnabledBool}} Disable {{else}} Enable {{/if}} </a>
+    </div>
+
+
+    <div>
+        
+        <p> Custom limits are {{#if customLimitsEnabled}} enabled {{else}} disabled {{/if}} </p>
+        <a href="/spadmin/time/toggleCustomLimits"> {{#if customLimitsEnabled}} Disable {{else}} Enable {{/if}} </a>
+    </div>
+
+    <div> 
+        <p> Current format is {{#if dateFormatDay}} dd/mm/yyyy hh:mm {{else}} hh:mm {{/if}} </p>
+        <a href="/spadmin/time/toggleDateFormat"> Switch to {{#if dateFormatDay}} hh:mm {{else}} dd/mm/yyyy hh:mm {{/if}} </a>
+    </div>
+</div>
+
+<div class="timestamps-manager">
+    {{#if timesBoolean}}
+    <div class="timestamp-container">
+        <div class="timestamp">
+            <div> <span> ID </span> </div>
+            <div> <span class="timestamp-value"> Timestamp </span> </div>
+            <div> Limit </div>
+            <div> Enabled </div>
+            <div> Count </div>
+        </div>
+        <a> <img src="/images/spadmin/delete.webp" alt="Delete"> </a>
+    </div>
+    {{#each time}}
+    <div class="timestamp-container">
+        <div class="timestamp">
+            <div> <span> {{this.id}} </span> </div>
+            <div> <span class="timestamp-value"> {{this.time}} </span> </div>
+            <a class="limit" href="#" data-id={{this.id}} data-limit={{this.custom_limit}}> {{this.custom_limit}} </a>
+            <div class="{{#if this.enabled}} deactivation {{else}} activation {{/if}}"> <a href="/spadmin/time/toggle/{{this.id}}"> </a> </div>
+            <div> {{this.time_count}} </div>
+        </div>
+        <a href="/spadmin/time/delete/{{this.id}}" onclick="return confirm('Are you sure ?')"> <img src="/images/spadmin/delete.webp" alt="Delete {{this.time}}"> </a>
+    </div>
+    {{/each}}
+    {{else}}
+    <p style="font-size: 1.5rem; font-weight: bold; margin-bottom: 10px"> Damn ! No timestamps found ! Timestamps will be disabled by default !</p>
+    {{/if}}
+    <a href="#" class="time-adder" data-format="{{#if dateFormatDay}}day{{else}}hour{{/if}}">
+        <div class="plus"></div>
+        <p> Add </p>
+    </a>
+</div>
+
+<script src="/javascripts/libs/aeon-master/dist/aeon.js" type="module"></script>
+<script src="/javascripts/libs/timepicker.js/timepicker.js" type="module"></script>
+<script src="/javascripts/time.js"></script>

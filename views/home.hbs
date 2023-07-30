@@ -25,35 +25,44 @@
 
     {{#each tables}}
     {{#unless this.infos.empty}}
-        <div class="input-div">
-            <label for="table-{{this.infos.foodName}}"> {{{this.infos.foodName}}} </label>
-            <select name="{{this.infos.foodName}}" id="table-{{this.infos.foodName}}">
-                <option disabled selected value="none"> -- Select an option -- </option>
-                {{#each this.content}}
-                <option value="{{this.id}}" id="{{../this.infos.foodName}}-{{this.id}}" {{#if this.price }}
-                    data-price={{this.price}} {{/if}}> {{{this.name}}} ({{#if this.price}}{{this.price}}{{else}}0.00{{/if}}€)
-                    {{#if this.description}}: {{{this.description}}} {{/if}} </option>
-                {{/each}}
-            </select>
-        </div>
+    <div class="input-div">
+        <label for="table-{{this.infos.foodName}}"> {{{this.infos.foodName}}} </label>
+        <select name="{{this.infos.foodName}}" id="table-{{this.infos.foodName}}">
+            <option disabled selected value="none"> -- Select an option -- </option>
+            {{#each this.content}}
+            <option value="{{this.id}}" id="{{../this.infos.foodName}}-{{this.id}}" {{#if this.price }}
+                data-price={{this.price}} {{/if}}> {{{this.name}}} ({{#if
+                this.price}}{{this.price}}{{else}}0.00{{/if}}€)
+                {{#if this.description}}: {{{this.description}}} {{/if}} </option>
+            {{/each}}
+        </select>
+    </div>
     {{/unless}}
     {{/each}}
-
+    {{#if timeStatus}}
     <div class="input-div">
         <label for="time"> Pick up time </label>
         <select name="time" id="time">
             <option disabled selected value="none"> -- Select an option -- </option>
+            
             {{#each times}}
-            {{#if this.full}}
-            {{#if ../adminRegistrationOpen}}
-            <option value={{this.time}} id=count-{{this.time}}>{{this.time}} ({{this.count}}/{{this.limit}})</option>
-            {{/if}}
-            {{else}}
-            <option value={{this.time}} id=count-{{this.time}}>{{this.time}} ({{this.count}}/{{this.limit}})</option>
-            {{/if}}
-            {{/each}}
+                {{#if this.full}}
+                    {{#if ../adminRegistrationOpen}}
+                        <option value={{this.id}} id=count-{{this.id}}>{{this.time}} ({{this.time_count}}/{{this.time_limit}})</option>
+                    {{/if}}
+                {{else}}
+                    {{#if this.enabled}}
+                        <option value={{this.id}} id=count-{{this.id}}>{{this.time}} ({{this.time_count}}/{{this.time_limit}})</option>
+                    {{else}}
+                        {{#if ../adminRegistrationOpen}}
+                        <option value={{this.id}} id=count-{{this.id}}>{{this.time}} ({{this.time_count}}/{{this.time_limit}})</option>
+                        {{/if}}
+                    {{/if}}
+                {{/if}}
+            {{/each}} 
         </select>
     </div>
+    {{/if}}
     <div class="input-div input-div-checkbox">
         <input type="checkbox" name="accept" id="accept">
         <label for="accept">

@@ -31,7 +31,9 @@ a {
   text-decoration: none;
   font-weight: bold;
   font-size: 1.2rem;
-  color: var(--main-background-color)
+  color: var(--main-background-color);
+  width: 300px;
+  text-align: center;
 }
 
 a:hover {
@@ -221,6 +223,7 @@ footer {
 
 .error-message {
   text-align: center; 
+  align-self: center;
   color: red; 
   font-size:1.2rem; 
   background-color: #FF000044; 
@@ -246,6 +249,15 @@ footer {
   width: 25px;
   height: 25px;
   background: var(--text-color);
+}
+
+.button {
+  width: 100px;
+  text-align: start;
+}
+
+.button > button {
+  font-size: 2rem;
 }
 
 @media only screen and (max-width: 330px) {

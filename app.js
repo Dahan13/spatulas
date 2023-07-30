@@ -10,6 +10,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/spatulas');
 let logsRouter = require('./routes/logs');
 let webSocket = require('./routes/webSocket');
+let timeRouter = require('./routes/time');
 
 var app = express();
 
@@ -36,14 +37,15 @@ if (!fs.existsSync(logPath)) {
 app.use(logger('combined', { stream: accessLogStream }))
 
 // app setup
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.json({ extended: true }));
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/spadmin', usersRouter);
 app.use('/logs', logsRouter);
+app.use('/spadmin/time', timeRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

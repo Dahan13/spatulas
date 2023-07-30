@@ -1,6 +1,7 @@
 const pool = require('./databaseConnector');
 const validator = require('validator');
-let { setRegistration, getGlobalTimes } = require('./settingsUtilities');
+let { setRegistration } = require('./settingsUtilities');
+let { getTimes, timeEnabled, clearTimeDatabase, createTimeDatabase, getTimeFormat } = require('./timeUtilities');
 
 /**
  * This function will create all tables for the website to properly function, only if they are not already created.
@@ -8,20 +9,33 @@ let { setRegistration, getGlobalTimes } = require('./settingsUtilities');
 async function createDatabase(conn = null) {
     db = (conn) ? conn : await pool.promise().getConnection();
 
+    await createTimeDatabase(db); // Creating the time table
+
     // Creating the table that will contains all commands
-    await db.query("CREATE TABLE IF NOT EXISTS spatulasCommands (commandId INT PRIMARY KEY NOT NULL AUTO_INCREMENT, lastName VARCHAR(255) NOT NULL, firstName VARCHAR(255) NOT NULL, time VARCHAR(5) DEFAULT \'00h01\', preparation INT(1) DEFAULT 0, ready INT(1) DEFAULT 0, delivered INT(1) DEFAULT 0, price FLOAT DEFAULT 0.0, lastUpdated TIMESTAMP DEFAULT NOW())")
+    await db.query("CREATE TABLE IF NOT EXISTS spatulasCommands (commandId INT PRIMARY KEY NOT NULL AUTO_INCREMENT, lastName VARCHAR(255) NOT NULL, firstName VARCHAR(255) NOT NULL, unformated_time DATETIME, time VARCHAR(20), preparation INT(1) DEFAULT 0, ready INT(1) DEFAULT 0, delivered INT(1) DEFAULT 0, price FLOAT DEFAULT 0.0, lastUpdated TIMESTAMP DEFAULT NOW())")
 
     // Creating the table that will contains all the names of each food table
     await db.query("CREATE TABLE IF NOT EXISTS spatulasTables (tableId INT PRIMARY KEY NOT NULL AUTO_INCREMENT, foodName VARCHAR(255) NOT NULL)");
-
-    // Creating the table that will contains all the checkboxes for the forms
-    // A tick is caracterized by it's message, if it's mandatory, the money value it adds to the total price, and if it needs to be displayed in the admin command list
-    await db.query("CREATE TABLE IF NOT EXISTS spatulasCheckboxes (checkboxId INT PRIMARY KEY NOT NULL AUTO_INCREMENT, message VARCHAR(255) NOT NULL, mandatory INT(1) DEFAULT 0, price FLOAT DEFAULT 0.0, display INT(1) DEFAULT 1)")
 
     // Release connection if it was not passed as a parameter
     if (!conn) {
         db.release();
     }
+    return;
+}
+
+/**
+ * This function will update all commands time given their datetime and the current format
+ * @param {*} connection
+ */
+async function updateCommandsTime(connection = null) {
+    let db = (connection) ? connection : await pool.promise().getConnection();
+
+    let format = (await getTimeFormat() == "day") ? "%d/%m/%Y %H:%i" : "%H:%i";
+    await db.query("UPDATE spatulasCommands SET time = IF(unformated_time IS NOT NULL, DATE_FORMAT(unformated_time, ?), NULL)", [format]);
+
+    if (!connection) connection.release();
+
     return;
 }
 
@@ -237,25 +251,27 @@ async function insertCommand(lastName, firstName, time, price, foods, connection
         price = 0;
     }
 
+    // Checking if timestamps are enabled
+    let timeEnabledBool = await timeEnabled(db);
+    if (!timeEnabledBool) {
+        time = null; // If timestamps are not enabled, we set the time to null
+    }
+
     // Getting our tables infos
     let tableNumber = await getTablesInfos(db);
 
     // * Now we are gonna assemble our query
 
     // We create the different variables for the query
-    let columnNames = '(lastName, firstName, time, price, '
-    let valuesString = '(?, ?, ?, ?, ';
+    let columnNames = '(lastName, firstName, unformated_time, price'
+    let valuesString = '(?, ?, ?, ?';
     let valuesArray = [lastName, firstName, time, price];
     let foodIndex = 0; // The index of the food we are currently adding, we keep it separate from i because we might skip some foods
     for (let i = 0; i < tableNumber.length; i++) {
         if (tableNumber[i].empty) continue; // If the table is empty, we skip it
         valuesArray.push(foods[foodIndex]);
-        valuesString += '? ';
-        columnNames += '`' + tableNumber[i].foodName + '`';
-        if (foodIndex != foods.length - 1) {
-            columnNames += ', ';
-            valuesString += ', ';
-        }
+        valuesString += ', ? ';
+        columnNames += ', `' + tableNumber[i].foodName + '`';
         foodIndex++;
         if (foodIndex == foods.length) break; // If we added all the foods, we stop
     }
@@ -264,24 +280,27 @@ async function insertCommand(lastName, firstName, time, price, foods, connection
 
     // Executing the query
     await db.execute('INSERT INTO spatulasCommands ' + columnNames + ' VALUES ' + valuesString, valuesArray)
-
-    // Check if all time slots are full
-    let times = await getGlobalTimes(db);
-
-    for (let i = 0; i < times.length; i++) {
-        if (!times[i].full) { // If at least one time slot is not full, we return
-
-            // Releasing the connection if it was not passed as a parameter
-            if (!connection) {
-                db.release();
-            }
-
-            return true;
-        }
+    if (time != null) {
+        let format = (await getTimeFormat() == "day") ? "%d/%m/%Y %H:%i" : "%H:%i";
+        await db.execute('UPDATE spatulasCommands SET time=DATE_FORMAT(unformated_time, ?)', [format]);
     }
 
-    // If we are here, it means that all time slots are full, we close registration
-    setRegistration(false);
+    // Check if all time slots are full
+    if (timeEnabledBool) {
+        let times = await getTimes(db);
+        for (let i = 0; i < times.length; i++) {
+            if (!times[i].full) { // If at least one time slot is not full, we return
+                // Releasing the connection if it was not passed as a parameter
+                if (!connection) {
+                    db.release();
+                }
+                return true;
+            }
+        }
+        // If we are here, it means that all time slots are full, we close registration
+        setRegistration(false);
+    }
+    
 
     // Releasing the connection if it was not passed as a parameter
     if (!connection) {
@@ -453,21 +472,29 @@ async function createCommandFoodString(commands, separator = " ", connection = n
  */
 async function getCommandsByTime(searchString = "", orderCriteria = "userId", conn) {
     let db = (conn) ? conn : await pool.promise().getConnection(); // If a connection is provided, use it, otherwise create a new one. Note that we are using promises in this function, so we need to use the promise() function to get a promise-based connection
-    let sortedcommands = [];
-    let times = await getGlobalTimes(db);
 
-    for (let i = 0; i < times.length; i++) {
-        sortedcommands[i] = {}; // Create a new object for this time stamp
-        sortedcommands[i]["timeSettings"] = times[i]; // Add the time stamp to the list
-
-        let commandsFound = await getCommands("time LIKE \'" + times[i].time + "\'", searchString, orderCriteria, null, false, db); // Get all commands that have been added at this time stamp (we use the getCommands function to do so)
-        sortedcommands[i]["users"] = (commandsFound.length > 0) ? commandsFound : null; // If there are no commands, we set the value to null
+    let timeStatus = await timeEnabled(db);
+    if (timeStatus) {
+        let sortedcommands = [];
+        let times = await getTimes(db);
+    
+        for (let i = 0; i < times.length; i++) {
+            sortedcommands[i] = {}; // Create a new object for this time stamp
+            sortedcommands[i]["timeSettings"] = times[i]; // Add the time stamp to the list
+    
+            let commandsFound = await getCommands("time LIKE \'" + times[i].time + "\'", searchString, orderCriteria, null, false, db); // Get all commands that have been added at this time stamp (we use the getCommands function to do so)
+            sortedcommands[i]["users"] = (commandsFound.length > 0) ? commandsFound : null; // If there are no commands, we set the value to null
+        }
+    
+        if (!conn) db.release(); // If we created a new connection, we need to release it
+    
+        // Return the list
+        return sortedcommands;
+    } else {
+        let commandsFound = await getCommands(null, searchString, orderCriteria, null, false, db); // Get all commands that have been added at this time stamp (we use the getCommands function to do so)
+        if (!conn) db.release(); // If we created a new
+        return commandsFound;
     }
-
-    if (!conn) db.release(); // If we created a new connection, we need to release it
-
-    // Return the list
-    return sortedcommands;
 }
 
 async function clearUsers(connection = null) {
@@ -687,6 +714,7 @@ async function purgeDatabase(connection = null) {
     await conn.query('DROP TABLE IF EXISTS spatulasTables');
     await conn.query('DROP TABLE IF EXISTS spatulasCheckboxes');
 
+    await clearTimeDatabase(conn);
     await createDatabase(conn);
     conn.release();
 
@@ -705,6 +733,7 @@ async function refreshCommand(userId, conn = null) {
 module.exports = {
     createDatabase,
     insertCommand,
+    updateCommandsTime,
     insertTable,
     insertRow,
     getCommands,
