@@ -67,3 +67,25 @@ addTimeButton.addEventListener('click', () => {
         }
     });
 })
+
+// This part is used to handle the custom limits editing part
+
+const customLimitsButton = document.querySelectorAll(".limit")
+
+for (let i = 0; i < customLimitsButton.length; i++) {
+    customLimitsButton[i].addEventListener('click', (evt) => {
+        let id = evt.target.dataset.id;
+        let limit = evt.target.dataset.limit;
+
+        let popupContent = `
+        <form action="/spadmin/time/editLimit/${id}" method="POST">
+        <label for="limit"> Limit :</label>
+        <input type="number" name="limit" for="limit" id="limit" value="${limit}" required>
+        <input type="submit" value="Submit" id="submit-button"/>
+        </form>
+        `;
+
+        popup.innerHTML = popupContent;
+        popupVeil.classList.toggle("invisible");
+    })
+}

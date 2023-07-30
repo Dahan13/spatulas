@@ -73,6 +73,9 @@ async function getTimes(connection = null) {
     let customLimitEnabled = await getCustomLimitStatus();
     (!customLimitEnabled) ? limit = await getLimitAsync() : limit = null;
     for (let i = 0; i < times.length; i++) {
+        // Keeping a backup of the custom limit
+        times[i].custom_limit = times[i].time_limit;
+
         if (times[i].time_count >= times[i].time_limit) {
             times[i].full = true;
         } else {
@@ -81,6 +84,8 @@ async function getTimes(connection = null) {
         if (!customLimitEnabled) {
             times[i].time_limit = limit;
         }
+
+        
     }
     
     // If we are using a connection, we need to release it
@@ -275,6 +280,45 @@ async function removeTime(id, conn = null) {
 async function incrementTimeCount(timeId, conn = null) {
     let db = (conn) ? conn : pool.promise().getConnection();
     await db.query("UPDATE spatulasTime SET time_count = time_count + 1 WHERE id = ?", [timeId]);
+
+    if (!conn) {
+        db.release();
+    }
+
+    return;
+}
+
+/**
+ * This function change the enabled status of the given timestamp, given its id
+ * @param {int} timeId
+ * @param {*} connection
+ */
+async function toggleTimeEnabled(timeId, conn = null) {
+    let db = (conn) ? conn : pool.promise().getConnection();
+    await db.query("UPDATE spatulasTime SET enabled = !enabled WHERE id = ?", [timeId]);
+
+    if (!conn) {
+        db.release();
+    }
+
+    return;
+}
+
+/**
+ * This function will set the limit of the given timestamp, given its id
+ * @param {int} timeId
+ * @param {int} limit
+ * @param {*} connection
+ */
+async function setTimeLimit(timeId, limit, conn = null) {
+    let db = (conn) ? conn : pool.promise().getConnection();
+
+    await db.query("UPDATE spatulasTime SET time_limit = ? WHERE id = ?", [limit, timeId]);
+
+    if (!conn) {
+        db.release();
+    }
+
     return;
 }
 
@@ -291,5 +335,7 @@ module.exports = {
     insertTime,
     removeTime,
     incrementTimeCount,
-    getTimeFormat
+    getTimeFormat,
+    toggleTimeEnabled,
+    setTimeLimit
 };

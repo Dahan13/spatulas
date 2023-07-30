@@ -9,7 +9,7 @@ form {
     align-items: center;
 }
 
-.settings-manager > div {
+.settings-manager>div {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -19,13 +19,13 @@ form {
     margin: 10px 0;
 }
 
-.settings-manager > div > p {
+.settings-manager>div>p {
     font-size: 1.2em;
     font-weight: bold;
     margin-right: 10px;
 }
 
-.settings-manager > div > a {
+.settings-manager>div>a {
     font-size: 1.2em;
     font-weight: bold;
 
@@ -36,7 +36,7 @@ form {
     color: var(--text-color);
 }
 
-.settings-manager > div > a:hover {
+.settings-manager>div>a:hover {
     cursor: pointer;
     text-decoration: none;
     padding: 1px;
@@ -58,10 +58,10 @@ form {
     flex-direction: row;
     justify-content: space-between;
 
-    width:100%;
+    width: 100%;
 }
 
-.timestamp-container > a {
+.timestamp-container>a {
     display: flex;
     flex-direction: row;
     justify-content: center;
@@ -70,13 +70,13 @@ form {
     padding: 2px;
 }
 
-.timestamp-container > a > img {
+.timestamp-container>a>img {
     height: 20px;
     margin: 2px;
     cursor: pointer;
 }
 
-.timestamp-container:first-of-type > a > img {
+.timestamp-container:first-of-type>a>img {
     opacity: 0;
     cursor: default;
 }
@@ -94,7 +94,7 @@ form {
     margin-bottom: 3px;
 }
 
-.timestamp > div {
+.timestamp>div, .timestamp>a {
     width: 19%;
     height: auto;
 
@@ -108,26 +108,51 @@ form {
     border-left: 1px solid var(--text-color);
 }
 
-.timestamp > div:first-of-type {
+.timestamp>div:first-of-type {
     border-left: none;
 }
 
-.timestamp > div > img {
-    height: 25px;
-    padding: 2px;
+.activation,
+.deactivation {
+    background-size: 23px;
+    display: inline-block;
+    background-repeat: no-repeat;
+    background-position: center;
 }
 
-.activation:hover, .deactivation:hover {
+.activation>a,
+.deactivation>a {
+    width: 100%;
+    height: 100%;
+}
+
+.activation {
+    background-image: url(/images/time/disabled.webp);
+}
+
+.deactivation {
+    background-image: url(/images/time/activated.webp);
+}
+
+.activation:hover,
+.deactivation:hover {
     cursor: pointer;
-
+    background-image: url(/images/spadmin/edit.webp)
 }
 
-.activation:hover::after {
-    content: "Activate";
+.limit {
+    color: var(--text-color);
 }
 
-.deactivation:hover::after {
-    content: "Deactivate";
+.limit:hover {
+    font-size: 0px;
+    color: var(--main-background-color);
+}
+
+.limit:hover::after {
+    font-size: 1.2rem;
+    color: var(--text-color);
+    content: "Edit";
 }
 
 .timestamp-value {
@@ -148,12 +173,12 @@ form {
     align-self: flex-start;
 }
 
-.time-adder > .plus {
+.time-adder>.plus {
     height: 20px;
     width: 20px;
 }
 
-.time-adder > p {
+.time-adder>p {
     font-size: 1.05em;
     font-weight: bold;
     margin-left: 4px;
@@ -165,11 +190,11 @@ form {
     background-color: var(--text-color);
 }
 
-.time-adder:hover > .plus {
+.time-adder:hover>.plus {
     background-color: var(--main-background-color);
 }
 
-.time-adder:hover > p {
+.time-adder:hover>p {
     color: var(--main-background-color);
 }
 
@@ -188,18 +213,18 @@ form {
     margin-top: 7px;
 }
 
-.time-input > input {
+.time-input>input {
     width: 100px;
     height: 20px;
     margin-left: 10px;
 }
 
-.time-input > img {
+.time-input>img {
     height: 35px;
     width: 35px;
 }
 
-.time-input > img:hover {
+.time-input>img:hover {
     cursor: pointer;
     filter: invert(70%);
 }
@@ -210,7 +235,7 @@ form {
     margin-top: 10px;
 }
 
-.date-selector > aeon-datepicker > input {
+.date-selector>aeon-datepicker>input {
     background-color: var(--main-background-color);
     border-bottom: 1px solid var(--text-color);
 }
@@ -220,53 +245,53 @@ form {
         font-size: 1.5rem;
     }
 
-    .settings-manager > div > p {
+    .settings-manager>div>p {
         font-size: 1.5em;
         margin-right: 15px;
     }
-    
-    .settings-manager > div > a {
+
+    .settings-manager>div>a {
         font-size: 1.5em;
         padding: 6px;
     }
 
-    .settings-manager > div > a:hover {
+    .settings-manager>div>a:hover {
         padding: 4px;
     }
 
-    .timestamp-container > a > img {
+    .timestamp-container>a>img {
         height: 35px;
         margin: 2px 5px;
     }
 
-    .timestamp > div {
+    .timestamp>div, .timestamp>a {
         font-size: 1.2rem;
     }
 
-    .timestamp:last-of-type > .plus {
+    .timestamp:last-of-type>.plus {
         height: 28px;
         width: 28px;
     }
 
-    .timestamp > div > img {
-        height: 35px;
-        padding: 2px;
-    }
-
-    .time-input > input {
+    .time-input>input {
         font-size: 1.4rem;
         width: 150px;
         margin-left: 15px;
     }
-    
-    .time-input > img {
+
+    .time-input>img {
         height: 50px;
         width: 50px;
     }
-    
-    .date-selector > aeon-datepicker > input {
+
+    .date-selector>aeon-datepicker>input {
         background-color: var(--main-background-color);
         border-bottom: 1px solid var(--text-color);
         font-size: 1.4rem;
+    }
+
+    .activation,
+    .deactivation {
+        background-size: 33px;
     }
 }

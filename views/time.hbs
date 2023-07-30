@@ -46,8 +46,8 @@
         <div class="timestamp">
             <div> <span> {{this.id}} </span> </div>
             <div> <span class="timestamp-value"> {{this.time}} </span> </div>
-            <div> {{this.time_limit}} </div>
-            <div class="{{#if this.enabled}} deactivation {{else}} activation {{/if}}"> {{#if this.enabled}} <img src="/images/time/activated.webp" alt="Activated"> {{else}} <img src="/images/time/disabled.webp" alt="Disabled"> {{/if}}</div>
+            <a class="limit" href="#" data-id={{this.id}} data-limit={{this.custom_limit}}> {{this.custom_limit}} </a>
+            <div class="{{#if this.enabled}} deactivation {{else}} activation {{/if}}"> <a href="/spadmin/time/toggle/{{this.id}}"> </a> </div>
             <div> {{this.time_count}} </div>
         </div>
         <a href="/spadmin/time/delete/{{this.id}}" onclick="return confirm('Are you sure ?')"> <img src="/images/spadmin/delete.webp" alt="Delete {{this.time}}"> </a>

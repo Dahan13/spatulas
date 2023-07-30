@@ -7,7 +7,7 @@ var router = express.Router();
 let pool = require('./databaseConnector')
 let { clearUsers, purgeDatabase, getUsersByStatus, getTablesCount, createCommandFoodString, getCommands, getTablesInfos, insertTable, getTable, deleteElement, deleteTable, insertRow, getTableInfos, getTables, updateCommandsTime } = require("./databaseUtilities.js");
 let { getRegistration, getRegistrationDay, getLimit, setRegistration, setRegistrationDay, setLimit, checkPassword, authenticate, setPassword, getKitchenLimit, setKitchenLimit, getCustomLimitStatus, getTimeFormat, toggleTime, toggleCustomLimit, toggleTimeFormat } = require('./settingsUtilities');
-let { createTimeDatabase, getTimes, timeEnabled, insertTime, checkTimeId, removeTime } = require('./timeUtilities');
+let { createTimeDatabase, getTimes, timeEnabled, insertTime, checkTimeId, removeTime, toggleTimeEnabled, setTimeLimit } = require('./timeUtilities');
 
 router.get('/', function(req, res, next) {
     authenticate(req, res, async () => {
@@ -91,6 +91,36 @@ router.get('/delete/:id', (req, res, next) => {
             await removeTime(id, conn);
         }
         
+        conn.release();
+        res.redirect("/spadmin/time");
+    }, "/spadmin")
+})
+
+router.get('/toggle/:id', (req, res, next) => {
+    authenticate(req, res, async () => {
+        let conn = await pool.promise().getConnection();
+
+        let id = parseInt(validator.escape(req.params.id));
+        if (id && await checkTimeId(id, conn)) {
+            await toggleTimeEnabled(id, conn);
+        }
+
+        conn.release();
+        res.redirect("/spadmin/time");
+    }, "/spadmin")
+})
+
+router.post('/editLimit/:id', (req, res, next) => {
+    authenticate(req, res, async () => {
+        let conn = await pool.promise().getConnection();
+
+        let id = parseInt(validator.escape(req.params.id));
+        let limit = parseInt(validator.escape(req.body.limit));
+
+        if (id && limit && await checkTimeId(id, conn)) {
+            await setTimeLimit(id, limit, conn);
+        }
+
         conn.release();
         res.redirect("/spadmin/time");
     }, "/spadmin")
