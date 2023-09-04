@@ -2,9 +2,12 @@ var express = require('express');
 var fs = require('fs');
 var stringify = require('csv-stringify');
 const { body, query } = require('express-validator');
+const validator = require('validator');
 var router = express.Router();
 let pool = require('./databaseConnector')
-let { clearUsers, purgeDatabase, getUsersByStatus, getTablesCount, createCommandFoodString, getCommands, insertTable, getTable, deleteElement, deleteTable, insertRow, getTableInfos, getTables } = require("./databaseUtilities.js");
+let { purgeDatabase } = require("./databaseUtilities.js");
+let { getTablesCount, insertTable, getTable, deleteElement, deleteTable, insertRow, getTableInfos, getTables } = require("./databaseTablesUtilities.js");
+let { clearUsers, getUsersByStatus, createCommandFoodString, getCommands } = require("./databaseCommandsUtilities.js");
 let { getRegistration, getRegistrationDay, getLimit, setRegistration, setRegistrationDay, setLimit, checkPassword, authenticate, setPassword, getKitchenLimit, setKitchenLimit } = require('./settingsUtilities');
 
 /* GET users listing. */
@@ -221,9 +224,9 @@ router.get('/deleteDatabase/:table', (req, res, next) => {
 router.post('/add/:table/:display',
 body('name').trim().escape(),
 body('description').trim().escape(),
-body('price').toFloat(),
 (req, res, next) => {
   authenticate(req, res, async () => {
+    req.body.price = parseFloat(validator.escape(req.body.price.replace(',', '.')));
     await insertRow(req.params.table, req.body.name, (req.body.description) ? req.body.description : null, (req.body.price) ? req.body.price : null);
     if (req.params.display == "classic") {
       res.redirect('/spadmin/database/' + req.params.table);

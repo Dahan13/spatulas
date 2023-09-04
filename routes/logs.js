@@ -1,5 +1,4 @@
 var express = require('express');
-const { body, query, check } = require('express-validator');
 var router = express.Router();
 const fs = require('fs');
 let pool = require('./databaseConnector');

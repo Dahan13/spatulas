@@ -2,7 +2,7 @@ const { WebSocket } = require('ws');
 const validator = require('validator');
 let pool = require('./databaseConnector');
 const { checkPassword } = require('./settingsUtilities')
-const { toggleCommandBoolean } = require("./databaseUtilities")
+const { toggleCommandBoolean } = require("./databaseCommandsUtilities")
 
 
 const server = new WebSocket.Server({

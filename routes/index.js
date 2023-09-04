@@ -1,10 +1,12 @@
 var express = require('express');
-const { body, query, check } = require('express-validator');
+const { body, query } = require('express-validator');
 var router = express.Router();
 let pool = require('./databaseConnector');
-let { insertCommand, getCommands, calculatePrice, getCommandsByTime, getTables, checkTables, getValuesFromRequest, getTablesInfos, purgeDatabase, createDatabase } = require("./databaseUtilities.js");
+let { getValuesFromRequest, createDatabase } = require("./databaseUtilities.js");
+let { calculatePrice, getTables, checkTables, getTablesInfos } = require("./databaseTablesUtilities.js");
+let { insertCommand, getCommands, getCommandsByTime } = require("./databaseCommandsUtilities.js");
 let { getRegistration, getRegistrationDay, checkPassword } = require('./settingsUtilities');
-let { getTimes, timeEnabled, clearTimeDatabase, checkTimeId, getTimeCount, getTimeValue, incrementTimeCount } = require('./timeUtilities');
+let { getTimes, timeEnabled, checkTimeId, getTimeCount, getTimeValue, incrementTimeCount } = require('./timeUtilities');
 let { sendTimeCount } = require('./webSocket');
 
 createDatabase();

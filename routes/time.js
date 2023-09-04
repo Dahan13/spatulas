@@ -1,13 +1,10 @@
 var express = require('express');
-var fs = require('fs');
-var stringify = require('csv-stringify');
 const validator = require('validator');
-const { body, query } = require('express-validator');
 var router = express.Router();
 let pool = require('./databaseConnector')
-let { clearUsers, purgeDatabase, getUsersByStatus, getTablesCount, createCommandFoodString, getCommands, getTablesInfos, insertTable, getTable, deleteElement, deleteTable, insertRow, getTableInfos, getTables, updateCommandsTime } = require("./databaseUtilities.js");
-let { getRegistration, getRegistrationDay, getLimit, setRegistration, setRegistrationDay, setLimit, checkPassword, authenticate, setPassword, getKitchenLimit, setKitchenLimit, getCustomLimitStatus, getTimeFormat, toggleTime, toggleCustomLimit, toggleTimeFormat } = require('./settingsUtilities');
-let { createTimeDatabase, getTimes, timeEnabled, insertTime, checkTimeId, removeTime, toggleTimeEnabled, setTimeLimit } = require('./timeUtilities');
+let { updateCommandsTime } = require("./databaseCommandsUtilities.js");
+let { authenticate, getCustomLimitStatus, getTimeFormat, toggleTime, toggleCustomLimit, toggleTimeFormat } = require('./settingsUtilities');
+let { getTimes, timeEnabled, insertTime, checkTimeId, removeTime, toggleTimeEnabled, setTimeLimit } = require('./timeUtilities');
 
 router.get('/', function(req, res, next) {
     authenticate(req, res, async () => {

@@ -3,8 +3,6 @@ var Promise = require("bluebird");
 Promise.promisifyAll(fs); // Promisifying the fs module
 
 var ini = require('ini');
-const pool = require('./databaseConnector');
-const validator = require('validator');
 
 /**
  * ! This function is deprecated, switch to readIniAsync instead !
