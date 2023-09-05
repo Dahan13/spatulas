@@ -1,4 +1,5 @@
 const pool = require('./databaseConnector');
+const crypto = require('crypto');
 let { setRegistration } = require('./settingsUtilities');
 let { getTimes, timeEnabled, getTimeFormat } = require('./timeUtilities');
 let { getTablesInfos, getTables } = require('./databaseTablesUtilities');
@@ -19,6 +20,18 @@ async function updateCommandsTime(connection = null) {
 }
 
 /**
+ * This function will generate a random string of characters, and will append it to a given id and a list of values.
+ * Length is fixed at 30 characters
+ * @param {int} id 
+ * @param {Array} values Usually food values, the values should be chosen so that the resulting string is unique
+ * @returns {string} A string containing the id and the random string
+ */
+function generateRandomString(id, values) {
+    let randomString = crypto.getRandomValues(new Uint32Array(3)).join("");
+    return "" + id + randomString + values.join("");
+}
+
+/**
  * Insert a command into the database, it will also close registration if all time stamps are full
  * Given good array must be in the same order as in spatulasTables
  * @param {string} lastName 
@@ -27,7 +40,7 @@ async function updateCommandsTime(connection = null) {
  * @param {float} price
  * @param {Array} foods
  * @param {Any} connection An optional connection to the database, if none is provided, it will use the pool automatically
- * @returns {boolean} True if the command was inserted, false if the command was not inserted
+ * @returns {String | int} the session key of the command
  */
 async function insertCommand(lastName, firstName, time, price, foods, connection = null) {
     db = (connection) ? connection : await pool.promise().getConnection();
@@ -63,7 +76,14 @@ async function insertCommand(lastName, firstName, time, price, foods, connection
     valuesString += ')';
 
     // Executing the query
-    await db.execute('INSERT INTO spatulasCommands ' + columnNames + ' VALUES ' + valuesString, valuesArray)
+    let insertResult = await db.execute('INSERT INTO spatulasCommands ' + columnNames + ' VALUES ' + valuesString, valuesArray)
+
+    // We will generate a random string using the id and foods, and we will add it to the row
+    let id = insertResult[0].insertId;
+    let randomString = generateRandomString(id, foods);
+    await db.execute('UPDATE spatulasCommands SET sessionKey = ? WHERE commandId = ?', [randomString, id]);
+
+    // Handling the time stamps and its format
     if (time != null) {
         let format = (await getTimeFormat() == "day") ? "%d/%m/%Y %H:%i" : "%H:%i";
         await db.execute('UPDATE spatulasCommands SET time=DATE_FORMAT(unformated_time, ?)', [format]);
@@ -78,7 +98,7 @@ async function insertCommand(lastName, firstName, time, price, foods, connection
                 if (!connection) {
                     db.release();
                 }
-                return true;
+                return randomString;
             }
         }
         // If we are here, it means that all time slots are full, we close registration
@@ -91,7 +111,7 @@ async function insertCommand(lastName, firstName, time, price, foods, connection
         db.release();
     }
 
-    return true;
+    return randomString;
 }
 
 /**
@@ -317,6 +337,22 @@ async function refreshCommand(userId, conn = null) {
     return;
 }
 
+/**
+ * Given a session ID, the system will check if there is a command under this ID, if it is, it returns the command, otherwise it returns null
+ * @param {String} sessionKey
+ * @param {*} connection
+ * @returns {Object | null} The command if it exists, null otherwise
+ */
+async function checkSession(sessionKey, connection = null) {
+    let db = (connection) ? connection : await pool.promise().getConnection();
+    let result = await db.query('SELECT * FROM spatulasCommands WHERE sessionKey = ?', [sessionKey]);
+    result = result[0];
+
+    if (!connection) db.release();
+
+    return (result.length > 0) ? result[0] : null;
+}
+
 module.exports = {
     insertCommand,
     updateCommandsTime,
@@ -327,4 +363,6 @@ module.exports = {
     clearUsers,
     toggleCommandBoolean,
     refreshCommand,
+    generateRandomString,
+    checkSession
 }

@@ -4,7 +4,7 @@ var router = express.Router();
 let pool = require('./databaseConnector');
 let { getValuesFromRequest, createDatabase } = require("./databaseUtilities.js");
 let { calculatePrice, getTables, checkTables, getTablesInfos } = require("./databaseTablesUtilities.js");
-let { insertCommand, getCommands, getCommandsByTime } = require("./databaseCommandsUtilities.js");
+let { insertCommand, getCommands, getCommandsByTime, checkSession } = require("./databaseCommandsUtilities.js");
 let { getRegistration, getRegistrationDay, checkPassword } = require('./settingsUtilities');
 let { getTimes, timeEnabled, checkTimeId, getTimeCount, getTimeValue, incrementTimeCount } = require('./timeUtilities');
 let { sendTimeCount } = require('./webSocket');
@@ -22,9 +22,10 @@ router.get('/',
           let conn = await pool.promise().getConnection()
           let tables = await getTables(conn);
           let timeStatus = await timeEnabled(conn);
+          let sessionStatus = await checkSession(req.cookies.hungryKey, conn);
 
           // Rendering home page
-          res.render('home', { title: 'Home', admin: auth, registrationOpen: (registStatus || auth), userRegistrationOpen: registStatus, adminRegistrationOpen: auth, timeStatus: timeStatus, tables: tables, times: (timeStatus) ? await getTimes(conn) : null, day: day, error: (req.query.error) ? req.query.error : null });
+          res.render('home', { title: 'Home', admin: auth, registrationOpen: (registStatus || auth), userRegistrationOpen: registStatus, adminRegistrationOpen: auth, timeStatus: timeStatus, tables: tables, times: (timeStatus) ? await getTimes(conn) : null, day: day, sessionStatus: sessionStatus, error: (req.query.error) ? req.query.error : null });
           await conn.release(); // Releasing connection
         })
       })
@@ -77,6 +78,9 @@ router.post('/register',
             let insertResult = await insertCommand(req.body.lastName, req.body.firstName, await getTimeValue(req.body.time, conn), price, foods, conn);
 
             if (insertResult) { // If the user was successfully inserted in the database
+              // First we give the user a cookie containing the session key of its command
+              res.cookie('hungryKey', insertResult, { maxAge: 999999999999999, httpOnly: true });
+
               if (timeEnabledBool) { // If timestamps are enabled, we need to update the remaining places on the timestamp
               // Before sending user to queue, we send a message through websocket to inform of the change of remaining places on the time stamp
               await incrementTimeCount(req.body.time, conn); // Incrementing the timeCount
@@ -84,7 +88,7 @@ router.post('/register',
               sendTimeCount(req.body.time, timeCount);
               }
               conn.release();
-              res.redirect('/queue');
+              res.redirect('/');
             } else { // If the user was not successfully inserted in the database
               conn.release();
               res.redirect('/?error=true');
