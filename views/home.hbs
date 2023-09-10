@@ -1,17 +1,18 @@
 <link rel="stylesheet" href="/stylesheets/home-style.css" />
 {{#if sessionStatus}}
-<nav> 
+<h1 style="margin-bottom: 45px"> Welcome {{sessionStatus.firstName}} {{sessionStatus.lastName}}, your order has been registered ! </h1>
+<nav class="navigator"> 
     <a href="/editCommand/{{sessionStatus.commandId}}">
-        <img src="/images/spadmin/manage.webp" alt="Manage">
-        <p> Settings </p>
+        <img src="/images/spadmin/edit.webp" alt="Edit">
+        <p> Edit last order </p>
     </a>
     <a href="/newRegistration">
-        <img src="/images/spadmin/database.webp" alt="databases management page">
-        <p> Access databases </p>
+        <img src="/images/home/new_order.webp" onclick="return confirm('Are you sure ? Starting a new registration will prevent you from editing the last one you made.')" alt="New order">
+        <p> New order </p>
     </a>
     <a href="/queue">
-        <img src="/images/spadmin/clock.webp" alt="timestamps management page">
-        <p> Timestamps manager </p>
+        <img src="/images/layout/queue.webp" alt="Queue">
+        <p> Queue </p>
     </a>
 </nav>
 {{else}}

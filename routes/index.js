@@ -134,4 +134,10 @@ router.get('/display', async (req, res, next) => {
   res.render('room-display', { title: "Room display", userReady: userReady, userPreparation: userPrep })
 })
 
+router.get('/newRegistration', (req, res, next) => {
+  res.cookie('hungryKey', '');
+  res.redirect('/');
+
+})
+
 module.exports = router;

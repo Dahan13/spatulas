@@ -83,6 +83,39 @@ input[type="submit"]:disabled, button:disabled {
     margin-right: 5px;
 }
 
+.navigator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.navigator > a {
+    color: var(--text-color);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+
+    height: 140px;
+    padding: 5px;
+    width: 150px;
+    margin-bottom: 30px;
+    border-bottom: 3px solid var(--text-color);
+}
+
+.navigator > a > img {
+    width: 100px;
+    height: 100px;
+}
+
+.navigator > a:hover {
+    text-decoration: none;
+    border: 3px solid var(--text-color);
+    padding: 0px;
+}
+
 @media only screen and (min-width: 1020px) {
 
     .huge-logo {
@@ -115,5 +148,10 @@ input[type="submit"]:disabled, button:disabled {
         padding: 12px;
         font-weight: bold;
         font-size: 1.5rem;
+    }
+
+    .navigator {
+        flex-direction: row;
+        justify-content: space-around;
     }
 }
