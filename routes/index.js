@@ -4,7 +4,7 @@ var router = express.Router();
 let pool = require('./databaseConnector');
 let { getValuesFromRequest, createDatabase } = require("./databaseUtilities.js");
 let { calculatePrice, getTables, checkTables, getTablesInfos } = require("./databaseTablesUtilities.js");
-let { insertCommand, getCommands, getCommandsByTime, checkSession } = require("./databaseCommandsUtilities.js");
+let { insertCommand, getCommands, getCommandsByTime, checkSession, createCommandFoodString } = require("./databaseCommandsUtilities.js");
 let { getRegistration, getRegistrationDay, checkPassword } = require('./settingsUtilities');
 let { getTimes, timeEnabled, checkTimeId, getTimeCount, getTimeValue, incrementTimeCount } = require('./timeUtilities');
 let { sendTimeCount } = require('./webSocket');
@@ -137,7 +137,30 @@ router.get('/display', async (req, res, next) => {
 router.get('/newRegistration', (req, res, next) => {
   res.cookie('hungryKey', '');
   res.redirect('/');
+})
 
+router.get('/editCommand', async (req, res, next) => {
+  // Getting command
+  let db = await pool.promise().getConnection();
+  let command = await checkSession(req.cookies.hungryKey, db);
+  await createCommandFoodString([command], ", ", db);
+  console.log(command)
+
+  // Getting data for order editing
+  let tables = await getTables(db);
+  let timeStatus = await timeEnabled(db);
+  db.release();
+  
+  // If command is found, we proceed
+  if (command) {
+    checkPassword(req.cookies.spatulasPower, (auth) => {
+      getRegistration(async (registStatus) => {
+        res.render('edit-command', {title: 'Edit command', registrationOpen: (registStatus || auth), userRegistrationOpen: registStatus, adminRegistrationOpen: auth, timeStatus: timeStatus, tables: tables, times: (timeStatus) ? await getTimes(db) : null, command: command});
+      })
+    })
+  } else { // If command is not found, we redirect to home page
+    res.redirect('/');
+  }
 })
 
 module.exports = router;

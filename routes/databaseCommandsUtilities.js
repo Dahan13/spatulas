@@ -251,13 +251,11 @@ async function createCommandFoodString(commands, separator = " ", connection = n
         for (let j = 0; j < tables.length; j++) {
             if (command[tables[j].foodName]) {
                 commandString += command[tables[j].foodName];
-                if (j != tables.length - 1) {
-                    commandString += separator;
-                }
+                commandString += separator;
             }
         }
 
-        command.foodString = commandString;
+        command.foodString = commandString.substring(0, commandString.length - separator.length);
     }
 
     // Releasing the connection if it was not passed as a parameter
@@ -345,8 +343,7 @@ async function refreshCommand(userId, conn = null) {
  */
 async function checkSession(sessionKey, connection = null) {
     let db = (connection) ? connection : await pool.promise().getConnection();
-    let result = await db.query('SELECT * FROM spatulasCommands WHERE sessionKey = ?', [sessionKey]);
-    result = result[0];
+    let result = await getCommands('sessionKey = \'' + sessionKey + '\'', null, null, null, true, db);
 
     if (!connection) db.release();
 

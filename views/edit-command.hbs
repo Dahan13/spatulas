@@ -1,46 +1,13 @@
 <link rel="stylesheet" href="/stylesheets/home-style.css" />
-{{#if sessionStatus}}
-<h1 style="margin-bottom: 45px"> Welcome {{sessionStatus.firstName}} {{sessionStatus.lastName}}, your order has been registered ! </h1>
-<nav class="navigator"> 
-    {{#if registrationOpen}}
-    <a href="/editCommand">
-        <img src="/images/spadmin/edit.webp" alt="Edit">
-        <p> Edit last order </p>
-    </a>
-    <a href="/newRegistration">
-        <img src="/images/home/new_order.webp" onclick="return confirm('Are you sure ? Starting a new registration will prevent you from editing the last one you made.')" alt="New order">
-        <p> New order </p>
-    </a>
-    {{/if}}
-    <a href="/queue">
-        <img src="/images/layout/queue.webp" alt="Queue">
-        <p> Queue </p>
-    </a>
-</nav>
-{{else}}
-{{#if adminRegistrationOpen}}
-<div class="error-message">
-    <p> As an administrator, </p>
-    <p> You retain access to everything on this webpage, including all timestamps. </p>
-</div>
-{{/if}}
+<h1 style="margin-bottom: 45px"> Welcome {{command.firstName}} {{command.lastName}}</h1>
+
+<h2> Your current order is : {{command.foodString}} {{#if command.time}}at {{command.time}}{{/if}}</h2>
 
 {{#if registrationOpen}}
-<h1> Registration for {{day}} </h1>
 {{#if error}}
 <p class="error-message"> Error. Please try again </p>
 {{/if}}
 <form action="register" method="POST"> {{!-- enctype="multipart/form-data" --}}
-    <div class="name-holder">
-        <div class="input-div">
-            <label for="lastName"> Last Name </label>
-            <input type="text" id="lastName" name="lastName" placeholder="Doe" maxlength="32">
-        </div>
-        <div class="input-div">
-            <label for="firstName"> First Name </label>
-            <input type="text" id="firstName" name="firstName" placeholder="John" maxlength="32">
-        </div>
-    </div>
 
     {{#each tables}}
     {{#unless this.infos.empty}}
@@ -82,24 +49,6 @@
         </select>
     </div>
     {{/if}}
-    <div class="input-div input-div-checkbox">
-        <input type="checkbox" name="accept" id="accept">
-        <label for="accept">
-            <p> I agree to the General Terms of Use of the website </p>
-            <p> I hereby consent to pay <bold id="price-range"> !IF YOU SEE THIS PLEASE REPORT IT! </bold> to receive my
-                command. </p>
-        </label>
-    </div>
     <input type="submit" value="Submit" id="submit-button" disabled />
 </form>
-<script src='/javascripts/homeInputs.js'> </script>
-<script src='/javascripts/homePrice.js'> </script>
-<script src='/javascripts/homeWS.js'> </script>
-{{else}}
-<img class="huge-logo" src="/images/home/huge_logo.webp" alt="Logo Spatul'As X Corentin">
-<div class="message-container">
-    <h1> Registrations are not open ! </h1>
-    <em> Come back later... </em>
-</div>
-{{/if}}
 {{/if}}
