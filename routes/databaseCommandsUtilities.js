@@ -1,7 +1,7 @@
 const pool = require('./databaseConnector');
 const crypto = require('crypto');
 let { setRegistration } = require('./settingsUtilities');
-let { getTimes, timeEnabled, getTimeFormat } = require('./timeUtilities');
+let { getTimes, timeEnabled, getTimeFormat, getTimeValue, incrementTimeCount, decrementTimeCount } = require('./timeUtilities');
 let { getTablesInfos, getTables } = require('./databaseTablesUtilities');
 
 /**
@@ -348,6 +348,45 @@ async function checkSession(sessionKey, connection = null) {
     if (!connection) db.release();
 
     return (result.length > 0) ? result[0] : null;
+}
+
+/**
+ * This function will update the content of an order, given its id and the new content
+ * @param {String} orderId
+ * @param {any} req The request object, it must contain the new content of the order
+ * @param {*} connection
+ */
+async function updateOrder(orderId, req, connection = null) {
+    let db = (connection) ? connection : await pool.promise().getConnection();
+
+    let SqlQuery = "UPDATE spatulasCommands SET ";
+
+    // We begins by storing the first order of the user, because it may be of use later
+    let oldOrder = await getCommands("commandId = " + orderId, null, null, null, false, db);
+
+    // Now we will cycle through all the food Tables and add them to the query
+    let tables = await getTablesInfos(db);
+    for (let i = 0; i < tables.length; i++) {
+        let newFoodValue = req.body[tables[i].foodName]
+        // If the user did input a value for this food, we add it to the query
+        if (newFoodValue) {
+            SqlQuery += tables[i].foodName + " = " + newFoodValue;
+        }
+    }
+    // ! WARNING COMMAS ARE NOT HANDLED YET FOR THE UPDATE QUERY
+    // Now we will handle the timestamp update
+    let newTimeStamp = req.body.time;
+    let oldTimeStamp = oldOrder[0].time;
+
+    SqlQuery += "unformated_time = " + await getTimeValue(newTimeStamp, db);
+    await incrementTimeCount(newTimeStamp, db);
+    await decrementTimeCount(oldTimeStamp, db);
+
+    // Finally sending the update
+
+    SqlQuery += " WHERE commandId = ?";
+
+    if (!connection) db.release();
 }
 
 module.exports = {

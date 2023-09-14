@@ -293,6 +293,20 @@ async function incrementTimeCount(timeId, conn = null) {
 }
 
 /**
+ * This function will decrement the time_count of a timestamp within the database, given its id
+ * @param {int} timeId
+ * @param {*} connection
+ */
+async function decrementTimeCount(timeId, conn = null) {
+    let db = (conn) ? conn : pool.promise().getConnection();
+    await db.query("UPDATE spatulasTime SET time_count = time_count - 1 WHERE id = ?", [timeId]);
+
+    (!conn) ? db.release() : null;
+
+    return;
+}
+
+/**
  * This function change the enabled status of the given timestamp, given its id
  * @param {int} timeId
  * @param {*} connection
@@ -339,6 +353,7 @@ module.exports = {
     insertTime,
     removeTime,
     incrementTimeCount,
+    decrementTimeCount,
     getTimeFormat,
     toggleTimeEnabled,
     setTimeLimit
