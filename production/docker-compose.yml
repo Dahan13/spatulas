@@ -1,4 +1,4 @@
-version: '4.0'
+version: '3.7'
 
 services:
   app:
@@ -14,7 +14,7 @@ services:
     restart: always
 
   mysql:
-    image: mysql:5.7
+    image: mysql:8.1
     command: --init-file /data/application/init.sql
     volumes:
       - todo-mysql-data:/var/lib/mysql
