@@ -36,19 +36,6 @@ tableAdderButtonSelected.addEventListener('click', () => {
     popupVeil.classList.toggle("invisible");
 })
 
-// This part of the code is responsible for the button that allows to switch between the classic and the modern display
-
-const displaySwitcher = document.getElementById("display-switcher");
-
-displaySwitcher.addEventListener('click', () => {
-    let currentTheme = displaySwitcher.dataset.theme;
-    if (currentTheme == "classic")
-        document.cookie = "theme=minimized";
-    else if (currentTheme == "minimized")
-        document.cookie = "theme=classic";
-    location.reload();
-})
-
 // This part of the code is responsible for the popup that allows the user to add an element to a database
 
 const elementAdderButtons = document.querySelectorAll(".element-adder");

@@ -79,7 +79,7 @@ router.post('/changePassword', (req, res, next) => {
 router.get('/databases', (req, res, next) => {
   authenticate(req, res, async () => {
     let tables = await getTables();
-    res.render('databases', { title: 'Databases', admin: true, tables: tables, classic_display: (req.cookies.theme == "classic") ? true : false, error: (req.query.error) ? req.query.error : null });
+    res.render('databases', { title: 'Databases', admin: true, tables: tables, error: (req.query.error) ? req.query.error : null });
   })
 })
 
@@ -197,17 +197,10 @@ router.get('/clearDatabases', (req,res,next) => {
   })
 })
 
-router.get('/delete/:table/:food/:display', (req, res, next) => {
+router.get('/delete/:table/:food', (req, res, next) => {
   authenticate(req, res, async () => {
     await deleteElement(req.params.food, req.params.table);
-    if (req.params.display == "classic") {
-      res.redirect('/spadmin/database/' + req.params.table);
-    } else if (req.params.display == "minimized") {
-      res.redirect('/spadmin/databases#' + req.params.table);
-    } else {
-      console.log('\x1b[31m%s\x1b[0m' , "Error: unknown display parameter. While this may not cause any server breaking issue, it could create bad user experience across the board.");
-      res.redirect('/spadmin/databases#' + req.params.table);
-    }
+    res.redirect('/spadmin/databases#' + req.params.table);
   })
 })
 
@@ -221,18 +214,11 @@ router.get('/deleteDatabase/:table', (req, res, next) => {
 router.post('/add/:table/:display',
 body('name').trim().escape(),
 body('description').trim().escape(),
-body('price').toFloat(),
 (req, res, next) => {
   authenticate(req, res, async () => {
+    req.body.price = parseFloat(req.body.price.replace(',', '.'));
     await insertRow(req.params.table, req.body.name, (req.body.description) ? req.body.description : null, (req.body.price) ? req.body.price : null);
-    if (req.params.display == "classic") {
-      res.redirect('/spadmin/database/' + req.params.table);
-    } else if (req.params.display == "minimized") {
-      res.redirect('/spadmin/databases#' + req.params.table);
-    } else {
-      console.log('\x1b[31m%s\x1b[0m' , "Error: unknown display parameter. While this may not cause any server breaking issue, it could create bad user experience across the board.");
-      res.redirect('/spadmin/databases#' + req.params.table);
-    }
+    res.redirect('/spadmin/databases#' + req.params.table);
   })
 })
 

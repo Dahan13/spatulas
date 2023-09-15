@@ -5,26 +5,10 @@
 
 <div class="title-options">
     <h1> Databases : </h1>
-    <button id="display-switcher" data-theme="{{#if classic_display}}classic{{else}}minimized{{/if}}"> Use the {{#if classic_display}} simplified {{else}} classic {{/if}} display </button>
 </div>
 {{#if error}}
 <p class="error-message" style="margin-top:10px"> Error. Please try again </p>
 {{/if}}
-{{#if classic_display}}
-<nav>
-    <a href="#" id="database-adder-classic">
-        <img src="/images/spadmin/add_database.webp" alt="Create database">
-        <p> New database </p>
-    </a>
-
-    {{#each tables}}
-    <a href="/spadmin/database/{{this.infos.tableId}}">
-        <img src="/images/spadmin/database.webp" alt="Manage {{this.infos.foodName}}">
-        <p> {{{this.infos.foodName}}} </p>
-    </a>
-    {{/each}}
-</nav>
-{{else}}
 <link rel="stylesheet" href="/stylesheets/databases-style.css" />
 <div class="database-adder">
     <img src="/images/spadmin/add_database.webp" alt="Add a database">
@@ -55,7 +39,7 @@
                 <td> {{{this.name}}} </td>
                 <td> {{#if this.description}} {{{this.description}}} {{else}} Not Specified {{/if}} </td>
                 <td> {{#if this.price}} {{this.price}}€ {{else}} 0.00€ {{/if}} </td>
-                <td> <a class="close-button" href="/spadmin/delete/{{../infos.tableId}}/{{this.id}}/minimized"></a> </td>
+                <td> <a class="close-button" href="/spadmin/delete/{{../infos.tableId}}/{{this.id}}"></a> </td>
             </tr>
             {{/each}}
         </table>
@@ -69,5 +53,4 @@
     </div>
 </div>
 {{/each}}
-{{/if}}
 <script src="/javascripts/databases.js"></script>

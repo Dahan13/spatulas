@@ -199,7 +199,14 @@ async function getTimeValue(id, connection = null) {
     let db = (connection) ? connection : await pool.promise().getConnection();
 
     let time = await db.execute("SELECT time FROM spatulasTime WHERE id = ?", [id]);
-    return time[0][0].time;
+    
+    if (time[0].length > 0) {
+        time = time[0];
+    }
+
+    if (!connection) connection.release();
+
+    return time[0].time;
 }
 
 /**
