@@ -76,16 +76,16 @@ async function getTimes(connection = null) {
         // Keeping a backup of the custom limit
         times[i].custom_limit = times[i].time_limit;
 
-        if (times[i].time_count >= times[i].time_limit) {
-            times[i].full = true;
-        } else {
-            times[i].full = false;
-        }
         if (!customLimitEnabled) {
             times[i].time_limit = limit;
         }
 
-        
+        if (times[i].time_count >= times[i].time_limit) {
+            times[i].full = true;
+            times[i].time_limit = times[i].time_count;
+        } else {
+            times[i].full = false;
+        }
     }
     
     // If we are using a connection, we need to release it
@@ -329,6 +329,60 @@ async function setTimeLimit(timeId, limit, conn = null) {
     return;
 }
 
+/**
+ * This function returns the limit of a given timestamp, given its id.
+ * If the time stamp is not in the database, it will return null
+ * @param {int} timeId
+ * @param {*} connection
+ * @returns {int} The limit of the timestamp. null if the timestamp is not in the database
+ */
+async function getTimeLimit(timeId, conn = null) {
+    let db = (conn) ? conn : pool.promise().getConnection();
+
+    // We need to check if the timeId is valid
+    if (!(await checkTimeId(timeId, db))) return null;
+
+    // First we need to check if custom limits are enabled or not
+    let customLimitEnabled = await getCustomLimitStatus();
+
+    // If custom limits are enabled, we need to return the custom limit
+    let limit;
+    if (customLimitEnabled) {
+        limit = await db.query("SELECT time_limit FROM spatulasTime WHERE id = ?", [timeId]);
+        limit = limit[0][0].time_limit;
+    } else { // If custom limits are not enabled, we need to return the global limit
+        limit = await getLimitAsync();
+    }
+
+    if (!conn) {
+        db.release();
+    }
+
+    return limit;
+}
+
+/**
+ * This function will return a boolean indicating whether there is or not at least a spot remaining for the given timestamp
+ * @param {int} timeId
+ * @param {*} connection
+ * @returns {boolean} True if there is a spot remaining, false otherwise
+ */
+async function timeOpen(timeId, conn = null) {
+    let db = (conn) ? conn : pool.promise().getConnection();
+
+    // First we check if the timestamp is valid
+    if (!(await checkTimeId(timeId, db))) return false;
+
+    let limit = await getTimeLimit(timeId, db);
+    let count = await getTimeCount(timeId, db);
+
+    if (!conn) {
+        db.release();
+    }
+
+    return (count < limit)
+}
+
 module.exports = { 
     createTimeDatabase,
     clearTimeDatabase,
@@ -344,5 +398,7 @@ module.exports = {
     incrementTimeCount,
     getTimeFormat,
     toggleTimeEnabled,
-    setTimeLimit
+    setTimeLimit,
+    getTimeLimit,
+    timeOpen
 };

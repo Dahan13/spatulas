@@ -4,7 +4,7 @@ var router = express.Router();
 let pool = require('./databaseConnector');
 let { insertCommand, getCommands, calculatePrice, getCommandsByTime, getTables, checkTables, getValuesFromRequest, getTablesInfos, purgeDatabase, createDatabase } = require("./databaseUtilities.js");
 let { getRegistration, getRegistrationDay, checkPassword } = require('./settingsUtilities');
-let { getTimes, timeEnabled, clearTimeDatabase, checkTimeId, getTimeCount, getTimeValue, incrementTimeCount } = require('./timeUtilities');
+let { getTimes, timeEnabled, clearTimeDatabase, checkTimeId, getTimeCount, getTimeValue, incrementTimeCount, timeOpen } = require('./timeUtilities');
 let { sendTimeCount } = require('./webSocket');
 
 createDatabase();
@@ -67,8 +67,11 @@ router.post('/register',
           let timeEnabledBool = await timeEnabled(conn);
           let timeBool = (await timeEnabledBool) ? await checkTimeId(req.body.time, conn) : true; // If timestamps are enabled, we check if the timestamp is valid
 
+          // We also check if there is a spot available on the timestamp (note that admin are not concerned by this limit)
+          let timeAllowed = (await timeOpen(req.body.time, conn) || adminRegistStatus)
+
           // Checking if the user filled all the fields and if the time stamp is valid
-          if (req.body.lastName && req.body.lastName.length <= 32 && req.body.firstName && req.body.firstName.length <= 32 && req.body.accept == 'on' && timeBool && foodBoolean) {
+          if (req.body.lastName && req.body.lastName.length <= 32 && req.body.firstName && req.body.firstName.length <= 32 && req.body.accept == 'on' && timeBool && foodBoolean && timeAllowed) {
 
             // Calculating the price of the order and inserting the user in the database
             let price = await calculatePrice(foods, conn);
@@ -87,7 +90,7 @@ router.post('/register',
               conn.release();
               res.redirect('/?error=true');
             }      
-          } else { // If the user did not fill all the fields
+          } else { // If the user did not fill all the fields or selected timestamp is full
             conn.release();
             res.redirect('/?error=true');
           }
