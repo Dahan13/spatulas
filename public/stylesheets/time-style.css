@@ -25,18 +25,29 @@ form {
     margin-right: 10px;
 }
 
-.settings-manager>div>a {
+.settings-manager > div > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.settings-manager>div>div>a, input[type="submit"] {
     font-size: 1.2em;
     font-weight: bold;
 
     border-bottom: 2px solid var(--text-color);
     padding: 2px;
-
     width: auto;
+    margin: 2px;
     color: var(--text-color);
 }
 
-.settings-manager>div>a:hover {
+.focused-button {
+    padding: 1px;
+    border: 2px solid var(--text-color);
+}
+
+.settings-manager>div>div>a:hover, input[type="submit"]:hover {
     cursor: pointer;
     text-decoration: none;
     padding: 1px;
@@ -74,6 +85,10 @@ form {
     height: 20px;
     margin: 2px;
     cursor: pointer;
+}
+
+.timestamp-container>a>img:hover {
+    filter: invert(70%);
 }
 
 .timestamp-container:first-of-type>a>img {
@@ -137,7 +152,7 @@ form {
 .activation:hover,
 .deactivation:hover {
     cursor: pointer;
-    background-image: url(/images/spadmin/edit.webp)
+    filter: opacity(50%);
 }
 
 .limit {
@@ -240,6 +255,10 @@ form {
     border-bottom: 1px solid var(--text-color);
 }
 
+.not-used {
+    opacity: 0.5;
+}
+
 @media only screen and (min-width: 1020px) {
     label {
         font-size: 1.5rem;
@@ -250,12 +269,19 @@ form {
         margin-right: 15px;
     }
 
-    .settings-manager>div>a {
+    .settings-manager>div>div>a, input[type="submit"] {
         font-size: 1.5em;
+        height:fit-content;
+        margin-top: auto;
+        margin-bottom: 8px;
         padding: 6px;
     }
 
-    .settings-manager>div>a:hover {
+    .settings-manager>div>div>a:hover, input[type="submit"]:hover {
+        padding: 4px;
+    }
+
+    .focused-button {
         padding: 4px;
     }
 

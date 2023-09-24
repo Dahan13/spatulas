@@ -12,20 +12,40 @@
 
 <div class="settings-manager">
     <div>
-        <p> Timestamps are {{#if timeEnabledBool}} enabled {{else}} disabled {{/if}} </p>
-        <a href="/spadmin/time/toggleTime"> {{#if timeEnabledBool}} Disable {{else}} Enable {{/if}} </a>
+        <p> Timestamps status : </p>
+        <div>
+            <a href="/spadmin/time/toggleTime" {{#if timeEnabledBool}} class="focused-button" {{/if}}> On </a>
+            <a href="/spadmin/time/toggleTime" {{#unless timeEnabledBool}} class="focused-button" {{/unless}}> Off </a>
+        </div>
     </div>
-
 
     <div>
-        
-        <p> Custom limits are {{#if customLimitsEnabled}} enabled {{else}} disabled {{/if}} </p>
-        <a href="/spadmin/time/toggleCustomLimits"> {{#if customLimitsEnabled}} Disable {{else}} Enable {{/if}} </a>
+
+        <p> Custom limits : </p>
+        <div>
+            <a href="/spadmin/time/toggleCustomLimits" {{#if customLimitsEnabled}} class="focused-button" {{/if}}> On
+            </a>
+            <a href="/spadmin/time/toggleCustomLimits" {{#unless customLimitsEnabled}} class="focused-button"
+                {{/unless}}> Off </a>
+        </div>
     </div>
 
-    <div> 
-        <p> Current format is {{#if dateFormatDay}} dd/mm/yyyy hh:mm {{else}} hh:mm {{/if}} </p>
-        <a href="/spadmin/time/toggleDateFormat"> Switch to {{#if dateFormatDay}} hh:mm {{else}} dd/mm/yyyy hh:mm {{/if}} </a>
+    <form style="width: 95%; margin-bottom: 40px; margin-top: -10px" action="/spadmin/updateLimit" method="POST" class="one-line-form {{#if customLimitsEnabled}} not-used {{/if}}">
+        <div class="input-div">
+            <label for="limit"> Limit per time stamp</label>
+            <input type="number" id="limit" name="limit" min="1" required>
+        </div>
+        <input type="submit" value="Update limit" id="general-parameters-limit-submit-button" />
+    </form>
+
+    <div>
+        <p> Format : </p>
+        <div>
+            <a href="/spadmin/time/toggleDateFormat" class="{{#unless dateFormatDay}} focused-button {{/unless}}"> hh:mm
+            </a>
+            <a href="/spadmin/time/toggleDateFormat" class="{{#if dateFormatDay}} focused-button {{/if}}"> dd/mm/yyyy
+                hh:mm </a>
+        </div>
     </div>
 </div>
 
@@ -35,26 +55,29 @@
         <div class="timestamp">
             <div> <span> ID </span> </div>
             <div> <span class="timestamp-value"> Timestamp </span> </div>
+            <div> Count </div>
             <div> Limit </div>
             <div> Enabled </div>
-            <div> Count </div>
         </div>
         <a> <img src="/images/spadmin/delete.webp" alt="Delete"> </a>
     </div>
     {{#each time}}
     <div class="timestamp-container">
-        <div class="timestamp">
+        <div class="timestamp {{#unless this.enabled}} not-used {{/unless}}">
             <div> <span> {{this.id}} </span> </div>
             <div> <span class="timestamp-value"> {{this.time}} </span> </div>
-            <a class="limit" href="#" data-id={{this.id}} data-limit={{this.custom_limit}}> {{this.custom_limit}} </a>
-            <div class="{{#if this.enabled}} deactivation {{else}} activation {{/if}}"> <a href="/spadmin/time/toggle/{{this.id}}"> </a> </div>
             <div> {{this.time_count}} </div>
+            <a class="limit {{#unless ../customLimitsEnabled}} not-used {{/unless}}" href="#" data-id={{this.id}} data-limit={{this.custom_limit}}> {{this.custom_limit}} </a>
+            <div class="{{#if this.enabled}} deactivation {{else}} activation {{/if}}"> <a
+                    href="/spadmin/time/toggle/{{this.id}}"> </a> </div>
         </div>
-        <a href="/spadmin/time/delete/{{this.id}}" onclick="return confirm('Are you sure ?')"> <img src="/images/spadmin/delete.webp" alt="Delete {{this.time}}"> </a>
+        <a href="/spadmin/time/delete/{{this.id}}" onclick="return confirm('Are you sure ?')"> <img
+                src="/images/spadmin/delete.webp" alt="Delete {{this.time}}"> </a>
     </div>
     {{/each}}
     {{else}}
-    <p style="font-size: 1.5rem; font-weight: bold; margin-bottom: 10px"> Damn ! No timestamps found ! Timestamps will be disabled by default !</p>
+    <p style="font-size: 1.5rem; font-weight: bold; margin-bottom: 10px"> Damn ! No timestamps found ! Timestamps will
+        be disabled by default !</p>
     {{/if}}
     <a href="#" class="time-adder" data-format="{{#if dateFormatDay}}day{{else}}hour{{/if}}">
         <div class="plus"></div>
