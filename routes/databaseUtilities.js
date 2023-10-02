@@ -1,7 +1,7 @@
 const pool = require('./databaseConnector');
 const validator = require('validator');
 let { setRegistration } = require('./settingsUtilities');
-let { getTimes, timeEnabled, clearTimeDatabase, createTimeDatabase, getTimeFormat } = require('./timeUtilities');
+let { getTimes, timeEnabled, clearTimeDatabase, createTimeDatabase, getTimeFormat, recalculateTimeCounts } = require('./timeUtilities');
 
 /**
  * This function will create all tables for the website to properly function, only if they are not already created.
@@ -17,6 +17,7 @@ async function createDatabase(conn = null) {
     // Creating the table that will contains all the names of each food table
     await db.query("CREATE TABLE IF NOT EXISTS spatulasTables (tableId INT PRIMARY KEY NOT NULL AUTO_INCREMENT, foodName VARCHAR(255) NOT NULL)");
 
+    await recalculateTimeCounts(db);
     // Release connection if it was not passed as a parameter
     if (!conn) {
         db.release();
@@ -502,6 +503,7 @@ async function clearUsers(connection = null) {
 
     // Dropping the table
     await db.query('TRUNCATE TABLE spatulasCommands');
+    await recalculateTimeCounts(db);
     db.release();
 }
 

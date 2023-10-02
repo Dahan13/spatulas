@@ -10,7 +10,7 @@ async function createTimeDatabase(conn = null) {
     let db = (conn) ? conn : await pool.promise().getConnection();
 
     await db.query("CREATE TABLE IF NOT EXISTS spatulasTime (id INT PRIMARY KEY NOT NULL AUTO_INCREMENT, time DATETIME UNIQUE NOT NULL, time_limit INTEGER DEFAULT 0, enabled INT(1) DEFAULT 1, time_count INTEGER DEFAULT 0)")
-
+    
     if (!conn) { // If no connection was supplied, we need to release it
         db.release();
     }
@@ -383,6 +383,33 @@ async function timeOpen(timeId, conn = null) {
     return (count < limit)
 }
 
+/**
+ * This function will recalculate the time_count of each timestamp in the database
+ * @param {*} connection
+ */
+async function recalculateTimeCounts(connection = null) {
+    let conn = (connection) ? connection : await pool.promise().getConnection();
+
+    let times = await getTimes(conn);
+    let orders = await conn.query("SELECT unformated_time AS time, count(*) AS count FROM spatulasCommands GROUP BY unformated_time");
+
+    for (let i = 0; i < times.length; i++) {
+        let count = 0;
+        for (let j = 0; j < orders.length; j++) {
+            if (times[i].time == orders[j].time) {
+                count = orders[j].count;
+            }
+        }
+        await conn.query("UPDATE spatulasTime SET time_count = ? WHERE id = ?", [count, times[i].id]);
+    }
+
+    if (!connection) {
+        conn.release();
+    }
+
+    return;
+}
+
 module.exports = { 
     createTimeDatabase,
     clearTimeDatabase,
@@ -400,5 +427,6 @@ module.exports = {
     toggleTimeEnabled,
     setTimeLimit,
     getTimeLimit,
-    timeOpen
+    timeOpen,
+    recalculateTimeCounts
 };
