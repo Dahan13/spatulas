@@ -4,10 +4,9 @@ var router = express.Router();
 let pool = require('./databaseConnector');
 let { getValuesFromRequest, createDatabase } = require("./databaseUtilities.js");
 let { calculatePrice, getTables, checkTables, getTablesInfos } = require("./databaseTablesUtilities.js");
-let { insertCommand, getCommands, getCommandsByTime, checkSession, createCommandFoodString } = require("./databaseCommandsUtilities.js");
+let { insertCommand, getCommands, getCommandsByTime, checkSession, createCommandFoodString, updateOrder } = require("./databaseCommandsUtilities.js");
 let { getRegistration, getRegistrationDay, checkPassword } = require('./settingsUtilities');
-let { getTimes, timeEnabled, checkTimeId, getTimeCount, getTimeValue, incrementTimeCount } = require('./timeUtilities');
-let { sendTimeCount } = require('./webSocket');
+let { getTimes, timeEnabled, checkTimeId, getTimeValue, incrementTimeCount } = require('./timeUtilities');
 
 createDatabase();
 
@@ -84,8 +83,6 @@ router.post('/register',
               if (timeEnabledBool) { // If timestamps are enabled, we need to update the remaining places on the timestamp
               // Before sending user to queue, we send a message through websocket to inform of the change of remaining places on the time stamp
               await incrementTimeCount(req.body.time, conn); // Incrementing the timeCount
-              let timeCount = await getTimeCount(req.body.time, conn);
-              sendTimeCount(req.body.time, timeCount);
               }
               conn.release();
               res.redirect('/');
@@ -144,7 +141,6 @@ router.get('/editCommand', async (req, res, next) => {
   let db = await pool.promise().getConnection();
   let command = await checkSession(req.cookies.hungryKey, db);
   await createCommandFoodString([command], ", ", db);
-  console.log(command)
 
   // Getting data for order editing
   let tables = await getTables(db);
@@ -161,6 +157,18 @@ router.get('/editCommand', async (req, res, next) => {
   } else { // If command is not found, we redirect to home page
     res.redirect('/');
   }
+})
+
+router.post('/editOrder/:orderId', async (req, res, next) => {
+  let authentifiedOrder = await checkSession(req.cookies.hungryKey, db)
+
+  if (req.params.orderId == authentifiedOrder.commandId) {
+    await updateOrder(req.params.orderId, req);
+    res.redirect('/');
+  } else {
+    res.redirect('/queue');
+  }
+
 })
 
 module.exports = router;

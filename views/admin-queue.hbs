@@ -15,9 +15,9 @@
     </div>
 </div>
 {{#if notEmpty}}
-<h2> Ready : </h2>
+<h2> Ready ({{readyCount}}/{{orderCount}}): </h2>
 <div class="commands-container ready" id="ready-container">
-{{#each users}}
+{{#each users.ready}}
     {{#if this.ready}}
     {{#unless this.delivered}}
 <div class="command-wrapper" id={{this.commandId}}>
@@ -56,9 +56,9 @@
     {{/if}}
 {{/each}}
 </div>
-<h2> Preparing : </h2>
+<h2> Preparing ({{preparationCount}}/{{orderCount}}): </h2>
 <div class="commands-container prepare" id="preparation-container">
-{{#each users}}
+{{#each users.preparation}}
     {{#if this.preparation}}
     {{#unless this.ready}}
     {{#unless this.delivered}}
@@ -99,9 +99,9 @@
     {{/if}}
 {{/each}}
 </div>
-<h2> Wait list : </h2>
+<h2> Wait list ({{untreatedCount}}/{{orderCount}}): </h2>
 <div class="commands-container" id="vanilla-container">
-{{#each users}}
+{{#each users.untreated}}
     {{#unless this.delivered}}
     {{#unless this.ready}}
     {{#unless this.preparation}}
@@ -142,9 +142,9 @@
     {{/unless}}
 {{/each}}
 </div>
-<h2> Delivered : </h2>
+<h2> Delivered ({{deliveredCount}}/{{orderCount}}): </h2>
 <div class="commands-container delivered" id="delivered-container">
-{{#each users}}
+{{#each users.delivered}}
     {{#if this.delivered}}
 <div class="command-wrapper" id={{this.commandId}}>
     <div class="command-container">

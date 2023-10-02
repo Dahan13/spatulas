@@ -7,7 +7,7 @@
 {{#if error}}
 <p class="error-message"> Error. Please try again </p>
 {{/if}}
-<form action="register" method="POST"> {{!-- enctype="multipart/form-data" --}}
+<form action="editOrder/{{command.commandId}}" method="POST"> {{!-- enctype="multipart/form-data" --}}
 
     {{#each tables}}
     {{#unless this.infos.empty}}
@@ -49,6 +49,6 @@
         </select>
     </div>
     {{/if}}
-    <input type="submit" value="Submit" id="submit-button" disabled />
+    <input type="submit" value="Submit" id="submit-button" />
 </form>
 {{/if}}

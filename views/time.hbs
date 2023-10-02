@@ -33,7 +33,7 @@
     <form style="width: 95%; margin-bottom: 40px; margin-top: -10px" action="/spadmin/updateLimit" method="POST" class="one-line-form {{#if customLimitsEnabled}} not-used {{/if}}">
         <div class="input-div">
             <label for="limit"> Limit per time stamp</label>
-            <input type="number" id="limit" name="limit" min="1" required>
+            <input type="number" id="limit" name="limit" min="1" value={{generalLimit}} required>
         </div>
         <input type="submit" value="Update limit" id="general-parameters-limit-submit-button" />
     </form>

@@ -25,6 +25,8 @@ td:first-child {
 
 }
 
+
+
 .table-toolbar {
     width: 99%;
     border-bottom: 1px solid var(--text-color);
@@ -76,6 +78,11 @@ td:first-child {
     width: 100%;
     border-collapse: collapse;
     align-self: center;
+}
+
+.table-content > table > tbody > tr > td > a > img {
+    height: 30px;
+    margin: 3px;
 }
 
 .element-adder {

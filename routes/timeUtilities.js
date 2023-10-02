@@ -1,7 +1,6 @@
 const pool = require('./databaseConnector');
-const validator = require('validator');
 let { getCustomLimitStatus, getLimitAsync, getTimeFormat, getTimeStatus } = require('./settingsUtilities');
-
+const { sendTimeCount } = require('./webSocket');
 /**
  * Create the time database
  * @param {Connection} conn The connection to use
@@ -207,6 +206,24 @@ async function getTimeValue(id, connection = null) {
 }
 
 /**
+* This function returns the timestamp formatted value given its id
+* @param {int} id
+* @param {*} connection
+* @returns {string} The timestamp's value
+*/
+async function getTimeFormatedValue(id, connection = null) {
+    let db = (connection) ? connection : await pool.promise().getConnection();
+
+    let format = (await getTimeFormat() == "day") ? "%d/%m/%Y %H:%i" : "%H:%i";
+    let time = await db.execute("SELECT DATE_FORMAT(time, ?) AS time FROM spatulasTime WHERE id = ?", [format, id]);
+    if (time[0].length) {
+        return time[0][0].time;
+    } else {
+        return null;
+    }
+}
+
+/**
  * This function will insert a new timestamp in the database
  * The function can accept values in the format hh:mm or dd/mm/yyyy hh:mm.
  * The format parameter is used to find which format is used in input
@@ -284,6 +301,7 @@ async function removeTime(id, conn = null) {
 async function incrementTimeCount(timeId, conn = null) {
     let db = (conn) ? conn : pool.promise().getConnection();
     await db.query("UPDATE spatulasTime SET time_count = time_count + 1 WHERE id = ?", [timeId]);
+    await sendTimeCount(await getTimeFormatedValue(timeId, db), await getTimeCount(timeId, db));
 
     if (!conn) {
         db.release();
@@ -300,6 +318,7 @@ async function incrementTimeCount(timeId, conn = null) {
 async function decrementTimeCount(timeId, conn = null) {
     let db = (conn) ? conn : pool.promise().getConnection();
     await db.query("UPDATE spatulasTime SET time_count = time_count - 1 WHERE id = ?", [timeId]);
+    sendTimeCount(await getTimeFormatedValue(timeId, db), await getTimeCount(timeId, db));
 
     (!conn) ? db.release() : null;
 

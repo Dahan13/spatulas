@@ -123,6 +123,37 @@ th {
     margin: 0;
 }
 
+.registration-manager {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.registration-manager > a {
+    color: var(--text-color);
+    padding: 10px;
+}
+
+.registration-manager > a:hover {
+    border: 3px solid var(--text-color);
+}
+
+.registration-manager >  .open {
+    color: green;
+    border-color: green;
+}
+
+.registration-manager > .close {
+    color: red;
+    border-color: red;
+}
+
+.focused-button {
+    border: 3px solid var(--text-color);
+    padding: 10px;
+}
+
 @media only screen and (min-width: 1020px) {
 
     .input-div {

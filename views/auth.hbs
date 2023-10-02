@@ -3,6 +3,10 @@
 
 {{#if authentified}}
 <a class="button" href="/spadmin/disconnect" style="margin-bottom:15px; margin-left: auto;"> <button> Disconnect </button> </a>
+<div class="registration-manager">
+    <a href="/spadmin/updateRegistration" class="{{#if registrationOpen}} focused-button {{/if}} open">  Open registration </a>
+    <a href="/spadmin/updateRegistration" class="{{#unless registrationOpen}} focused-button {{/unless}} close"> Close registration </a>
+</div>
 <h1> Navigate : </h1>
 <nav> 
     <a href="/spadmin/manage">
@@ -11,11 +15,11 @@
     </a>
     <a href="/spadmin/databases">
         <img src="/images/spadmin/database.webp" alt="databases management page">
-        <p> Access databases </p>
+        <p> Databases </p>
     </a>
     <a href="/spadmin/time">
         <img src="/images/spadmin/clock.webp" alt="timestamps management page">
-        <p> Timestamps manager </p>
+        <p> Timestamps </p>
     </a>
     <a href="/spadmin/queue">
         <img src="/images/layout/queue.webp" alt="Admin queue">
@@ -31,7 +35,7 @@
     </a>
     <a href="/logs">
         <img src="/images/spadmin/logs.webp" alt="Admin log page">
-        <p> Access logs </p>
+        <p> Logs </p>
     </a>
 </nav>
 {{else}}

@@ -55,7 +55,7 @@
                 <td> {{{this.name}}} </td>
                 <td> {{#if this.description}} {{{this.description}}} {{else}} Not Specified {{/if}} </td>
                 <td> {{#if this.price}} {{this.price}}€ {{else}} 0.00€ {{/if}} </td>
-                <td> <a class="close-button" href="/spadmin/delete/{{../infos.tableId}}/{{this.id}}/minimized"></a> </td>
+                <td> <a href="/spadmin/delete/{{../infos.tableId}}/{{this.id}}/minimized"> <img src="/images/spadmin/delete.webp" alt="Delete table {{this.infos.foodName}}"> </a> </td>
             </tr>
             {{/each}}
         </table>

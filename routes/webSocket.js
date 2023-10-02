@@ -1,13 +1,33 @@
 const { WebSocket } = require('ws');
 const validator = require('validator');
 let pool = require('./databaseConnector');
-const { checkPassword } = require('./settingsUtilities')
-const { toggleCommandBoolean } = require("./databaseCommandsUtilities")
+const { checkPassword } = require('./settingsUtilities');
 
 
 const server = new WebSocket.Server({
   port: 8000
 });
+
+// ! This function comes directly from databaseCommandUtilities.js to avoid circular dependencies
+/**
+ * This function will toggle one of the status of a command. It will also update the lastUpdated field of the user
+ * @param {String} userId
+ * @param {String} statusToUpdate
+ * @param {*} connection
+ */
+async function toggleCommandBoolean(userId, statusToUpdate, connection = null) {
+  let db = (connection) ? connection : pool.promise().getConnection();
+  let result = await db.query('SELECT ' + statusToUpdate + ' FROM spatulasCommands WHERE commandId = ?', [userId]);
+  let status = result[0][0][statusToUpdate];
+  await db.query('UPDATE spatulasCommands SET ' + statusToUpdate + ' = ? WHERE commandId = ?', [(status) ? 0 : 1, userId]);
+
+  // We update the lastUpdated field of the user
+  await db.execute('UPDATE spatulasCommands SET lastUpdated = NOW() WHERE commandId = ?', [userId]);
+
+  if (!connection) db.release();
+
+  return;
+}
 
 let sockets = [];
 server.on('connection', function(socket) {

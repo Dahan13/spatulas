@@ -3,7 +3,7 @@ const validator = require('validator');
 var router = express.Router();
 let pool = require('./databaseConnector')
 let { updateCommandsTime } = require("./databaseCommandsUtilities.js");
-let { authenticate, getCustomLimitStatus, getTimeFormat, toggleTime, toggleCustomLimit, toggleTimeFormat } = require('./settingsUtilities');
+let { authenticate, getCustomLimitStatus, getTimeFormat, toggleTime, toggleCustomLimit, toggleTimeFormat, getLimitAsync } = require('./settingsUtilities');
 let { getTimes, timeEnabled, insertTime, checkTimeId, removeTime, toggleTimeEnabled, setTimeLimit } = require('./timeUtilities');
 
 router.get('/', function(req, res, next) {
@@ -12,10 +12,11 @@ router.get('/', function(req, res, next) {
         let times = await getTimes(conn);
         let timeEnabledBool = await timeEnabled(conn);
         let customLimitsEnabled = await getCustomLimitStatus();
+        let generalLimit = await getLimitAsync();
         let dateFormatDay = (await getTimeFormat() == "day") ? true : false;
         conn.release();
 
-        res.render('time', { title: 'Time manager', admin: true, time: times, timesBoolean: (times.length) ? true : false, timeEnabledBool: timeEnabledBool, customLimitsEnabled: customLimitsEnabled, dateFormatDay: dateFormatDay, error: req.query.error });
+        res.render('time', { title: 'Time manager', admin: true, time: times, timesBoolean: (times.length) ? true : false, timeEnabledBool: timeEnabledBool, customLimitsEnabled: customLimitsEnabled, dateFormatDay: dateFormatDay, generalLimit: generalLimit, error: req.query.error });
     }, "/spadmin")
 })
 

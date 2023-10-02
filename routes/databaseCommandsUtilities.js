@@ -1,7 +1,7 @@
 const pool = require('./databaseConnector');
 const crypto = require('crypto');
 let { setRegistration } = require('./settingsUtilities');
-let { getTimes, timeEnabled, getTimeFormat, getTimeValue, incrementTimeCount, decrementTimeCount } = require('./timeUtilities');
+let { getTimes, timeEnabled, getTimeFormat, getTimeValue, incrementTimeCount, decrementTimeCount, getTimeIndex } = require('./timeUtilities');
 let { getTablesInfos, getTables } = require('./databaseTablesUtilities');
 
 /**
@@ -213,7 +213,7 @@ async function getCommands(conditions = null, searchString = null, orderCriteria
  * @param {string} orderCriteria3
  * @param {string} orderCriteria4
  * @param {Any} connection An optional connection to the database, if none is provided, it will use the pool automatically
- * @returns {Array} An array containing all the users, non-treated, in preparation, ready and delivered, ordered with the given criteria
+ * @returns {Array} {untreated: Array, preparation: Array, ready: Array, delivered: Array}
  */
 async function getUsersByStatus(orderCriteria1 = null, searchString1 = null, orderCriteria2 = null, searchString2 = null, orderCriteria3 = null, searchString3 = null, orderCriteria4 = null, searchString4 = null, connection = null) {
     let db = (connection) ? connection : await pool.promise().getConnection();
@@ -229,7 +229,7 @@ async function getUsersByStatus(orderCriteria1 = null, searchString1 = null, ord
         db.release();
     }
 
-    return untreatedUsers.concat(preparationUsers).concat(readyUsers).concat(deliveredUsers);
+    return {"untreated": untreatedUsers, "preparation": preparationUsers, "ready": readyUsers, "delivered": deliveredUsers};
 }
 
 /**
@@ -360,6 +360,7 @@ async function updateOrder(orderId, req, connection = null) {
     let db = (connection) ? connection : await pool.promise().getConnection();
 
     let SqlQuery = "UPDATE spatulasCommands SET ";
+    let variablesArray = [];
 
     // We begins by storing the first order of the user, because it may be of use later
     let oldOrder = await getCommands("commandId = " + orderId, null, null, null, false, db);
@@ -370,23 +371,42 @@ async function updateOrder(orderId, req, connection = null) {
         let newFoodValue = req.body[tables[i].foodName]
         // If the user did input a value for this food, we add it to the query
         if (newFoodValue) {
-            SqlQuery += tables[i].foodName + " = " + newFoodValue;
+            SqlQuery += tables[i].foodName + " = ?,";
+            variablesArray.push(newFoodValue);
         }
     }
-    // ! WARNING COMMAS ARE NOT HANDLED YET FOR THE UPDATE QUERY
-    // Now we will handle the timestamp update
-    let newTimeStamp = req.body.time;
-    let oldTimeStamp = oldOrder[0].time;
+    
 
-    SqlQuery += "unformated_time = " + await getTimeValue(newTimeStamp, db);
-    await incrementTimeCount(newTimeStamp, db);
-    await decrementTimeCount(oldTimeStamp, db);
+    // Now we will handle the timestamp update
+    if (await timeEnabled(db)) {
+        let newTimeStamp = req.body.time;
+        let oldTimeStamp = await getTimeIndex(oldOrder[0].time, db);
+    
+        SqlQuery += "unformated_time = ?,";
+        variablesArray.push(await getTimeValue(newTimeStamp, db));
+
+        await incrementTimeCount(newTimeStamp, db);
+        await decrementTimeCount(oldTimeStamp, db);
+    }
+
+    // Removing the last comma from the query to fit the SQL syntax
+    SqlQuery = SqlQuery.substring(0, SqlQuery.length - 1);
 
     // Finally sending the update
 
     SqlQuery += " WHERE commandId = ?";
+    variablesArray.push(orderId);
+
+    await db.execute(SqlQuery, variablesArray);
+
+    if (await timeEnabled(db)) {
+        let format = (await getTimeFormat() == "day") ? "%d/%m/%Y %H:%i" : "%H:%i";
+        await db.execute('UPDATE spatulasCommands SET time=DATE_FORMAT(unformated_time, ?)', [format]);
+    }
 
     if (!connection) db.release();
+
+    return;
 }
 
 module.exports = {
@@ -400,5 +420,6 @@ module.exports = {
     toggleCommandBoolean,
     refreshCommand,
     generateRandomString,
-    checkSession
+    checkSession,
+    updateOrder
 }

@@ -13,7 +13,9 @@ let { getRegistration, getRegistrationDay, getLimit, setRegistration, setRegistr
 /* GET users listing. */
 router.get('/', function(req, res, next) {
   checkPassword(req.cookies.spatulasPower, (result) => {
-    res.render('auth', { title: 'Authentification', admin: result, authentified: result });
+    getRegistration((regisBool) => {
+      res.render('auth', { title: 'Authentification', admin: result, authentified: result, registrationOpen: regisBool });
+    })
   })
 });
 
@@ -45,7 +47,7 @@ query('search-query').trim().escape(),
     let users = await getUsersByStatus('commandId', req.query["search-query"], 'lastUpdated', req.query["search-query"], 'lastUpdated', req.query["search-query"], 'lastUpdated', req.query["search-query"], conn)
     await createCommandFoodString(users, ", ", conn);
     conn.release();
-    res.render('admin-queue', { title: 'Queue Manager', admin: true, searching: (req.query["search-query"]) ? true : false, users: users, notEmpty: (typeof users !== "undefined" && users.length > 0) ? true : false });
+    res.render('admin-queue', { title: 'Queue Manager', admin: true, searching: (req.query["search-query"]) ? true : false, users: users, notEmpty: (typeof users !== "undefined" && users.untreated.length > 0 || users.preparation.length > 0 || users.ready.length > 0 || users.delivered.length > 0) ? true : false, orderCount: (typeof users !== "undefined" && users.untreated.length > 0 || users.preparation.length > 0 || users.ready.length > 0 || users.delivered.length > 0) ? users.untreated.length + users.preparation.length + users.ready.length + users.delivered.length : 0, untreatedCount: (typeof users !== "undefined" && users.untreated.length > 0) ? users.untreated.length : 0, preparationCount: (typeof users !== "undefined" && users.preparation.length > 0) ? users.preparation.length : 0, readyCount: (typeof users !== "undefined" && users.ready.length > 0) ? users.ready.length : 0, deliveredCount: (typeof users !== "undefined" && users.delivered.length > 0) ? users.delivered.length : 0 });
   })
 })
 
@@ -53,16 +55,13 @@ router.get('/manage', (req, res, next) => {
   authenticate(req, res, async () => {
 
     // Getting all database related informations
-    let conn = await pool.promise().getConnection();
-    let count = await getTablesCount("delivered = 0", null, conn);
 
     // Getting all settings related informations
     getRegistration((regisBool) => {
       getRegistrationDay((day) => {
         getLimit((limit) => {
           getKitchenLimit((kitchenLimit) => {
-            conn.release();
-            res.render('settings', { title: 'Settings', admin: true, limit: limit, day: day, regisBool: regisBool, kitchenLimit: kitchenLimit,  count: count});
+            res.render('settings', { title: 'Settings', admin: true, limit: limit, day: day, regisBool: regisBool, kitchenLimit: kitchenLimit});
           })
         })
       })
@@ -137,7 +136,7 @@ router.get('/kitchen', (req, res, next) => {
   })
 })
 
-router.post('/updateRegistration', (req, res, next) => {
+router.get('/updateRegistration', (req, res, next) => {
   authenticate(req, res, () => {
     getRegistration((oldValue) => {
       if (oldValue == 1) {
@@ -147,7 +146,7 @@ router.post('/updateRegistration', (req, res, next) => {
         setRegistration(1)
       }
     })
-    res.redirect('/spadmin/manage#generalParameters');
+    res.redirect('/spadmin/');
   })
 })
 
@@ -175,7 +174,7 @@ router.post('/removeTimeStamp', (req, res, next) => {
 router.post('/updateLimit', (req, res, next) => {
   authenticate(req, res, () => {
     setLimit(req.body.limit);
-    res.redirect('/spadmin/manage#generalParameters');
+    res.redirect('/spadmin/time/');
   })
 })
 
